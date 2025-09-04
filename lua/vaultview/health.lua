@@ -1,16 +1,16 @@
---- Make sure `plugin_template` will work as expected.
+--- Make sure `vaultview` will work as expected.
 ---
 --- At minimum, we validate that the user's configuration is correct. But other
 --- checks can happen here if needed.
 ---
 
-local configuration_ = require("plugin_template._core.configuration")
+local configuration_ = require("vaultview._core.configuration")
 local logging_ = require("mega.logging")
-local say_constant = require("plugin_template._commands.hello_world.say.constant")
-local tabler = require("plugin_template._core.tabler")
-local texter = require("plugin_template._core.texter")
+local say_constant = require("vaultview._commands.hello_world.say.constant")
+local tabler = require("vaultview._core.tabler")
+local texter = require("vaultview._core.texter")
 
-local _LOGGER = logging_.get_logger("plugin_template.health")
+local _LOGGER = logging_.get_logger("vaultview.health")
 
 local M = {}
 
@@ -135,7 +135,7 @@ end
 
 --- Check all "commands" values for issues.
 ---
----@param data plugin_template.Configuration All of the user's fallback settings.
+---@param data vaultview.Configuration All of the user's fallback settings.
 ---@return string[] # All found issues, if any.
 ---
 local function _get_command_issues(data)
@@ -169,7 +169,7 @@ end
 --- - Or the table, which is `table<str, table<...>>`, has an incorrect value.
 --- - The inner tables must also follow a specific structure.
 ---
----@param command string A supported `plugin_template` command. e.g. `"hello_world"`.
+---@param command string A supported `vaultview` command. e.g. `"hello_world"`.
 ---@return string[] # All found issues, if any.
 ---
 local function _get_lualine_command_issues(command, data)
@@ -246,7 +246,7 @@ end
 
 --- Check all "tools.lualine" values for issues.
 ---
----@param data plugin_template.Configuration All of the user's fallback settings.
+---@param data vaultview.Configuration All of the user's fallback settings.
 ---@return string[] # All found issues, if any.
 ---
 local function _get_lualine_issues(data)
@@ -284,7 +284,7 @@ end
 
 --- Check if logging configuration `data` has any issues.
 ---
----@param data plugin_template.LoggingConfiguration The user's logger settings.
+---@param data vaultview.LoggingConfiguration The user's logger settings.
 ---@return string[] # All of the found issues, if any.
 ---
 local function _get_logging_issues(data)
@@ -335,7 +335,7 @@ end
 
 --- Check all "tools.lualine" values for issues.
 ---
----@param data plugin_template.Configuration All of the user's fallback settings.
+---@param data vaultview.Configuration All of the user's fallback settings.
 ---@return string[] # All found issues, if any.
 ---
 local function _get_telescope_issues(data)
@@ -400,12 +400,12 @@ end
 
 --- Check `data` for problems and return each of them.
 ---
----@param data plugin_template.Configuration? All extra customizations for this plugin.
+---@param data vaultview.Configuration? All extra customizations for this plugin.
 ---@return string[] # All found issues, if any.
 ---
 function M.get_issues(data)
     if not data or vim.tbl_isempty(data) then
-        data = configuration_.resolve_data(vim.g.plugin_template_configuration)
+        data = configuration_.resolve_data(vim.g.vaultview_configuration)
     end
 
     local output = {}
@@ -432,19 +432,19 @@ function M.get_issues(data)
     return output
 end
 
---- Make sure `data` will work for `plugin_template`.
+--- Make sure `data` will work for `vaultview`.
 ---
----@param data plugin_template.Configuration? All extra customizations for this plugin.
+---@param data vaultview.Configuration? All extra customizations for this plugin.
 ---
 function M.check(data)
-    _LOGGER:debug("Running plugin-template health check.")
+    _LOGGER:debug("Running vaultview health check.")
 
     vim.health.start("Configuration")
 
     local issues = M.get_issues(data)
 
     if vim.tbl_isempty(issues) then
-        vim.health.ok("Your vim.g.plugin_template_configuration variable is great!")
+        vim.health.ok("Your vim.g.vaultview_configuration variable is great!")
     end
 
     for _, issue in ipairs(issues) do

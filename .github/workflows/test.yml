@@ -56,7 +56,7 @@ jobs:
 
     - name: Install LuaRocks
       # TODO: Replace with https://github.com/luarocks/gh-actions-luarocks after v6+
-      uses: ColinKennedy/gh-actions-luarocks@v1.0.0
+      uses: fvalenza/gh-actions-luarocks@v1.0.0
 
     - name: Print Versions
       run: |
@@ -67,15 +67,15 @@ jobs:
     # Reference: https://github.com/nvim-neorocks/luarocks-tag-release/issues/435
     #
     - name: Expand The Template Rockspec
-      uses: ColinKennedy/luarocks-rockspec-expander@v1.0.1
+      uses: fvalenza/luarocks-rockspec-expander@v1.0.1
       with:
         input: template.rockspec
-        output: nvim-best-practices-plugin-template-scm-1.rockspec
+        output: vaultview-scm-1.rockspec
         delete_input_after: true
 
     - name: Build Test Dependencies
       run: |
-        luarocks test nvim-best-practices-plugin-template-scm-1.rockspec --prepare
+        luarocks test vaultview-scm-1.rockspec --prepare
 
     - name: Test
       run: |

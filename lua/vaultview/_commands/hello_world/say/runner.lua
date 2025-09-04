@@ -1,9 +1,9 @@
 --- The main file that implements `hello-world say` outside of COMMAND mode.
 
-local constant = require("plugin_template._commands.hello_world.say.constant")
+local constant = require("vaultview._commands.hello_world.say.constant")
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("plugin_template._commands.hello_world.say.runner")
+local _LOGGER = logging.get_logger("vaultview._commands.hello_world.say.runner")
 
 local M = {}
 

@@ -15,7 +15,7 @@ end
 vim.opt.runtimepath:prepend(lazypath)
 
 local plugins = {
-    load(vim.fn.system("curl -s https://raw.githubusercontent.com/ColinKennedy/mega.vimdoc/main/bootstrap.lua"))(),
+    load(vim.fn.system("curl -s https://raw.githubusercontent.com/fvalenza/mega.vimdoc/main/bootstrap.lua"))(),
 }
 
 require("lazy").setup(plugins, {

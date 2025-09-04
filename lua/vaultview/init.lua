@@ -4,13 +4,13 @@
 --- package must get a new **major** version.
 ---
 
-local configuration = require("plugin_template._core.configuration")
-local arbitrary_thing_runner = require("plugin_template._commands.arbitrary_thing.runner")
-local copy_logs_runner = require("plugin_template._commands.copy_logs.runner")
-local count_sheep = require("plugin_template._commands.goodnight_moon.count_sheep")
-local read = require("plugin_template._commands.goodnight_moon.read")
-local say_runner = require("plugin_template._commands.hello_world.say.runner")
-local sleep = require("plugin_template._commands.goodnight_moon.sleep")
+local configuration = require("vaultview._core.configuration")
+local arbitrary_thing_runner = require("vaultview._commands.arbitrary_thing.runner")
+local copy_logs_runner = require("vaultview._commands.copy_logs.runner")
+local count_sheep = require("vaultview._commands.goodnight_moon.count_sheep")
+local read = require("vaultview._commands.goodnight_moon.read")
+local say_runner = require("vaultview._commands.hello_world.say.runner")
+local sleep = require("vaultview._commands.goodnight_moon.sleep")
 
 local M = {}
 

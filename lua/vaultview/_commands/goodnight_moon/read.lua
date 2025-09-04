@@ -2,7 +2,7 @@
 
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("plugin_template._commands.goodnight_moon.read")
+local _LOGGER = logging.get_logger("vaultview._commands.goodnight_moon.read")
 
 local M = {}
 

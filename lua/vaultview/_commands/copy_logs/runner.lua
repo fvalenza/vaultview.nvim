@@ -2,13 +2,13 @@
 
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("plugin_template._commands.copy_logs.runner")
+local _LOGGER = logging.get_logger("vaultview._commands.copy_logs.runner")
 
 local M = {}
 
 --- Modify the user's system clipboard with `result`.
 ---
----@param result plugin_template.ReadFileResult The file path + its contents that we read.
+---@param result vaultview.ReadFileResult The file path + its contents that we read.
 ---
 local function _callback(result)
     vim.fn.setreg("+", result.data)
@@ -16,7 +16,7 @@ local function _callback(result)
     vim.notify(string.format('Log file "%s" was copied to the clipboard.', result.path), vim.log.levels.INFO)
 end
 
----@class plugin_template.ReadFileResult
+---@class vaultview.ReadFileResult
 ---    A file path + its contents.
 ---@field data string
 ---    The blob of text that was read from `path`.
@@ -26,7 +26,7 @@ end
 --- Read the contents of `path` and pass its contents to `callback`.
 ---
 ---@param path string An absolute path to a file on-disk.
----@param callback fun(result: plugin_template.ReadFileResult): nil Call this once `path` is read.
+---@param callback fun(result: vaultview.ReadFileResult): nil Call this once `path` is read.
 ---@private
 ---
 function M._read_file(path, callback)

@@ -71,7 +71,7 @@ jobs:
       - name: Create User Documentation
         uses: kdheepak/panvimdoc@main
         with:
-          vimdoc: plugin-template
+          vimdoc: vaultview
           version: "Neovim >= 0.8.0"
           demojify: true
           treesitter: true

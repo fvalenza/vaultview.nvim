@@ -1,16 +1,16 @@
-*plugin-template-news.txt*
+*vaultview-news.txt*
 
-Notable changes since PluginTemplate 1.10
+Notable changes since Vaultview 1.10
 
 
 ===============================================================================
-NEW FEATURES                                     *plugin-template-new-features*
+NEW FEATURES                                     *vaultview-new-features*
 
 - Added `mdformat` support for auto-formatting Markdown files!
 
 
 ===============================================================================
-BREAKING CHANGES                                 *plugin-template-new-breaking*
+BREAKING CHANGES                                 *vaultview-new-breaking*
 
 n/a
 
