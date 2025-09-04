@@ -1,0 +1,32 @@
+name: StyLua
+
+on:
+  pull_request:
+    branches:
+    - main
+  push:
+    branches:
+      - main
+
+jobs:
+  stylua:
+    name: StyLua
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # TODO: Change this once an outcome for this PR is done
+      #
+      # Reference: https://github.com/JohnnyMorganz/stylua-action/pull/58
+      #
+      - name: Install StyLua
+        uses: JohnnyMorganz/stylua-action@v4.1.0
+        with:
+          version: latest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: false
+
+      - name: Run StyLua
+        run: |
+          make check-stylua
