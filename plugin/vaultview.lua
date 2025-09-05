@@ -28,7 +28,7 @@ cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
 
 vim.keymap.set("n", "<Plug>(VaultviewSayHi)", function()
     local configuration = require("vaultview._core.configuration")
-    local vaultview = require("plugin_template")
+    local vaultview = require("vaultview")
 
     configuration.initialize_data_if_needed()
 
