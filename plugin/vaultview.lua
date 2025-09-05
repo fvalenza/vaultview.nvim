@@ -10,6 +10,7 @@ local _SUBCOMMANDS = function()
     local copy_logs = require("vaultview._commands.copy_logs.parser")
     local goodnight_moon = require("vaultview._commands.goodnight_moon.parser")
     local hello_world = require("vaultview._commands.hello_world.parser")
+    local open = require("vaultview._commands.open.parser")
 
     local parser = cmdparse.ParameterParser.new({ name = _PREFIX, help = "The root of all commands." })
     local subparsers = parser:add_subparsers({ "commands", help = "All runnable commands." })
@@ -18,6 +19,7 @@ local _SUBCOMMANDS = function()
     subparsers:add_parser(copy_logs.make_parser())
     subparsers:add_parser(goodnight_moon.make_parser())
     subparsers:add_parser(hello_world.make_parser())
+    subparsers:add_parser(open.make_parser())
 
     return parser
 end
