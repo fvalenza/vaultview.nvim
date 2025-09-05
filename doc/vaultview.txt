@@ -97,7 +97,7 @@ A template repository used to create Neovim plugins.
 >lua
     {
         "fvalenza/vaultview",
-        dependencies = { "fvalenza/mega.cmdparse", "ColinKennedy/mega.logging" },
+        dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging" },
         -- TODO: (you) - Make sure your first release matches v1.0.0 so it auto-releases!
         version = "v1.*",
     }
