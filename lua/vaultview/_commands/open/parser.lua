@@ -24,19 +24,12 @@ end
 ---@return mega.cmdparse.ParameterParser # The main parser for the `:Vaultview hello-world` command.
 function M.make_parser()
     local parser = cmdparse.ParameterParser.new({ "open", help = "open" })
-    local top_subparsers =
-        parser:add_subparsers({ destination = "commands", help = "All open commands.", required = true })
-    --- @cast top_subparsers mega.cmdparse.Subparsers
-
-    local board = top_subparsers:add_parser({ "board", help = "open the board" })
-    board:add_parameter({"board", help = "Name of the board to open."})
 
 
-    board:set_execute(function(data)
-        ---@cast data mega.cmdparse.NamespaceExecuteArguments
-        local runner = require("vaultview._commands.open.board.runner")
+    parser:set_execute(function()
+        local runner = require("vaultview._commands.open.runner")
 
-        runner.run_open_board(data.namespace.board)
+        runner.run_open_board()
     end)
 
 

@@ -62,6 +62,14 @@ function M.run_hello_world_say_word(word, repeat_, style)
     say_runner.run_say_word(word, repeat_, style)
 end
 
+
+--- [TODO:description]
+function M.run_open_vaultview()
+    local runner = require("vaultview._commands.open.runner")
+
+    runner.run_open_board()
+end
+
 --- Count a sheep for each `count`.
 ---
 ---@param count number Prints 1 sheep per `count`. A value that is 1-or-greater.

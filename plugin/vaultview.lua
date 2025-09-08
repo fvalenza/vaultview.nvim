@@ -26,11 +26,11 @@ end
 
 cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
 
-vim.keymap.set("n", "<Plug>(VaultviewSayHi)", function()
+vim.keymap.set("n", "<Plug>(Vaultview)", function()
     local configuration = require("vaultview._core.configuration")
     local vaultview = require("vaultview")
 
     configuration.initialize_data_if_needed()
 
-    vaultview.run_hello_world_say_word("Hi!")
-end, { desc = "Say hi to the user." })
+    vaultview.run_open_vaultview()
+end, { desc = "Open your vaultview" })
