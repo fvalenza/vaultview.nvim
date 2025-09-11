@@ -2,6 +2,7 @@
 
 local configuration = require("vaultview._core.configuration")
 local logging = require("mega.logging")
+local vaultview = require("vaultview._core.vaultview")
 
 local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
 
@@ -23,9 +24,13 @@ function M.run_open_board()
     local data = configuration.resolve_data(vim.g.vaultview_configuration)
 
 
-	print("Items in this list: " .. vim.inspect(data))
+	-- print("Items in this list: " .. vim.inspect(data)) -- debug, and to see it everything works
 
-    vim.notify( "opening vaultview", vim.log.levels.INFO)
+    -- vim.notify( "opening vaultview", vim.log.levels.INFO)
+
+    local vv = vaultview.new(data)
+
+    vv:open()
 end
 
 return M
