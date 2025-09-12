@@ -4,6 +4,9 @@ VaultView.__index = VaultView
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
+local Board = require("vaultview._core.board")
+local DailyParser = require("vaultview._parser.daily_parser")
+local tutils = require("vaultview.utils.table_utils")
 
 
 function VaultView:create_vaultview_windows()
@@ -54,6 +57,28 @@ function VaultView:create_vaultview_windows()
 
 end
 
+local config = {
+	-- markdown_dir = "~/mboard/daily",
+	markdown_dir = "~/mboard",
+	vault = {
+		-- path = "/home/fvalenza/root-filetree/devel/myVault",
+		path = "/home/fvalenza/mboard/daily/",
+		name = "myVault",
+	},
+	dailyBoard = {
+		-- daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+		daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+        daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
+		-- show_empty_months = false,
+	},
+	mocBoard = {
+		note_folder_mode = true,
+		pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
+		file_title = "strip-moc", -- could be "date" or "basename" or "strip-moc"
+	},
+}
+
+
 -- function VaultView.new(config)
 function VaultView.new()
 	local self = setmetatable({}, VaultView)
@@ -61,7 +86,14 @@ function VaultView.new()
 
     self:create_vaultview_windows()
 
+    local dailyBoardData = DailyParser.parseBoard(config.vault, config.dailyBoard)
+    tutils.printTable(dailyBoardData, "dailyBoardData")
+
+	-- print("Items in dailyBoardData: " .. vim.inspect(dailyBoardData))
     -- create the boards and give them the pages and views windows so they can draw in it  (at least text in page window, but not sure if necesarry to give view window)
+    local board = Board.new("title", dailyBoardData, self.pages_win)
+
+    self.board = board
 
 
     return self
@@ -71,6 +103,7 @@ function VaultView:render()
     self.board_selection_win:show()
     self.pages_win:show()
     self.views_win:show()
+    self.board:render()
 end
 
 -- Si open() c'est juste des appels a render(), autant ne pas l'avoir et directement appeler render()
