@@ -91,33 +91,37 @@ local function set_list_keymap(layout, context)
             noremap = true,
             nowait = true,
         },
-        ["p"] = {
+		["p"] = {
+			function()
+			    local runner = require("vaultview._commands.open.runner")
+                runner.run_go_to_previous_board()
+			end,
+			mode = "n",
+			noremap = true,
+			nowait = true,
+		},
+		["n"] = {
+			function()
+				local runner = require("vaultview._commands.open.runner")
+                runner.run_go_to_next_board()
+			end,
+			mode = "n",
+			noremap = true,
+			nowait = true,
+		},
+        ["<S-h>"] = {-- Like for quit, use runner "commands" to "pass" it to context.vaultview or to context.vaultview.board
             function()
-                M.context.vv:go_to_board(-1)
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["n"] = {
-            function()
-                M.context.vv:go_to_board(1)
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["<S-h>"] = {
-            function()
-                M.context.vv:go_to_page(-1)
+                local runner = require("vaultview._commands.open.runner")
+                runner.run_go_to_previous_page()
             end, -- previous page
             mode = "n",
             noremap = true,
             nowait = true,
         },
-        ["<S-l>"] = {
+        ["<S-l>"] = {-- Like for quit, use runner "commands" to "pass" it to context.vaultview or to context.vaultview.board
             function()
-                M.context.vv:go_to_page(1)
+                local runner = require("vaultview._commands.open.runner")
+                runner.run_go_to_next_page()
             end, -- next page
             mode = "n",
             noremap = true,
@@ -139,6 +143,33 @@ local function set_list_keymap(layout, context)
             noremap = true,
             nowait = true,
         },
+		["1"] = {
+			function()
+			    local runner = require("vaultview._commands.open.runner")
+			    runner.run_go_to_board(1)
+			end,
+			mode = "n",
+			noremap = true,
+			nowait = true,
+		},
+		["2"] = {
+			function()
+				local runner = require("vaultview._commands.open.runner")
+				runner.run_go_to_board(2)
+			end,
+			mode = "n",
+			noremap = true,
+			nowait = true,
+		},
+		["3"] = {
+			function()
+				local runner = require("vaultview._commands.open.runner")
+				runner.run_go_to_board(3)
+			end,
+			mode = "n",
+			noremap = true,
+			nowait = true,
+		},
     }
 end
 -- function ViewLayoutCarousel.new(config)
@@ -161,6 +192,17 @@ function ViewLayoutCarousel:show()
             end
         end
         list.win:show()
+    end
+end
+
+function ViewLayoutCarousel:hide()
+    for _, list in ipairs(self.lists) do
+        for _, card in ipairs(list.cards or {}) do
+            if card.win then
+                card.win:hide()
+            end
+        end
+        list.win:hide()
     end
 end
 

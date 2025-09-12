@@ -102,6 +102,18 @@ function VaultView.new()
     return self
 end
 
+-- TODO, these 3 functions and in new, have table of boards + index of active board. See how pages are done in board.lua
+function VaultView:go_to_board(index)
+end
+
+function VaultView:go_to_next_board()
+
+end
+
+function VaultView:go_to_previous_board()
+
+end
+
 function VaultView:render()
     self.board_selection_win:show()
     self.pages_win:show()
@@ -130,7 +142,8 @@ function VaultView:set_keymap()
 	return {
 		q = {
 			function()
-				self:close()
+			    local runner = require("vaultview._commands.open.runner")
+			    runner.run_close_board()
 			end,
 			mode = "n",
 			noremap = true,
@@ -138,7 +151,8 @@ function VaultView:set_keymap()
 		},
 		["p"] = {
 			function()
-				self:go_to_board(-1)
+			    local runner = require("vaultview._commands.open.runner")
+                runner.run_go_to_previous_board()
 			end,
 			mode = "n",
 			noremap = true,
@@ -146,7 +160,8 @@ function VaultView:set_keymap()
 		},
 		["n"] = {
 			function()
-				self:go_to_board(1)
+				local runner = require("vaultview._commands.open.runner")
+                runner.run_go_to_next_board()
 			end,
 			mode = "n",
 			noremap = true,
@@ -154,8 +169,8 @@ function VaultView:set_keymap()
 		},
 		["<S-h>"] = {
 			function()
-				-- M:go_to_page(-1)
-				self:go_to_page(-1)
+			    local runner = require("vaultview._commands.open.runner")
+			    runner.run_go_to_previous_page()
 			end, -- previous page
 			mode = "n",
 			noremap = true,
@@ -163,16 +178,18 @@ function VaultView:set_keymap()
 		},
 		["<S-l>"] = {
 			function()
-				-- M:go_to_page(1)
-				self:go_to_page(1)
+			    local runner = require("vaultview._commands.open.runner")
+			    runner.run_go_to_next_page()
 			end, -- next page
 			mode = "n",
 			noremap = true,
 			nowait = true,
 		},
+        -- TODO "automatize it" from 1 to 9 ? or just straight copy it 9 times ? perhaps no need to do it the hard way for only 9 mappings...
 		["1"] = {
 			function()
-				self:set_active_tab(1)
+			    local runner = require("vaultview._commands.open.runner")
+			    runner.run_go_to_board(1)
 			end,
 			mode = "n",
 			noremap = true,
@@ -180,7 +197,8 @@ function VaultView:set_keymap()
 		},
 		["2"] = {
 			function()
-				self:set_active_tab(2)
+				local runner = require("vaultview._commands.open.runner")
+				runner.run_go_to_board(2)
 			end,
 			mode = "n",
 			noremap = true,
@@ -188,7 +206,8 @@ function VaultView:set_keymap()
 		},
 		["3"] = {
 			function()
-				self:set_active_tab(3)
+				local runner = require("vaultview._commands.open.runner")
+				runner.run_go_to_board(3)
 			end,
 			mode = "n",
 			noremap = true,

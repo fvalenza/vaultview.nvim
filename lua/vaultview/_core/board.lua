@@ -42,14 +42,46 @@ function Board.new(board_title, board_data, page_selection_win, context)
     return self
 end
 
+function Board:go_to_page(direction)
+	local new_index = self.active_page_index + direction
+	if new_index < 1 then
+		new_index = #self.pages_title -- wrap left
+	elseif new_index > #self.pages_title then
+		new_index = 1 -- wrap right
+	end
+
+	-- hide current page layout
+	-- if self.view_layout then
+	-- 	self.view_layout:close()
+	-- end
+    self:hide()
+
+	-- update active page
+	self.active_page_index = new_index
+
+    self:render()
+
+end
+
+
 function Board:render()
     self:render_page_selection()
     self:render_view()
 end
 
+
 function Board:close()
     for _, vl in ipairs(self.pages_viewlayout) do
         vl:close()
+    end
+end
+
+function Board:hide()
+    local active_page_viewlayout = self.pages_viewlayout[self.active_page_index]
+    if active_page_viewlayout then
+        active_page_viewlayout:hide()
+    else
+        vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
     end
 end
 
@@ -61,20 +93,20 @@ function Board:render_page_selection()
     local pages_line = table.concat(self.pages_title, " | ")
 
     -- Final line with decorations
-    local line = "<C-h>  <--  " .. pages_line .. "   --> <C-l>"
+    local line = "<S-h>  <--  " .. pages_line .. "   --> <S-l>"
 
     -- Put the line into the buffer (replace first line, or you can append)
     vim.api.nvim_buf_set_lines(buf, 0, 1, false, { line })
 
     -- First, apply "Comment" highlight to everything except pages
-    vim.api.nvim_buf_add_highlight(buf, -1, "Comment", 0, 0, 11) -- "<C-h>  <--  "
-    vim.api.nvim_buf_add_highlight(buf, -1, "Comment", 0, #line - 9, -1) -- "   --> <C-l>"
+    vim.api.nvim_buf_add_highlight(buf, -1, "Comment", 0, 0, 11) -- "<S-h>  <--  "
+    vim.api.nvim_buf_add_highlight(buf, -1, "Comment", 0, #line - 9, -1) -- "   --> <S-l>"
 
     -- Now underline the active page
-    local col_start = 12 -- starting col of first page (after "<C-h>  <--  ")
+    local col_start = 12 -- starting col of first page (after "<S-h>  <--  ")
     for i, title in ipairs(self.pages_title) do
         local col_end = col_start + #title
-        if i == active_page_index then
+        if i == self.active_page_index then
             vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", 0, col_start, col_end)
         end
         col_start = col_end + 3 -- skip " | "
