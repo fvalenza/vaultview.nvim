@@ -7,6 +7,7 @@ local vaultview = require("vaultview._core.vaultview")
 local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
 
 local M = {}
+M.context = {}
 
 --- Print `phrase` according to the other options.
 ---
@@ -29,8 +30,19 @@ function M.run_open_board()
     -- vim.notify( "opening vaultview", vim.log.levels.INFO)
 
     local vv = vaultview.new(data)
+    M.context.vv = vv
 
     vv:open()
+end
+
+function M.run_close_board()
+    _LOGGER:debug("Closing open board")
+
+    -- vim.notify( "closing vaultview", vim.log.levels.INFO)
+
+    if M.context.vv then
+        M.context.vv:close()
+    end
 end
 
 return M

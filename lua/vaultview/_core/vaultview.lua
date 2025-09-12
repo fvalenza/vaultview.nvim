@@ -91,7 +91,10 @@ function VaultView.new()
 
 	-- print("Items in dailyBoardData: " .. vim.inspect(dailyBoardData))
     -- create the boards and give them the pages and views windows so they can draw in it  (at least text in page window, but not sure if necesarry to give view window)
-    local board = Board.new("title", dailyBoardData, self.pages_win)
+    local context = {
+        vaultview = self,
+    }
+    local board = Board.new("DailyBoard", dailyBoardData, self.pages_win, context)
 
     self.board = board
 
@@ -113,11 +116,13 @@ function VaultView:open()
     -- self:set_keymaps()
 end
 
+
 function VaultView:close()
     vim.notify( "closing vaultview", vim.log.levels.INFO)
     self.board_selection_win:close()
     self.pages_win:close()
     self.views_win:close()
+    self.board:close()
 end
 
 

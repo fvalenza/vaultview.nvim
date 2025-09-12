@@ -3,15 +3,41 @@ Board.__index = Board
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
+local ViewLayoutCarousel = require("vaultview._core.viewlayout")
 
 -- function Board.new(config)
-function Board.new(board_title, board_data, page_selection_win)
+function Board.new(board_title, board_data, page_selection_win, context)
     local self = setmetatable({}, Board)
     vim.notify("creating board", vim.log.levels.INFO)
 
+    self.context = context
+    self.page_selection_win = page_selection_win -- The Snacks window where we will display the pages titles
+
+    -- Create ViewLayoutCarousel instance for each page TODO
     self.board_title = board_title
     self.board_data = board_data or {}
-    self.page_selection_win = page_selection_win
+
+    self.pages_title = {}
+    self.pages_content = {}
+    self.pages_viewlayout = {}
+    for _, page in ipairs(self.board_data) do
+        table.insert(self.pages_title, page.title)
+        table.insert(self.pages_content, page.lists)
+        local page_viewlayout = ViewLayoutCarousel.new(page.lists, self.context)
+
+        local vl = page_viewlayout
+        -- Determine what to render based on the available space and the number of lists
+        vl.last_left_collapsed, vl.last_right_collapsed, vl.layout_space_taken = vl:compute_layout()
+        vl.visibility_window_left = math.max(1, vl.last_left_collapsed + 1) -- Ensure we don't go below 1
+        vl.visibility_window_right = math.min(#vl.lists, vl.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
+        vl.list_focus_index = math.ceil((vl.last_left_collapsed + vl.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
+
+        table.insert(self.pages_viewlayout, page_viewlayout)
+    end
+
+
+    self.active_page_index = 1
+
 
     return self
 end
@@ -21,18 +47,18 @@ function Board:render()
     self:render_view()
 end
 
+function Board:close()
+    for _, vl in ipairs(self.pages_viewlayout) do
+        vl:close()
+    end
+end
+
 -- TODO  Display in the center of the page selection window ?? Not sure it is worth it
 function Board:render_page_selection()
 
-    local active_page_index = 2 -- e.g. "page2" is active
     local buf = self.page_selection_win.buf
 
-    -- Collect page titles
-    local pages = {}
-    for _, page in ipairs(self.board_data) do
-        table.insert(pages, page.title)
-    end
-    local pages_line = table.concat(pages, " | ")
+    local pages_line = table.concat(self.pages_title, " | ")
 
     -- Final line with decorations
     local line = "<C-h>  <--  " .. pages_line .. "   --> <C-l>"
@@ -46,7 +72,7 @@ function Board:render_page_selection()
 
     -- Now underline the active page
     local col_start = 12 -- starting col of first page (after "<C-h>  <--  ")
-    for i, title in ipairs(pages) do
+    for i, title in ipairs(self.pages_title) do
         local col_end = col_start + #title
         if i == active_page_index then
             vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", 0, col_start, col_end)
@@ -55,6 +81,14 @@ function Board:render_page_selection()
     end
 end
 
-function Board:render_view() end
+function Board:render_view()
+    local active_page_viewlayout = self.pages_viewlayout[self.active_page_index]
+    if active_page_viewlayout then
+        active_page_viewlayout:render()
+    else
+        vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
+    end
+
+end
 
 return Board
