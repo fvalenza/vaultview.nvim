@@ -73,7 +73,7 @@ function M.run_go_to_previous_page()
     _LOGGER:debug("Go to previous page")
 
     if M.context.vv then
-        M.context.vv.board:go_to_page(-1)
+        M.context.vv:go_to_page(-1)
     end
 end
 
@@ -81,7 +81,7 @@ function M.run_go_to_next_page()
     _LOGGER:debug("Go to next page")
 
     if M.context.vv then
-        M.context.vv.board:go_to_page(1)
+        M.context.vv:go_to_page(1)
     end
 end
 

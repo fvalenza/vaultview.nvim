@@ -172,6 +172,7 @@ local function set_list_keymap(layout, context)
 		},
     }
 end
+
 -- function ViewLayoutCarousel.new(config)
 function ViewLayoutCarousel.new(page_data, context)
     local self = setmetatable({}, ViewLayoutCarousel)
