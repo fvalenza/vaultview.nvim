@@ -84,7 +84,7 @@ local config = {
 -- function VaultView.new(config)
 function VaultView.new()
     local self = setmetatable({}, VaultView)
-    vim.notify("creating vaultview", vim.log.levels.INFO)
+    -- vim.notify("creating vaultview", vim.log.levels.INFO)
 
     self:create_vaultview_windows()
 
@@ -124,7 +124,7 @@ end
 function VaultView:go_to_board(index)
 
     if index < 1 or index > #self.boards then
-        vim.notify("Invalid board index: " .. tostring(index), vim.log.levels.WARN)
+        -- vim.notify("Invalid board index: " .. tostring(index), vim.log.levels.WARN)
         return
     end
 
@@ -137,7 +137,7 @@ function VaultView:go_to_board(index)
     if active_board then
         active_board:hide()
     else
-        vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
     end
 
     -- update active board index
@@ -195,19 +195,19 @@ function VaultView:render()
     if active_board then
         active_board:render()
     else
-        vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
     end
 end
 
 -- Si open() c'est juste des appels a render(), autant ne pas l'avoir et directement appeler render()
 function VaultView:open()
-    vim.notify("opening vaultview", vim.log.levels.INFO)
+    -- vim.notify("opening vaultview", vim.log.levels.INFO)
     self:render()
     -- self:set_keymaps()
 end
 
 function VaultView:close()
-    vim.notify("closing vaultview", vim.log.levels.INFO)
+    -- vim.notify("closing vaultview", vim.log.levels.INFO)
     self.board_selection_win:close()
     self.pages_win:close()
     self.views_win:close()
@@ -222,7 +222,7 @@ function VaultView:go_to_page(direction)
     if active_board then
         active_board:go_to_page(direction)
     else
-        vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
     end
 end
 

@@ -13,7 +13,7 @@ local M = {}
 function M.run(book)
     _LOGGER:debug("Running goodnight-moon count-sheep")
 
-    vim.notify(string.format("%s: it is a book", book), vim.log.levels.INFO)
+    -- vim.notify(string.format("%s: it is a book", book), vim.log.levels.INFO)
 end
 
 return M

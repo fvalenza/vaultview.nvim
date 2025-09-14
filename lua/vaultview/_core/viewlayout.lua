@@ -243,7 +243,7 @@ function ViewLayoutCarousel:createLayoutWindows(data)
                 content = card_content,
                 expanded = card_expanded,
             })
-            print("Created card window for item: " .. card_title)
+            -- print("Created card window for item: " .. card_title)
         end
 
         table.insert(lists, {
@@ -263,7 +263,7 @@ end
 function ViewLayoutCarousel:make_card_window(title, card_content)
     local lself = self
     local lcontext = self.context
-    print("context is " .. vim.inspect(lcontext))
+    -- print("context is " .. vim.inspect(lcontext))
     local card_win = Snacks.win({
         width = Constants.card_win.width,
         height = Constants.card_win.height,
@@ -391,11 +391,11 @@ function ViewLayoutCarousel:render()
         -- put everything in function called render_cards(list) that shall also account for card expand/collapse (x for cards, X for lists)
         local row_offset = Constants.list_win.row + 1 + 1 -- start at the row of the list + 1
         -- local row_offset = list.win.opts.row + 1 + 1
-        print("Rendering cards for list: " .. list.title)
-        print("Number of cards: " .. #list.cards)
+        -- print("Rendering cards for list: " .. list.title)
+        -- print("Number of cards: " .. #list.cards)
         -- print("Cards: " .. vim.inspect(list.cards))
         for _, card in ipairs(list.cards or {}) do
-            print("Rendering card: " .. card.title)
+            -- print("Rendering card: " .. card.title)
             -- shall set the position of the card window in the list column:
             -- col shall be the col of the current list window and row shall start at the row of the list +1 and increment for each card
             local card_win = card.win
@@ -423,20 +423,20 @@ function ViewLayoutCarousel:render()
     self:show()
     -- Focus the list or the card of the list
 
-    print("list index: " .. self.list_focus_index)
-    print("card index: " .. self.card_focus_index)
+    -- print("list index: " .. self.list_focus_index)
+    -- print("card index: " .. self.card_focus_index)
     local current_list = self.lists[self.list_focus_index]
     local current_card_in_list = current_list.cards[self.card_focus_index]
     if self.card_focus_index == 0 then
-        print("Focusing on list: " .. current_list.title)
+        -- print("Focusing on list: " .. current_list.title)
         current_list.win:focus()
     else
-        print("Focusing on card with index: " .. self.card_focus_index)
-        print("Focusing on card: " .. current_card_in_list.title)
+        -- print("Focusing on card with index: " .. self.card_focus_index)
+        -- print("Focusing on card: " .. current_card_in_list.title)
         if current_card_in_list and current_card_in_list.win then
             current_card_in_list.win:focus()
         else
-            print("No card to focus in the current list.")
+            -- print("No card to focus in the current list.")
         end
     end
     -- We are on a list, toggle the list expand/collapse
@@ -452,24 +452,24 @@ function ViewLayoutCarousel:move_focus_horizontal(direction)
     elseif direction == "right" then
         direction_index = 1
     else
-        print("Invalid horizontal direction: " .. tostring(direction))
+        -- print("Invalid horizontal direction: " .. tostring(direction))
         return
     end
 
-    print("Visibility window: " .. self.visibility_window_left .. " to " .. self.visibility_window_right)
+    -- print("Visibility window: " .. self.visibility_window_left .. " to " .. self.visibility_window_right)
 
     local old_index = self.list_focus_index or 1
     local old_list = self.lists[old_index]
     local old_card_index = old_list.card_focus_index or 0 -- 0 = header, >0 = card number
 
-    print("Moving focus " .. direction .. " from index: " .. old_index)
+    -- print("Moving focus " .. direction .. " from index: " .. old_index)
 
     local new_index = old_index + direction_index
     new_index = math.max(1, math.min(new_index, #self.lists))
 
     -- Expand/collapse logic for visibility
     if new_index < self.visibility_window_left then
-        print("Expanding left list")
+        -- print("Expanding left list")
         self.lists[new_index].expanded = true
         self:collapse_list(self.visibility_window_right) -- Collapse the righttmost list
         self.visibility_window_left = new_index
@@ -478,7 +478,7 @@ function ViewLayoutCarousel:move_focus_horizontal(direction)
         self.last_right_collapsed = self.last_right_collapsed - 1
         self:render()
     elseif new_index > self.visibility_window_right then
-        print("Expanding right list")
+        -- print("Expanding right list")
         self.lists[new_index].expanded = true
         self:collapse_list(self.visibility_window_left) -- Collapse the leftmost list
         self.visibility_window_right = new_index
@@ -508,9 +508,9 @@ function ViewLayoutCarousel:move_focus_horizontal(direction)
         new_list.cards[new_list.card_focus_index].win:focus()
     end
 
-    print(
-        "Moving focus from " .. old_index .. " to " .. new_index .. " (card index: " .. new_list.card_focus_index .. ")"
-    )
+    -- print(
+    --     "Moving focus from " .. old_index .. " to " .. new_index .. " (card index: " .. new_list.card_focus_index .. ")"
+    -- )
 end
 
 function ViewLayoutCarousel:move_focus_mostleft()

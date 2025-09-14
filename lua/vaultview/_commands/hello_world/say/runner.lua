@@ -54,7 +54,7 @@ local function _say(phrase, repeat_, style)
     end
 
     for _ = 1, repeat_ do
-        vim.notify(text, vim.log.levels.INFO)
+        -- vim.notify(text, vim.log.levels.INFO)
     end
 end
 

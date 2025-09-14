@@ -98,19 +98,19 @@ function M.findContentInEntryFile(path)
 	for line in content:gmatch("[^\n]+") do
 		if line:match("^#%s*Excalidraw Data") then
 			-- in_metadata = true
-			print("[MarkdownParser] Excalidraw section found, stopping parsing.")
+			-- print("[MarkdownParser] Excalidraw section found, stopping parsing.")
 			break -- Exit the loop entirely
 		end
 
 		table.insert(result.lines, line)
 		local heading = line:match("^##%s+(.+)$") -- Match only level 2 headings
 		if heading then
-			print("[MarkdownParser] Found level 2 heading:", heading)
+			-- print("[MarkdownParser] Found level 2 heading:", heading)
 			table.insert(result.headings, heading)
 		end
 	end
 
-	print("[MarkdownParser] Done parsing file. Found " .. #result.headings .. " level 2 headings.")
+	-- print("[MarkdownParser] Done parsing file. Found " .. #result.headings .. " level 2 headings.")
 	return result
 end
 
@@ -119,7 +119,7 @@ function M.parseInputs(inputs)
 
 	-- foreach page
 	for key_page, val_page in tutils.sortedPairs(inputs) do
-		print("Key:", key_page, "Value:", val_page)
+		-- print("Key:", key_page, "Value:", val_page)
 		local resPage = {}
 		resPage.title = key_page
         resPage.dataType = "page"
@@ -127,14 +127,14 @@ function M.parseInputs(inputs)
 
 		-- for each category
 		for key_category, val_category in tutils.sortedPairs(val_page) do
-			print("  Category:", key_category)
+			-- print("  Category:", key_category)
 			local resCategory = {}
 			resCategory.title = key_category
             resCategory.dataType = "list"
 			resCategory.items = {}
 
 			for _, entry in ipairs(val_category) do
-				print("    Entry:", entry.name, "Path:", entry.path)
+				-- print("    Entry:", entry.name, "Path:", entry.path)
 				local resEntry = {}
 				resEntry.title = entry.name
                 resEntry.dataType = "entry"
@@ -176,37 +176,37 @@ function M.parseBoard(vault, boardConfig)
 end
 
 function M.printBoardData(data)
-	print("BoardData: ")
+	-- print("BoardData: ")
 	for k, v in tutils.sortedPairs(data) do
-		print('[\"',k,'\"] = {')
-		--print the v.title and then the v.lists (is a table)
-        print("\tdataType:", v.dataType)
-		print("\ttitle:", v.title)
-		print("\tlists: {")
+		-- print('[\"',k,'\"] = {')
+		-- print the v.title and then the v.lists (is a table)
+        -- print("\tdataType:", v.dataType)
+		-- print("\ttitle:", v.title)
+		-- print("\tlists: {")
 
 		-- for _, vlist in tutils.sortedPairs(v.lists) do
 		for _, vlist in ipairs(v.lists) do
-            print("\t\t{")
-            print("\t\t\tdataType:", vlist.dataType)
-            print("\t\t\ttitle:", vlist.title)
-            print("\t\t\titems: {")
+            -- print("\t\t{")
+            -- print("\t\t\tdataType:", vlist.dataType)
+            -- print("\t\t\ttitle:", vlist.title)
+            -- print("\t\t\titems: {")
             for _, item in ipairs(vlist.items) do
-                print("\t\t\t\t{")
-                print("\t\t\t\t\tdataType:", item.dataType)
-                print("\t\t\t\t\ttitle:", item.title)
-                print("\t\t\t\t\tcontent: {")
+                -- print("\t\t\t\t{")
+                -- print("\t\t\t\t\tdataType:", item.dataType)
+                -- print("\t\t\t\t\ttitle:", item.title)
+                -- print("\t\t\t\t\tcontent: {")
                 for _, line in ipairs(item.content) do
-                    print("\t\t\t\t\t\t" .. line)
+                    -- print("\t\t\t\t\t\t" .. line)
                 end
-                print("\t\t\t\t\t} -- content")
-                print("\t\t\t\t} -- item")
+                -- print("\t\t\t\t\t} -- content")
+                -- print("\t\t\t\t} -- item")
             end
-            print("\t\t\t} -- items")
-            print("\t\t} -- list")
+            -- print("\t\t\t} -- items")
+            -- print("\t\t} -- list")
 		end
 
-		print("\t} -- lists")
-		print("} -- page")
+		-- print("\t} -- lists")
+		-- print("} -- page")
 	end
 end
 

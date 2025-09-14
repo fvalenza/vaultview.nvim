@@ -8,7 +8,6 @@ local ViewLayoutCarousel = require("vaultview._core.viewlayout")
 -- function Board.new(config)
 function Board.new(board_title, board_data, page_selection_win, context)
     local self = setmetatable({}, Board)
-    vim.notify("creating board", vim.log.levels.INFO)
 
     self.context = context
     self.page_selection_win = page_selection_win -- The Snacks window where we will display the pages titles
@@ -81,7 +80,7 @@ function Board:hide()
     if active_page_viewlayout then
         active_page_viewlayout:hide()
     else
-        vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
+        -- vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
     end
 end
 
@@ -118,7 +117,7 @@ function Board:render_view()
     if active_page_viewlayout then
         active_page_viewlayout:render()
     else
-        vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
+        -- vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
     end
 
 end

@@ -34,3 +34,10 @@ vim.keymap.set("n", "<Plug>(Vaultview)", function()
 
     vaultview.run_open_vaultview()
 end, { desc = "Open your vaultview" })
+
+vim.keymap.set("n", "<Plug>(VaultviewClose)", function()
+
+    local runner = require("vaultview._commands.open.runner")
+    runner.run_close_board()
+
+end, { desc = "Close your vaultview" })
