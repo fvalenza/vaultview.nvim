@@ -3,174 +3,20 @@ ViewLayoutCarousel.__index = ViewLayoutCarousel
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
+local Keymaps = require("vaultview.keymaps")
 
--- TODO
--- 1  2  3 ... 9  -> goToBoard(index)
--- shift h/l  -> goToPage(index) with index = current_page + 1 or -1
--- or shift h/l to go to next/previous page
 local function set_list_keymap(layout, context)
-    return {
-        ["<M-h>"] = {
-            function()
-                layout:move_focus_mostleft()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["h"] = {
-            function()
-                layout:move_focus_left()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["c"] = {
-            function()
-                layout:move_focus_center()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["l"] = {
-            function()
-                layout:move_focus_right()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["<M-l>"] = {
-            function()
-                layout:move_focus_mostright()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["gg"] = {
-            function()
-                layout:move_focus_mostup()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["k"] = {
-            function()
-                layout:move_focus_up()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["j"] = {
-            function()
-                layout:move_focus_down()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["G"] = {
-            function()
-                layout:move_focus_mostdown()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        q = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_close_board()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-		["p"] = {
-			function()
-			    local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_previous_board()
-			end,
-			mode = "n",
-			noremap = true,
-			nowait = true,
-		},
-		["n"] = {
-			function()
-				local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_next_board()
-			end,
-			mode = "n",
-			noremap = true,
-			nowait = true,
-		},
-        ["<S-h>"] = {-- Like for quit, use runner "commands" to "pass" it to context.vaultview or to context.vaultview.board
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_previous_page()
-            end, -- previous page
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["<S-l>"] = {-- Like for quit, use runner "commands" to "pass" it to context.vaultview or to context.vaultview.board
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_next_page()
-            end, -- next page
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        X = {
-            function()
-                layout:toggle_expand_list()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        x = {
-            function()
-                layout:toggle_expand()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-		["1"] = {
-			function()
-			    local runner = require("vaultview._commands.open.runner")
-			    runner.run_go_to_board(1)
-			end,
-			mode = "n",
-			noremap = true,
-			nowait = true,
-		},
-		["2"] = {
-			function()
-				local runner = require("vaultview._commands.open.runner")
-				runner.run_go_to_board(2)
-			end,
-			mode = "n",
-			noremap = true,
-			nowait = true,
-		},
-		["3"] = {
-			function()
-				local runner = require("vaultview._commands.open.runner")
-				runner.run_go_to_board(3)
-			end,
-			mode = "n",
-			noremap = true,
-			nowait = true,
-		},
-    }
+    local map = {}
+
+    for k, v in pairs(Keymaps.generic) do
+        map[k] = v
+    end
+
+    for k, v in pairs(Keymaps.ViewLayoutCarousel) do
+        map[k] = { function() v[1](layout) end, mode = v.mode, noremap = v.noremap, nowait = v.nowait }
+    end
+
+    return map
 end
 
 -- function ViewLayoutCarousel.new(config)

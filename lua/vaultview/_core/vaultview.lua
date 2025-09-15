@@ -18,7 +18,7 @@ function VaultView:create_vaultview_windows()
         col = 0,
         text = "",
         show = true,
-        keys = self:set_keymap(),
+        focusable = false,
         on_buf = function() end,
     })
 
@@ -203,7 +203,6 @@ end
 function VaultView:open()
     -- vim.notify("opening vaultview", vim.log.levels.INFO)
     self:render()
-    -- self:set_keymaps()
 end
 
 function VaultView:close()
@@ -226,82 +225,7 @@ function VaultView:go_to_page(direction)
     end
 end
 
-function VaultView:set_keymap()
-    return {
-        q = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_close_board()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["p"] = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_previous_board()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["n"] = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_next_board()
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["<S-h>"] = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_previous_page()
-            end, -- previous page
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["<S-l>"] = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_next_page()
-            end, -- next page
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        -- TODO "automatize it" from 1 to 9 ? or just straight copy it 9 times ? perhaps no need to do it the hard way for only 9 mappings...
-        ["1"] = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_board(1)
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["2"] = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_board(2)
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-        ["3"] = {
-            function()
-                local runner = require("vaultview._commands.open.runner")
-                runner.run_go_to_board(3)
-            end,
-            mode = "n",
-            noremap = true,
-            nowait = true,
-        },
-    }
-end
+local Keymaps = require("vaultview.keymaps")
+
 
 return VaultView
