@@ -32,7 +32,7 @@ function M.run_open_board()
     local vv = vaultview.new(data)
     M.context.vv = vv
 
-    vv:open()
+    vv:render()
 end
 
 function M.run_close_board()
@@ -44,6 +44,27 @@ function M.run_close_board()
         M.context.vv:close()
     end
 end
+
+
+function M.render()
+    _LOGGER:debug("Redrawing open board")
+
+    if M.context.vv then
+        M.context.vv:render()
+    end
+end
+
+function M.refresh()
+    -- DISGUSTING HACK -> close and open again to force refresh of data
+    _LOGGER:debug("Refresh board")
+
+    if M.context.vv then
+        M.run_close_board()
+        M.run_open_board()
+        M:render()
+    end
+end
+
 
 function M.run_go_to_board(index)
     _LOGGER:debug("Go to board: " .. tostring(index))

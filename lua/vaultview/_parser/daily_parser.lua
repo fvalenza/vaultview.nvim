@@ -75,6 +75,7 @@ function M.arrangeBoardInputs(entries)
 			end
 		end
 	end
+    print(vim.inspect(grouped))
 	return grouped
 end
 
@@ -137,6 +138,7 @@ function M.parseInputs(inputs)
 				-- print("    Entry:", entry.name, "Path:", entry.path)
 				local resEntry = {}
 				resEntry.title = entry.name
+                resEntry.filepath = entry.path
                 resEntry.dataType = "entry"
 				resEntry.content = {}
 				local expanded_path = expand_path(entry.path)

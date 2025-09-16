@@ -56,20 +56,20 @@ local config = {
     -- markdown_dir = "~/mboard/daily",
     markdown_dir = "~/mboard",
     vault = {
-        -- path = "/home/fvalenza/root-filetree/devel/myVault",
-        path = "/home/fvalenza/mboard/daily/",
+        path = "/home/fvalenza/root-filetree/devel/myVault",
+        -- path = "/home/fvalenza/mboard/daily/",
         name = "myVault",
     },
     boards = {
         dailyBoard = {
-            -- daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
-            daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+            daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+            -- daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
             -- show_empty_months = false,
         },
         dailyBoard2 = {
-            -- daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
-            daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+            daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+            -- daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
             -- show_empty_months = false,
         },
@@ -199,11 +199,6 @@ function VaultView:render()
     end
 end
 
--- Si open() c'est juste des appels a render(), autant ne pas l'avoir et directement appeler render()
-function VaultView:open()
-    -- vim.notify("opening vaultview", vim.log.levels.INFO)
-    self:render()
-end
 
 function VaultView:close()
     -- vim.notify("closing vaultview", vim.log.levels.INFO)

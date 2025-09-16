@@ -15,6 +15,7 @@ M.generic = {
     ["7"] = { function() require("vaultview._commands.open.runner").run_go_to_board(7) end, mode = "n", noremap = true, nowait = true, },
     ["8"] = { function() require("vaultview._commands.open.runner").run_go_to_board(8) end, mode = "n", noremap = true, nowait = true, },
     ["9"] = { function() require("vaultview._commands.open.runner").run_go_to_board(9) end, mode = "n", noremap = true, nowait = true, },
+    ["r"] = { function() require("vaultview._commands.open.runner").refresh() end, mode = "n", noremap = true, nowait = true, },
 }
 
 
@@ -30,6 +31,8 @@ M.ViewLayoutCarousel = {
     ["G"] = { function(layout) layout:move_focus_mostdown() end, mode = "n", noremap = true, nowait = true, },
     X = { function(layout) layout:toggle_expand_list() end, mode = "n", noremap = true, nowait = true, },
     x = { function(layout) layout:toggle_expand() end, mode = "n", noremap = true, nowait = true, },
+    ["<CR>"] = { function(layout) layout:open_focused_in_nvim() end, mode = "n", noremap = true, nowait = true, },
+    ["o"] = { function(layout) layout:open_focused_in_obsidian() end, mode = "n", noremap = true, nowait = true, },
 }
 
 return M

@@ -77,14 +77,18 @@ function ViewLayoutCarousel:createLayoutWindows(data)
         local win = self:make_list_window(title)
         -- create cards for each item in the list
         for _, item in ipairs(items) do
+            print("Printing items")
+            print(vim.inspect(item))
             local card_title = item.title or "Untitled Card"
             local card_content = item.content or "No content" -- TODO temporary ?  but shall not be item.path
+            local card_filepath = item.filepath or nil
             local card_win = self:make_card_window(card_title, card_content)
             local card_expanded = true -- Setting it to true for the moment but should be determined later, in render ?
             -- Add the card window to the list
             table.insert(cards, {
                 id = item.date or "no-date",
                 title = card_title,
+                filepath = card_filepath,
                 win = card_win,
                 content = card_content,
                 expanded = card_expanded,
@@ -439,4 +443,78 @@ function ViewLayoutCarousel:move_focus_mostdown()
     current_list.card_focus_index = #current_list.cards
     current_list.cards[current_list.card_focus_index].win:focus()
 end
+
+
+
+
+function ViewLayoutCarousel:open_focused_in_nvim()
+    local current_list = self.lists[self.list_focus_index]
+    local ci = current_list.card_focus_index or 0
+
+    if ci == 0 then
+        -- vim.notify("Focused on list header: " .. current_list.title, vim.log.levels.INFO)
+        return
+    end
+
+    local card = current_list.cards[ci]
+    if not card or not card.filepath then
+        -- vim.notify("No file path for card: " .. (card and card.title or "unknown"), vim.log.levels.WARN)
+        return
+    end
+
+    local filepath = card.filepath
+    local expanded_path = vim.fn.expand(filepath)
+    if vim.fn.filereadable(expanded_path) == 0 then
+        -- vim.notify("File does not exist: " .. expanded_path, vim.log.levels.ERROR)
+        return
+    end
+
+    local win = require("snacks").win({
+        file = expanded_path,
+        width = 0.9,
+        height = 0.95,
+        zindex = 50,
+        border = "rounded",
+        relative = "editor",
+        bo = { modifiable = true,  },
+        keys = { q = "close" },
+        on_close = function ()
+            require("vaultview._commands.open.runner").refresh() -- HACK to refresh whole board (and data parsing) instead of just the updated card
+            -- TODO implement a way to just refresh the card that was edited
+        end,
+        wo = {
+            wrap = true,
+            linebreak = true,
+        },
+    })
+end
+
+function ViewLayoutCarousel:open_focused_in_obsidian()
+    local current_list = self.lists[self.list_focus_index]
+    local ci = current_list.card_focus_index or 0
+
+    if ci == 0 then
+        -- vim.notify("Focused on list header: " .. current_list.title, vim.log.levels.INFO)
+        return
+    end
+
+    local card = current_list.cards[ci]
+    if not card or not card.filepath then
+        -- vim.notify("No file path for card: " .. (card and card.title or "unknown"), vim.log.levels.WARN)
+        return
+    end
+
+    local path = vim.fn.fnamemodify(card.filepath, ":p") -- absolute path
+    -- https://help.obsidian.md/Extending+Obsidian/Obsidian+URI
+    local uri = "obsidian://open?path=" .. vim.fn.escape(path, " ")
+    print("Opening Obsidian URI:", uri)
+
+    local vaultname = "myVault"
+    local cmd = string.format("!xdg-open 'obsidian://open?vault=%s&file=%s'", vaultname, card.title)
+    print("Executing command:", cmd)
+    vim.cmd(cmd)
+end
+
+
+
 return ViewLayoutCarousel
