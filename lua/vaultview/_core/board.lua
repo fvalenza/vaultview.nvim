@@ -30,6 +30,13 @@ function Board.new(board_title, board_data, page_selection_win, context)
         vl.visibility_window_left = math.max(1, vl.last_left_collapsed + 1) -- Ensure we don't go below 1
         vl.visibility_window_right = math.min(#vl.lists, vl.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
         vl.list_focus_index = math.ceil((vl.last_left_collapsed + vl.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
+        vl.card_focus_index = 1
+        -- if list focused has no items, move focus to the next list with items
+    local current_list = vl.lists[vl.list_focus_index]
+        if #current_list.cards == 0 then
+            vl.list_focus_index = vl.list_focus_index + 1
+        end
+        current_list.cards[vl.card_focus_index].win:focus()
 
         table.insert(self.pages_viewlayout, page_viewlayout)
     end
