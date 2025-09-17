@@ -43,6 +43,9 @@ function M.parseDirForBoardInputs(dir)
 	return boardData
 end
 
+--- Rearranges flat array of entries {date=yyyy-mm-dd, name=..., path=...} into a nested table grouped by year and month
+---@param entries [TODO:parameter]
+---@return [TODO:return]
 function M.arrangeBoardInputs(entries)
 	-- entries is a flat array of {date=yyyy-mm-dd, name=..., path=...}
 	-- we want to group them by year and month
@@ -115,6 +118,27 @@ function M.findContentInEntryFile(path)
 	return result
 end
 
+local function monthToString(month)
+    local monthNames = {
+        ["01"] = "January",
+        ["02"] = "February",
+        ["03"] = "March",
+        ["04"] = "April",
+        ["05"] = "May",
+        ["06"] = "June",
+        ["07"] = "July",
+        ["08"] = "August",
+        ["09"] = "September",
+        ["10"] = "October",
+        ["11"] = "November",
+        ["12"] = "December",
+    }
+    return monthNames[month] or month
+end
+
+--- Extract for each entry the relevant content (headings, etc)
+---@param inputs [TODO:parameter]
+---@return [TODO:return]
 function M.parseInputs(inputs)
 	local results = {}
 
@@ -131,6 +155,7 @@ function M.parseInputs(inputs)
 			-- print("  Category:", key_category)
 			local resCategory = {}
 			resCategory.title = key_category
+			resCategory.title = monthToString(key_category)
             resCategory.dataType = "list"
 			resCategory.items = {}
 
@@ -172,7 +197,7 @@ function M.parseBoard(vault, boardConfig)
     local boardArrangedInputs = M.arrangeBoardInputs(boardRawInputs) -- shall take board config to know how to arrange (category/entry)
     -- printTable(boardArrangedInputs, "boardArrangedInputs")
     local boardParsedInputs = M.parseInputs(boardArrangedInputs) -- shall take board config to know how to parse (which headings, etc)
-    -- printTable(boardParsedInputs, "boardParsedInputs")
+    tutils.printTable(boardParsedInputs, "boardParsedInputs")
 
     return boardParsedInputs
 end

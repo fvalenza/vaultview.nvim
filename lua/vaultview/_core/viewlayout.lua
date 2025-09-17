@@ -31,16 +31,6 @@ function ViewLayoutCarousel.new(page_data, context)
     return self
 end
 
-function ViewLayoutCarousel:show()
-    for _, list in ipairs(self.lists) do
-        for _, card in ipairs(list.cards or {}) do
-            if card.win then
-                card.win:show()
-            end
-        end
-        list.win:show()
-    end
-end
 
 function ViewLayoutCarousel:hide()
     for _, list in ipairs(self.lists) do
@@ -77,8 +67,6 @@ function ViewLayoutCarousel:createLayoutWindows(data)
         local win = self:make_list_window(title)
         -- create cards for each item in the list
         for _, item in ipairs(items) do
-            print("Printing items")
-            print(vim.inspect(item))
             local card_title = item.title or "Untitled Card"
             local card_content = item.content or "No content" -- TODO temporary ?  but shall not be item.path
             local card_filepath = item.filepath or nil
@@ -129,7 +117,7 @@ function ViewLayoutCarousel:make_card_window(title, card_content)
         backdrop = false,
         focusable = true,
         keys = set_list_keymap(lself, lcontext),
-        bo = { modifiable = false },
+        bo = { modifiable = true },
         -- bo = { modifiable = true, filetype = filetype },
     })
     card_win:hide()
@@ -148,13 +136,12 @@ function ViewLayoutCarousel:make_list_window(title)
         relative = "editor",
         row = Constants.list_win.row, -- align all lists at top of view_win
         col = Constants.list_win.col, -- at creation, put them all at the top left. will be recomputed in render function
-        text = title,
         show = true,
         enter = false,
         backdrop = false,
         focusable = true,
         keys = set_list_keymap(lself),
-        bo = { modifiable = false },
+        bo = { modifiable = true },
         -- bo = { modifiable = true, filetype = filetype },
     })
     list_win:hide()
@@ -209,72 +196,99 @@ function ViewLayoutCarousel:compute_layout()
 end
 
 function ViewLayoutCarousel:render()
-    -- update positioning of the lists depending on the layout
-    local col_offset = Constants.list_win.col -- offset for the next list
-    for i, list in pairs(self.lists) do
+    local function hide_all_entry_cards(list)
+        for _, card in ipairs(list.cards or {}) do
+            local card_win = card.win
+            card_win:hide() -- hide the card window
+        end
+    end
+
+    local render_expanded_list = function(list, col_offset)
         local win = list.win
+
+        local list_winbar_title_fmt = " %s %%= %d " -- title on left, number of cards on right
+        win.opts.wo.winbar = list_winbar_title_fmt:format(list.title, #list.cards)
+
         win.opts.col = col_offset -- put the win at the offset
         -- determine the width based on expanded state
         local width = list.expanded and Constants.list_win.width or Constants.list_win_close.width
         win.opts.width = width
         col_offset = col_offset + width + 1 + 1 -- 1 = padding, 1 = border
 
-        -- title shall be title string if expaneded, or result of stringToCharList if not expanded
-        if list.expanded then
-            win.opts.text = list.title
-        else
-            local function stringToCharList(str)
-                local chars = {}
-                for idx = 1, #str do
-                    table.insert(chars, str:sub(idx, idx))
-                end
-                return chars
-            end
-            local char_list_title = stringToCharList(list.title)
-            -- print(vim.inspect(char_list_title))
-            -- win.opts.text = char_list_title -- FIX: this is not working as expected, need to convert to a list of chars
-            win.opts.text = "toto" -- A tester pour voir si j'arrive bien a update le texte
-        end
-
         -- Render the cards of the lists
         -- TODO iterate over the items of the list and render them
         -- put everything in function called render_cards(list) that shall also account for card expand/collapse (x for cards, X for lists)
         local row_offset = Constants.list_win.row + 1 + 1 -- start at the row of the list + 1
-        -- local row_offset = list.win.opts.row + 1 + 1
-        -- print("Rendering cards for list: " .. list.title)
-        -- print("Number of cards: " .. #list.cards)
-        -- print("Cards: " .. vim.inspect(list.cards))
-        for _, card in ipairs(list.cards or {}) do
-            -- print("Rendering card: " .. card.title)
+
+        for c, card in ipairs(list.cards or {}) do
             -- shall set the position of the card window in the list column:
             -- col shall be the col of the current list window and row shall start at the row of the list +1 and increment for each card
             local card_win = card.win
-            card_win.opts.width = width -- set the height of the card window
+            card_win.opts.width = width -- set the width of the card window
             card_win.opts.col = list.win.opts.col -- align with the list
             local height = card.expanded and Constants.card_win.height or Constants.card_win_close.height
             card_win.opts.row = row_offset -- put the card below the list title
             card_win.opts.height = height
             row_offset = row_offset + height + 1 + 1 -- increment the row offset for the next card
 
-            card_win.opts.text = card.content -- set the content of the card
-            if list.expanded == true then
-                card_win:show() -- show the card window
-            else
-                -- If the list is collapsed, hide all its cards
-                for _, card in ipairs(list.cards or {}) do
-                    local card_win = card.win
-                    card_win:hide() -- hide the card window
-                end
-            end
+            -- FIXME: when focusing on previsouly collapsed list/card, errors "not enough room"
+            -- local card_winbar_title_fmt = " %s %%= %d " -- title on left, number of cards on right
+            -- card_win.opts.wo.winbar = card_winbar_title_fmt:format(card.title, c)
+
+            card_win:show()
         end
+
+        list.win:show()
+
+        return col_offset
     end
 
-    -- Actual rendering of the lists windows
-    self:show()
-    -- Focus the list or the card of the list
+    local render_collapsed_list = function(list, col_offset)
+        local win = list.win
+        local list_winbar_tile_fmt = " %d "
+        win.opts.wo.winbar = list_winbar_tile_fmt:format(#list.cards)
 
-    -- print("list index: " .. self.list_focus_index)
-    -- print("card index: " .. self.card_focus_index)
+        local function stringToCharList(str)
+            local chars = {}
+            for idx = 1, #str do
+                table.insert(chars, str:sub(idx, idx))
+            end
+            return chars
+        end
+
+        local char_list_title = stringToCharList(list.title)
+        vim.api.nvim_buf_set_lines(win.buf, -1, -1, false, char_list_title)
+
+        win.opts.col = col_offset -- put the win at the offset
+        -- determine the width based on expanded state
+        local width = list.expanded and Constants.list_win.width or Constants.list_win_close.width
+        win.opts.width = width
+        col_offset = col_offset + width + 1 + 1 -- 1 = padding, 1 = border
+
+        list.win:show()
+
+        return col_offset
+    end
+
+    local col_offset = Constants.list_win.col -- offset for which column to put the next list window
+    for _, list in pairs(self.lists) do
+
+        -- Start by hiding all card windows. We will show them later if necessary (if list is expanded)
+        hide_all_entry_cards(list)
+
+        -- Clear the list buffer before setting new lines
+        vim.api.nvim_buf_set_lines(list.win.buf, 0, -1, false, {""})
+
+        if list.expanded then
+            col_offset = render_expanded_list(list, col_offset)
+        else
+            col_offset = render_collapsed_list(list, col_offset)
+
+        end
+
+    end
+
+    -- Focus the list or the card of the list
     local current_list = self.lists[self.list_focus_index]
     local current_card_in_list = current_list.cards[self.card_focus_index]
     if self.card_focus_index == 0 then
