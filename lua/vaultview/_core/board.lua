@@ -32,7 +32,7 @@ function Board.new(board_title, board_data, page_selection_win, context)
         vl.list_focus_index = math.ceil((vl.last_left_collapsed + vl.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
         vl.card_focus_index = 1
         -- if list focused has no items, move focus to the next list with items
-    local current_list = vl.lists[vl.list_focus_index]
+        local current_list = vl.lists[vl.list_focus_index]
         if #current_list.cards == 0 then
             vl.list_focus_index = vl.list_focus_index + 1
         end
@@ -41,40 +41,35 @@ function Board.new(board_title, board_data, page_selection_win, context)
         table.insert(self.pages_viewlayout, page_viewlayout)
     end
 
-
     self.active_page_index = 1
-
 
     return self
 end
 
 function Board:go_to_page(direction)
-	local new_index = self.active_page_index + direction
-	if new_index < 1 then
-		new_index = #self.pages_title -- wrap left
-	elseif new_index > #self.pages_title then
-		new_index = 1 -- wrap right
-	end
+    local new_index = self.active_page_index + direction
+    if new_index < 1 then
+        new_index = #self.pages_title -- wrap left
+    elseif new_index > #self.pages_title then
+        new_index = 1 -- wrap right
+    end
 
-	-- hide current page layout
-	-- if self.view_layout then
-	-- 	self.view_layout:close()
-	-- end
+    -- hide current page layout
+    -- if self.view_layout then
+    -- 	self.view_layout:close()
+    -- end
     self:hide()
 
-	-- update active page
-	self.active_page_index = new_index
+    -- update active page
+    self.active_page_index = new_index
 
     self:render()
-
 end
-
 
 function Board:render()
     self:render_page_selection()
     self:render_view()
 end
-
 
 function Board:close()
     for _, vl in ipairs(self.pages_viewlayout) do
@@ -93,7 +88,6 @@ end
 
 -- TODO  Display in the center of the page selection window ?? Not sure it is worth it
 function Board:render_page_selection()
-
     local buf = self.page_selection_win.buf
 
     local pages_line = table.concat(self.pages_title, " | ")
@@ -126,7 +120,60 @@ function Board:render_view()
     else
         -- vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
     end
+end
 
+function Board:focus()
+    local active_page_viewlayout = self.pages_viewlayout[self.active_page_index]
+    if active_page_viewlayout then
+        active_page_viewlayout:focus()
+    else
+        -- vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
+    end
+end
+
+function Board:pick()
+    local itemss = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
+
+    Snacks.picker.pick({
+        items = itemss,
+        finder = function()
+            local finder_items = {}
+            for idx, e in ipairs(itemss) do
+                -- `text` is what will be shown. `item` can be the full table so you can use more fields later
+                table.insert(finder_items, {
+                    idx = idx,
+                    text = e,
+                    item = e,
+                })
+            end
+            return finder_items
+        end,
+        format = function(item, _)
+            local ret = {}
+            ret[#ret + 1] = { item.text, "SnacksPickerLabel" }
+            ret[#ret + 1] = { " " }
+            ret[#ret + 1] = { item.text, "SnacksPickerComment" }
+            return ret
+        end,
+        confirm = function(picker, item)
+            picker:close()
+            require("vaultview._commands.open.runner").run_focus()
+            -- go to the picked page
+            if item then
+                vim.notify("Picking page " .. item.text)
+            end
+        end,
+
+        actions = {
+            ["<CR>"] = "confirm",
+            ["q"] = function(picker)
+                picker:close()
+                vim.notify("Picker closed")
+                require("vaultview._commands.open.runner").run_focus()
+            end,
+            ["<ESC>"] = "close",
+        },
+    })
 end
 
 return Board

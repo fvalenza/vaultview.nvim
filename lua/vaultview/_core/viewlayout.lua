@@ -458,6 +458,16 @@ function ViewLayoutCarousel:move_focus_mostdown()
     current_list.cards[current_list.card_focus_index].win:focus()
 end
 
+function ViewLayoutCarousel:focus()
+    local current_list = self.lists[self.list_focus_index]
+    local ci = current_list.card_focus_index or 0
+
+    if ci == 0 then
+        current_list.win:focus()
+    else
+        current_list.cards[ci].win:focus()
+    end
+end
 
 
 

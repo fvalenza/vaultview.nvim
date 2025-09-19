@@ -220,6 +220,24 @@ function VaultView:go_to_page(direction)
     end
 end
 
+function VaultView:focus()
+    local active_board = self.boards[self.active_board_index]
+    if active_board then
+        active_board:focus()
+    else
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+    end
+end
+
+function VaultView:pick()
+    local active_board = self.boards[self.active_board_index]
+    if active_board then
+        active_board:pick()
+    else
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+    end
+end
+
 local Keymaps = require("vaultview.keymaps")
 
 

@@ -106,6 +106,22 @@ function M.run_go_to_next_page()
     end
 end
 
+function M.run_focus()
+    _LOGGER:debug("Get focus back on viewlayout")
+
+    if M.context.vv then
+        M.context.vv:focus()
+    end
+end
+
+function M.run_pick()
+    _LOGGER:debug("Picker")
+
+    if M.context.vv then
+        M.context.vv:pick()
+    end
+end
+
 
 
 
