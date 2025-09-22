@@ -220,10 +220,10 @@ function VaultView:go_to_page(direction)
     end
 end
 
-function VaultView:focus()
+function VaultView:focus(entry_idx)
     local active_board = self.boards[self.active_board_index]
     if active_board then
-        active_board:focus()
+        active_board:focus(entry_idx)
     else
         -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
     end

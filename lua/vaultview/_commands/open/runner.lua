@@ -106,11 +106,11 @@ function M.run_go_to_next_page()
     end
 end
 
-function M.run_focus()
+function M.run_focus(title)
     _LOGGER:debug("Get focus back on viewlayout")
 
     if M.context.vv then
-        M.context.vv:focus()
+        M.context.vv:focus(title)
     end
 end
 

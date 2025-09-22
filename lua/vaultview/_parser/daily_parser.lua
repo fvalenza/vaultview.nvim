@@ -197,7 +197,9 @@ function M.parseBoard(vault, boardConfig)
     local boardArrangedInputs = M.arrangeBoardInputs(boardRawInputs) -- shall take board config to know how to arrange (category/entry)
     -- printTable(boardArrangedInputs, "boardArrangedInputs")
     local boardParsedInputs = M.parseInputs(boardArrangedInputs) -- shall take board config to know how to parse (which headings, etc)
-    tutils.printTable(boardParsedInputs, "boardParsedInputs")
+    -- tutils.printTable(boardParsedInputs, "boardParsedInputs")
+    print("Final parsed board inputs:")
+    vim.inspect(boardParsedInputs)
 
     return boardParsedInputs
 end

@@ -117,6 +117,7 @@ function ViewLayoutCarousel:make_card_window(title, card_content)
         backdrop = false,
         focusable = true,
         keys = set_list_keymap(lself, lcontext),
+        -- wo = { winbar = title, wrap = true, linebreak = true }, -- FIXME when adding titlebars, when opening a list i got errors not enough room
         bo = { modifiable = true },
         -- bo = { modifiable = true, filetype = filetype },
     })
@@ -375,6 +376,48 @@ function ViewLayoutCarousel:move_focus_horizontal(direction)
     -- print(
     --     "Moving focus from " .. old_index .. " to " .. new_index .. " (card index: " .. new_list.card_focus_index .. ")"
     -- )
+end
+
+function ViewLayoutCarousel:move_focus_idx(list_idx, card_idx)
+    -- Determine if current list_focus_index is left or right of the new list_idx
+    if list_idx < 1 or list_idx > #self.lists then
+        -- print("Invalid list index: " .. tostring(list_idx))
+        return
+    end
+    local direction = list_idx < self.list_focus_index and "left" or "right"
+    while self.list_focus_index ~= list_idx do
+        self:move_focus_horizontal(direction)
+    end
+
+    local direction_updown = card_idx < (self.lists[self.list_focus_index].card_focus_index or 0) and "up" or "down"
+    while (self.lists[self.list_focus_index].card_focus_index or 0) ~= card_idx do
+        self:move_focus_vertical(direction_updown)
+    end
+
+    -- if list_idx < 1 or list_idx > #self.lists then
+    --     print("Invalid list index: " .. tostring(list_idx))
+    --     return
+    -- end
+    --
+    -- local target_list = self.lists[list_idx]
+    -- if card_idx < 0 or card_idx > #target_list.cards then
+    --     -- print("Invalid card index: " .. tostring(card_idx))
+    --     return
+    -- end
+    --
+    -- self.list_focus_index = list_idx
+    -- target_list.card_focus_index = card_idx
+    --
+    -- -- Adjust visibility window if necessary
+    -- if list_idx < self.visibility_window_left then
+    --     self.visibility_window_left = list_idx
+    --     self.visibility_window_right = math.min(self.visibility_window_right + 1, #self.lists)
+    -- elseif list_idx > self.visibility_window_right then
+    --     self.visibility_window_right = list_idx
+    --     self.visibility_window_left = math.max(self.visibility_window_left - 1, 1)
+    -- end
+    --
+    -- self:render()
 end
 
 function ViewLayoutCarousel:move_focus_mostleft()

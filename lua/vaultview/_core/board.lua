@@ -43,6 +43,9 @@ function Board.new(board_title, board_data, page_selection_win, context)
 
     self.active_page_index = 1
 
+    print("Board created with title: " .. self.board_title)
+    print(vim.inspect(self.board_data))
+
     return self
 end
 
@@ -122,23 +125,59 @@ function Board:render_view()
     end
 end
 
-function Board:focus()
-    local active_page_viewlayout = self.pages_viewlayout[self.active_page_index]
-    if active_page_viewlayout then
-        active_page_viewlayout:focus()
-    else
-        -- vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
+function Board:focus(entry_idx)
+    print("Looking to focus on card with entry_idx:" .. entry_idx)
+    local idx = 1 -- let's find the idx of the entry across all pages and lists of the one selected
+    -- find the page whose cards/entries has given title
+    for _, pages_viewlayout in ipairs(self.pages_viewlayout) do
+        for list_index, list in ipairs(pages_viewlayout.lists) do
+            print("Checking list: " .. list.title)
+            print("List has " .. tostring(#list.cards) .. " cards")
+            print(vim.inspect(list.cards))
+            for item_index, item in ipairs(list.cards) do
+                if idx == entry_idx then
+                    -- focus this item
+                    -- pages_viewlayout.list_focus_index = list_index
+                    -- pages_viewlayout.card_focus_index = item_index
+                    pages_viewlayout:move_focus_idx(list_index, item_index)
+                    -- item.win:focus()
+                    print("Focusing entry idx: " .. tostring(entry_idx))
+                    print("In list: " .. list.title .. " (list index: " .. tostring(list_index) .. ")")
+                    print("Card title: " .. item.title .. " (item index: " .. tostring(item_index) .. ")")
+                    return
+                end
+                idx = idx + 1
+            end
+        end
     end
+
+
+
+    -- local active_page_viewlayout = self.pages_viewlayout[self.active_page_index]
+    -- if active_page_viewlayout then
+    --     active_page_viewlayout:focus()
+    -- else
+    --     -- vim.notify("No viewlayout for active page index " .. tostring(self.active_page_index), vim.log.levels.WARN)
+    -- end
 end
 
 function Board:pick()
-    local itemss = { "1", "2", "3", "4", "5", "6", "7", "8", "9" }
+    local entry_titles = {}
+    for page_idx, page in ipairs(self.board_data) do
+        for _, list in ipairs(page.lists) do
+            for _, item in ipairs(list.items) do
+                table.insert(entry_titles, item.title)
+            end
+        end
+    end
+    print("Entry titles:")
+    print(vim.inspect(entry_titles))
 
     Snacks.picker.pick({
-        items = itemss,
+        items = entry_titles,
         finder = function()
             local finder_items = {}
-            for idx, e in ipairs(itemss) do
+            for idx, e in ipairs(entry_titles) do
                 -- `text` is what will be shown. `item` can be the full table so you can use more fields later
                 table.insert(finder_items, {
                     idx = idx,
@@ -150,17 +189,17 @@ function Board:pick()
         end,
         format = function(item, _)
             local ret = {}
-            ret[#ret + 1] = { item.text, "SnacksPickerLabel" }
+            ret[#ret + 1] = { tostring(item.idx), "SnacksPickerLabel" }
             ret[#ret + 1] = { " " }
             ret[#ret + 1] = { item.text, "SnacksPickerComment" }
             return ret
         end,
         confirm = function(picker, item)
             picker:close()
-            require("vaultview._commands.open.runner").run_focus()
+            require("vaultview._commands.open.runner").run_focus(item.idx)
             -- go to the picked page
             if item then
-                vim.notify("Picking page " .. item.text)
+                print("Picking page " .. item.text)
             end
         end,
 
@@ -168,7 +207,6 @@ function Board:pick()
             ["<CR>"] = "confirm",
             ["q"] = function(picker)
                 picker:close()
-                vim.notify("Picker closed")
                 require("vaultview._commands.open.runner").run_focus()
             end,
             ["<ESC>"] = "close",
