@@ -106,6 +106,9 @@ function M.run_go_to_next_page()
     end
 end
 
+
+-- Focus the card with the given title.
+-- TODO: rename function
 function M.run_focus(title)
     _LOGGER:debug("Get focus back on viewlayout")
 
@@ -114,11 +117,37 @@ function M.run_focus(title)
     end
 end
 
-function M.run_pick()
+
+-- Focus back to viewlayout (at the position it is pointing to)
+function M.run_focus_back()
+    _LOGGER:debug("Get focus back on viewlayout")
+
+    if M.context.vv then
+        M.context.vv:focus_back()
+    end
+end
+
+function M.run_pick_list()
     _LOGGER:debug("Picker")
 
     if M.context.vv then
-        M.context.vv:pick()
+        M.context.vv:pick_list()
+    end
+end
+
+function M.run_pick_card()
+    _LOGGER:debug("Picker")
+
+    if M.context.vv then
+        M.context.vv:pick_card()
+    end
+end
+
+function M.run_pick_content()
+    _LOGGER:debug("Picker")
+
+    if M.context.vv then
+        M.context.vv:pick_content()
     end
 end
 

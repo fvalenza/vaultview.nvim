@@ -112,12 +112,12 @@ function ViewLayoutCarousel:make_card_window(title, card_content)
         row = Constants.card_win.row, -- align all lists at top of view_win
         col = Constants.card_win.col, -- at creation, put them all at the top left. will be recomputed in render function
         text = card_content,
+        title = title,
         show = true,
         enter = false,
         backdrop = false,
         focusable = true,
         keys = set_list_keymap(lself, lcontext),
-        -- wo = { winbar = title, wrap = true, linebreak = true }, -- FIXME when adding titlebars, when opening a list i got errors not enough room
         bo = { modifiable = true },
         -- bo = { modifiable = true, filetype = filetype },
     })
