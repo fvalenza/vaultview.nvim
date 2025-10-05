@@ -229,10 +229,37 @@ function VaultView:focus(entry_idx)
     end
 end
 
-function VaultView:pick()
+function VaultView:focus_back()
     local active_board = self.boards[self.active_board_index]
     if active_board then
-        active_board:pick()
+        active_board:focus_back()
+    else
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+    end
+end
+
+function VaultView:pick_list()
+    local active_board = self.boards[self.active_board_index]
+    if active_board then
+        active_board:pick_list()
+    else
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+    end
+end
+
+function VaultView:pick_card()
+    local active_board = self.boards[self.active_board_index]
+    if active_board then
+        active_board:pick_card()
+    else
+        -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
+    end
+end
+
+function VaultView:pick_content()
+    local active_board = self.boards[self.active_board_index]
+    if active_board then
+        active_board:pick_content()
     else
         -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
     end

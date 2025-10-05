@@ -4,6 +4,7 @@ Board.__index = Board
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
 local ViewLayoutCarousel = require("vaultview._core.viewlayout")
+local utils = require("vaultview.utils.utils")
 
 -- function Board.new(config)
 function Board.new(board_title, board_data, page_selection_win, context)
@@ -125,6 +126,7 @@ function Board:render_view()
     end
 end
 
+-- Focus on the n-th entry in board_data (across all pages and lists)
 function Board:focus(entry_idx)
     print("Looking to focus on card with entry_idx:" .. entry_idx)
     local idx = 1 -- let's find the idx of the entry across all pages and lists of the one selected
@@ -161,7 +163,15 @@ function Board:focus(entry_idx)
     -- end
 end
 
-function Board:pick()
+function Board:focus_back()
+    vim.notify("Get focus back on viewlayout", vim.log.levels.INFO)
+    print("Get focus back on viewlayout")
+    self.pages_viewlayout[self.active_page_index]:move_focus_horizontal("left")
+    self.pages_viewlayout[self.active_page_index]:move_focus_horizontal("right")
+end
+
+-- TODO
+function Board:pick_list()
     local entry_titles = {}
     for page_idx, page in ipairs(self.board_data) do
         for _, list in ipairs(page.lists) do
@@ -211,6 +221,140 @@ function Board:pick()
             end,
             ["<ESC>"] = "close",
         },
+    })
+end
+
+function Board:pick_card()
+    local entry_titles = {}
+    for page_idx, page in ipairs(self.board_data) do
+        for _, list in ipairs(page.lists) do
+            for _, item in ipairs(list.items) do
+                table.insert(entry_titles, {
+                    title = item.title,
+                    rootfile = item.filepath
+                })
+            end
+        end
+    end
+    print("Entry titles:")
+    print(vim.inspect(entry_titles))
+
+    Snacks.picker.pick({
+        items = entry_titles,
+        finder = function()
+            local finder_items = {}
+            for idx, e in ipairs(entry_titles) do
+                -- `text` is what will be shown. `item` can be the full table so you can use more fields later
+                table.insert(finder_items, {
+                    idx = idx,
+                    item = e,
+                    text = e.title,
+                    file = e.rootfile,
+                })
+            end
+            return finder_items
+        end,
+        format = function(item, _)
+            local ret = {}
+            local _, filename, _ = utils.SplitFilename(item.file)
+            ret[#ret + 1] = { tostring(item.idx), "SnacksPickerIdx" }
+            ret[#ret + 1] = { " " }
+            ret[#ret + 1] = { item.text, "SnacksPickerTime" }
+            return ret
+        end,
+        confirm = function(picker, item)
+            picker:close()
+            require("vaultview._commands.open.runner").run_focus(item.idx)
+            -- go to the picked page
+            if item then
+                print("Picking page " .. item.text)
+            end
+        end,
+        on_close = function()
+            print("Get focus back on viewlayout on close")
+            require("vaultview._commands.open.runner").run_focus_back()
+        end,
+
+        actions = {
+            ["<CR>"] = "confirm",
+            ["q"] = "close",
+            ["<ESC>"] = "close",
+        },
+    })
+end
+
+--TODO
+function Board:pick_content()
+    local entry_contents = {}
+    local idx = 1 -- idx of the card/entry of the content
+    for page_idx, page in ipairs(self.board_data) do
+        for list_idx, list in ipairs(page.lists) do
+            for item_idx, item in ipairs(list.items) do
+                if item.content and type(item.content) == "table" then
+                    for content_idx, line in ipairs(item.content) do
+                        entry_content_ = {
+                            entry_idx = idx,
+                            content = line,
+                            rootfile = item.filepath,
+                        }
+                        table.insert(entry_contents, entry_content_)
+
+                    end
+
+                end
+                idx = idx + 1
+            end
+        end
+    end
+    print("Entry contents:")
+    print(vim.inspect(entry_contents))
+
+    Snacks.picker.pick({
+        items = entry_contents,
+        finder = function()
+            local finder_items = {}
+            for idx, e in ipairs(entry_contents) do
+                -- `text` is what will be shown. `item` can be the full table so you can use more fields later
+                table.insert(finder_items, {
+                    idx = idx,
+                    text = e.content,
+                    item = e.content,
+                    entry_idx = e.entry_idx,
+                    file = e.rootfile,
+                })
+            end
+            return finder_items
+        end,
+        format = function(item, _)
+            local ret = {}
+            local _, filename, _ = utils.SplitFilename(item.file)
+            ret[#ret + 1] = { tostring(item.idx), "SnacksPickerIdx" }
+            ret[#ret + 1] = { " " }
+            ret[#ret + 1] = { item.text, "SnacksPickerTime" }
+            ret[#ret + 1] = { " " }
+            ret[#ret + 1] = { filename, "SnacksPickerComment" }
+            return ret
+        end,
+        confirm = function(picker, item)
+            picker:close()
+            print("Selected item:..." .. vim.inspect(item))
+            require("vaultview._commands.open.runner").run_focus(item.entry_idx)
+            -- -- go to the picked page
+            -- if item then
+            --     print("Picking page " .. item.text)
+            -- end
+        end,
+        on_close = function()
+            print("Get focus back on viewlayout on close")
+            require("vaultview._commands.open.runner").run_focus_back()
+        end,
+
+        actions = {
+            ["<CR>"] = "confirm",
+            ["q"] = "close",
+            ["<ESC>"] = "close",
+        },
+
     })
 end
 
