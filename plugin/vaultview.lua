@@ -32,7 +32,7 @@ vim.keymap.set("n", "<Plug>(Vaultview)", function()
 
     configuration.initialize_data_if_needed()
 
-    vaultview.run_open_vaultview()
+    vaultview.run_toggle_vaultview()
 end, { desc = "Open your vaultview" })
 
 vim.keymap.set("n", "<Plug>(VaultviewClose)", function()

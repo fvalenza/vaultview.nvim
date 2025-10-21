@@ -584,4 +584,5 @@ end
 
 
 
+
 return ViewLayoutCarousel

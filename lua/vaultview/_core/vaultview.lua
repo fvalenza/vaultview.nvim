@@ -169,6 +169,7 @@ end
 
 function VaultView:render_board_selection()
     local buf = self.board_selection_win.buf
+    local win = self.board_selection_win.win
 
     -- Build the line with indices in parentheses
     local parts = {}
@@ -177,7 +178,22 @@ function VaultView:render_board_selection()
     end
     local boards_line = table.concat(parts, "   ")
 
-    vim.api.nvim_buf_set_lines(buf, 0, 1, false, { boards_line })
+    -- Compute how many spaces to pad before "(h)elp"
+    local win_width = vim.api.nvim_win_get_width(win)
+    local help_text = "<C-h> help"
+    local total_len = #boards_line + #help_text
+
+    local padding = ""
+    if total_len < win_width then
+        padding = string.rep(" ", win_width - (total_len + 1) )
+    else
+        -- If it overflows, just add a single space
+        padding = " "
+    end
+
+    local full_line = boards_line .. padding .. help_text
+
+    vim.api.nvim_buf_set_lines(buf, 0, 1, false, { full_line })
 
     -- Apply highlights
     local col_start = 0
@@ -187,17 +203,20 @@ function VaultView:render_board_selection()
         local title_start = col_start + index_len
         local title_end = title_start + #title
 
-        -- Highlight the "(i)" as Comment
+        -- Highlight "(i)" as Comment
         vim.api.nvim_buf_add_highlight(buf, -1, "Comment", 0, col_start, col_start + index_len)
 
-        -- Underline the active board title
+        -- Underline active board
         if i == self.active_board_index then
             vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", 0, title_start, title_end)
         end
 
-        -- Move to the start of the next group (including spaces)
-        col_start = title_end + 3 -- accounts for "   " between entries
+        col_start = title_end + 3 -- skip "   "
     end
+
+    -- Highlight "<C-h> help" as Comment at the right edge
+    local help_start = win_width - (#help_text + 1)
+    vim.api.nvim_buf_add_highlight(buf, -1, "Comment", 0, help_start, win_width)
 end
 
 function VaultView:render()
@@ -212,6 +231,7 @@ function VaultView:render()
     else
         -- vim.notify("No active board for index " .. tostring(self.active_board_index), vim.log.levels.WARN)
     end
+    self.isDisplayed = true
 end
 
 
@@ -224,6 +244,7 @@ function VaultView:close()
     for _,board in ipairs(self.boards) do
         board:close()
     end
+    self.isDisplayed = false
 end
 
 function VaultView:go_to_page(direction)

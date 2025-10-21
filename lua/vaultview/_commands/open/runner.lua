@@ -3,6 +3,7 @@
 local configuration = require("vaultview._core.configuration")
 local logging = require("mega.logging")
 local vaultview = require("vaultview._core.vaultview")
+local Snacks = require("snacks")
 
 local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
 
@@ -34,6 +35,19 @@ function M.run_open_board()
 
     vv:render()
 end
+
+
+function M.run_toggle_board()
+    _LOGGER:debug("Toggling open board")
+
+    -- If vv is nil or not displayed, open it; otherwise, close it
+    if not M.context.vv or not M.context.vv.isDisplayed then
+        M.run_open_board()
+    else
+        M.run_close_board()
+    end
+end
+
 
 function M.run_close_board()
     _LOGGER:debug("Closing open board")
@@ -153,5 +167,29 @@ end
 
 
 
+function M.run_open_help()
+    -- Get the absolute path to this Lua file
+    local current_file = debug.getinfo(1, "S").source:sub(2)
+    local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/_doc/help_page.md"  -- go up and in _doc
+    print("Help path is: " .. help_path)
+    vim.notify("Opening help page..." .. help_path , vim.log.levels.INFO)
+
+
+    -- Open help window with Snacks
+    local help_win = Snacks.win({
+        file = help_path,
+        width = 0.8,
+        height = 0.8,
+        zindex = 60,
+        border = "rounded",
+        relative = "editor",
+        bo = { modifiable = false, filetype = "markdown" },
+        keys = { q = "close" },
+        wo = {
+            wrap = true,
+            linebreak = true,
+        },
+    })
+end
 
 return M

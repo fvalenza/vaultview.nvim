@@ -19,6 +19,7 @@ M.generic = {
     ["<C-f>"] = { function() require("vaultview._commands.open.runner").run_pick_list() end, mode = "n", noremap = true, nowait = true, },
     ["f"] = { function() require("vaultview._commands.open.runner").run_pick_card() end, mode = "n", noremap = true, nowait = true, },
     ["F"] = { function() require("vaultview._commands.open.runner").run_pick_content() end, mode = "n", noremap = true, nowait = true, },
+    ["<C-h>"] = { function() require("vaultview._commands.open.runner").run_open_help() end, mode = "n", noremap = true, nowait = true, },
 }
 
 
@@ -36,6 +37,7 @@ M.ViewLayoutCarousel = {
     x = { function(layout) layout:toggle_expand() end, mode = "n", noremap = true, nowait = true, },
     ["<CR>"] = { function(layout) layout:open_focused_in_nvim() end, mode = "n", noremap = true, nowait = true, },
     ["o"] = { function(layout) layout:open_focused_in_obsidian() end, mode = "n", noremap = true, nowait = true, },
+
 }
 
 return M

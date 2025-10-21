@@ -64,10 +64,10 @@ end
 
 
 --- [TODO:description]
-function M.run_open_vaultview()
+function M.run_toggle_vaultview()
     local runner = require("vaultview._commands.open.runner")
 
-    runner.run_open_board()
+    runner.run_toggle_board()
 end
 
 --- Count a sheep for each `count`.
