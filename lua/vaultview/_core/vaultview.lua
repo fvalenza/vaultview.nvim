@@ -170,18 +170,33 @@ end
 function VaultView:render_board_selection()
     local buf = self.board_selection_win.buf
 
-    local boards_line = table.concat(self.boards_title, "   ")
+    -- Build the line with indices in parentheses
+    local parts = {}
+    for i, title in ipairs(self.boards_title) do
+        table.insert(parts, string.format("(%d)%s", i, title))
+    end
+    local boards_line = table.concat(parts, "   ")
 
     vim.api.nvim_buf_set_lines(buf, 0, 1, false, { boards_line })
 
-    -- Underilne the active board
+    -- Apply highlights
     local col_start = 0
     for i, title in ipairs(self.boards_title) do
-        local col_end = col_start + #title
+        local index_str = string.format("(%d)", i)
+        local index_len = #index_str
+        local title_start = col_start + index_len
+        local title_end = title_start + #title
+
+        -- Highlight the "(i)" as Comment
+        vim.api.nvim_buf_add_highlight(buf, -1, "Comment", 0, col_start, col_start + index_len)
+
+        -- Underline the active board title
         if i == self.active_board_index then
-            vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", 0, col_start, col_end)
+            vim.api.nvim_buf_add_highlight(buf, -1, "Underlined", 0, title_start, title_end)
         end
-        col_start = col_end + 3 -- skip "   "
+
+        -- Move to the start of the next group (including spaces)
+        col_start = title_end + 3 -- accounts for "   " between entries
     end
 end
 
