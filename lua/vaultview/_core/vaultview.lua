@@ -5,6 +5,7 @@ local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
 local Board = require("vaultview._core.board")
 local DailyParser = require("vaultview._parser.daily_parser")
+local MocParser = require("vaultview._parser.moc_parser")
 local tutils = require("vaultview.utils.table_utils")
 
 function VaultView:create_vaultview_windows()
@@ -73,11 +74,11 @@ local config = {
             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
             -- show_empty_months = false,
         },
-        -- mocBoard = {
-        --     note_folder_mode = true,
-        --     pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
-        --     file_title = "strip-moc", -- could be "date" or "basename" or "strip-moc"
-        -- }
+        mocBoard = {
+            note_folder_mode = true,
+            pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
+            file_title = "strip-moc", -- could be "date" or "basename" or "strip-moc"
+        }
     },
 }
 
@@ -93,20 +94,26 @@ function VaultView.new()
     self.boards = {}
 
     -- iterate through boards in config and create them
-    for board_name, board_config in pairs(config.boards) do
-        table.insert(self.boards_title, board_name)
-
-        local BoardData = DailyParser.parseBoard(config.vault, board_config)
-        local context = {
-            vaultview = self,
-        }
-        local board = Board.new("DailyBoard", BoardData, self.pages_win, context)
-        table.insert(self.boards, board)
-    end
+    -- for board_name, board_config in pairs(config.boards) do
+    --     table.insert(self.boards_title, board_name)
+    --
+    --     local BoardData = DailyParser.parseBoard(config.vault, board_config)
+    --     local context = {
+    --         vaultview = self,
+    --     }
+    --     local board = Board.new("DailyBoard", BoardData, self.pages_win, context)
+    --     table.insert(self.boards, board)
+    -- end
 
     self.active_board_index = 1 -- TODO only if at leat oneboard created
 
-    -- local dailyBoardData = DailyParser.parseBoard(config.vault, config.dailyBoard)
+    local mocBoardData = MocParser.parseBoard(config.vault, config.boards.mocBoard)
+    table.insert(self.boards_title, board_name)
+    local context = {
+        vaultview = self,
+    }
+    local board = Board.new("MocBoard", mocBoardData, self.pages_win, context)
+    table.insert(self.boards, board)
     -- tutils.printTable(dailyBoardData, "dailyBoardData")
 
     -- create the boards and give them the pages and views windows so they can draw in it  (at least text in page window, but not sure if necesarry to give view window)
