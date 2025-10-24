@@ -113,6 +113,9 @@ function VaultView.new()
         vaultview = self,
     }
     local board = Board.new("MocBoard", mocBoardData, self.pages_win, context)
+    print("Created MocBoard")
+    -- vim.notify("MocBoard data parsed with " .. tostring(#mocBoardData.lists) .. " lists.", vim.log.levels.INFO)
+    print(vim.inspect(mocBoardData))
     table.insert(self.boards, board)
     -- tutils.printTable(dailyBoardData, "dailyBoardData")
 

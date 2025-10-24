@@ -91,11 +91,19 @@ function M.parseDirForBoardInputs(dir, config)
 
 	utils.walk(dir, cb, callback_params)
 
+    print("Parsed directory for board inputs:")
+    print(vim.inspect(boardData))
+
 	return boardData
 end
 
 function M.arrangeBoardInputs(entries)
-	return entries -- Do nothing, as recursive walking dirs shall have given already an alphabetically ordered table
+
+	local grouped = {}
+    -- Co;pute the number of columns can be put on a window hence compute the number of pages needed and put the content in pages/lists
+    print("Arranged board inputs:")
+    -- print(vim.inspect(grouped))
+    return entries -- Do nothing, as recursive walking dirs shall have given already an alphabetically ordered table
 end
 
 -- parse rg line into filepath, line, col, match
@@ -209,7 +217,60 @@ function M.parseInputs(inputs, vaultDir)
 	return results
 end
 
+function M.arrangeBoardInputs2(entries)
+    local arranged2 = {}
+    -- Compute the number of columns can be put on a window hence compute the number of pages needed and put the content in pages/lists
+    print("Arranged2 board inputs:")
+    -- print(vim.inspect(arranged2))
+
+    -- Compute the number of page required
+    local numPages = #entries / (maxNumberOfListsPerPage or 5)
+    -- TODO do not blindly iterate through ipairs(entries) but split in numPages chunks
+
+    local page = {
+        dataType = "page",
+        title = "MOC Page1",
+        lists = {},
+    }
+
+    local lists = {}
+    for _, entry in ipairs(entries) do
+        local list = {
+            dataType = "list",
+            title = entry.title,
+            items = {},
+        }
+        for _, wikilink in ipairs(entry.content) do
+            local wikilink_fdir, wikilink_fname, wikilink_fext = utils.SplitFilename(wikilink)
+            local wikilink_fcontent = M.findContentInEntryFile(wikilink)
+            local item = {
+                dataType = "entry",
+                title = wikilink_fname,
+                filepath = wikilink,
+                content = {},
+            }
+
+            if wikilink_fcontent then
+                for _, line in ipairs(wikilink_fcontent.headings) do
+                    table.insert(item.content, "- " .. line)
+                end
+            else
+                item.content = { "- (No items found in Todo)" }
+            end
+            table.insert(list.items, item)
+        end
+        table.insert(page.lists, list)
+    end
+
+
+    table.insert(arranged2, page)
+
+    return arranged2
+end
+
+
 function M.parseBoard(vault, boardConfig)
+    print("TOTO")
     local vaultRootPath = expand_path(vault.path)
     local boardMocInputs = M.parseDirForBoardInputs(vaultRootPath, boardConfig)
 
@@ -218,7 +279,11 @@ function M.parseBoard(vault, boardConfig)
     print("Final parsed board inputs:")
     print(vim.inspect(boardParsedMocInputs))
 
-    return boardParsedMocInputs
+    local boardArrangedMocInputs = M.arrangeBoardInputs2(boardParsedMocInputs)
+    print("arrange2 board inputs:")
+    print(vim.inspect(boardArrangedMocInputs))
+
+    return boardArrangedMocInputs
 end
 
 function M.printBoardData(data)

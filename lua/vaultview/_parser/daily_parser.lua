@@ -40,6 +40,8 @@ function M.parseDirForBoardInputs(dir)
 			end
 		end
 	end
+    print("Parsed directory for board inputs:")
+    print(vim.inspect(boardData))
 	return boardData
 end
 
@@ -78,6 +80,7 @@ function M.arrangeBoardInputs(entries)
 			end
 		end
 	end
+    print("Arranged board inputs:")
     print(vim.inspect(grouped))
 	return grouped
 end
