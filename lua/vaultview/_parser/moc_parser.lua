@@ -219,9 +219,11 @@ function M.arrangeBoardInputs2(entries)
     local arranged2 = {}
     print("Arranged2 board inputs:")
 
-    local maxNumberOfListsPerPage = 5 -- number of lists per page
+    local maxNumberOfListsPerPage = 4 -- number of lists per page
     local totalEntries = #entries
+    print("Total entries:", totalEntries)
     local numPages = math.ceil(totalEntries / maxNumberOfListsPerPage)
+    print("Number of pages needed:", numPages)
 
     for pageIndex = 1, numPages do
         local page = {

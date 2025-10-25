@@ -87,14 +87,14 @@ function ViewLayoutColumns:make_card_window(title, card_content)
     local lcontext = self.context
     -- print("context is " .. vim.inspect(lcontext))
     local card_win = Snacks.win({
-        width = Constants.card_win.width,
-        height = Constants.card_win.height,
-        zindex = Constants.card_win.zindex,
-        -- border = Constants.card_win.border,
+        width = Constants.card_win.ViewLayoutColumns.width,
+        height = Constants.card_win.ViewLayoutColumns.height,
+        zindex = Constants.card_win.ViewLayoutColumns.zindex,
+        -- border = Constants.card_win.ViewLayoutColumns.border,
         border = "rounded",
         relative = "editor",
-        row = Constants.card_win.row, -- align all lists at top of view_win
-        col = Constants.card_win.col, -- at creation, put them all at the top left. will be recomputed in render function
+        row = Constants.card_win.ViewLayoutColumns.row, -- align all lists at top of view_win
+        col = Constants.card_win.ViewLayoutColumns.col, -- at creation, put them all at the top left. will be recomputed in render function
         text = card_content,
         title = title,
         show = true,
@@ -113,14 +113,14 @@ end
 function ViewLayoutColumns:make_list_window(title)
     local lself = self
     local list_win = Snacks.win({
-        width = Constants.list_win.width,
-        height = Constants.list_win.height,
-        zindex = Constants.list_win.zindex,
-        -- border = Constants.list_win.border,
+        width = Constants.list_win.ViewLayoutColumns.width,
+        height = Constants.list_win.ViewLayoutColumns.height,
+        zindex = Constants.list_win.ViewLayoutColumns.zindex,
+        -- border = Constants.list_win.ViewLayoutColumns.border,
         border = "rounded",
         relative = "editor",
-        row = Constants.list_win.row, -- align all lists at top of view_win
-        col = Constants.list_win.col, -- at creation, put them all at the top left. will be recomputed in render function
+        row = Constants.list_win.ViewLayoutColumns.row, -- align all lists at top of view_win
+        col = Constants.list_win.ViewLayoutColumns.col, -- at creation, put them all at the top left. will be recomputed in render function
         show = true,
         enter = false,
         backdrop = false,
@@ -137,7 +137,7 @@ end
 -- function ViewLayoutColumns.update(data)
 -- end
 
-local space_taken_expanded = Constants.list_win.width + 2 -- 1 for padding and 1 for borders
+local space_taken_expanded = Constants.list_win.ViewLayoutColumns.width + 2 -- 1 for padding and 1 for borders
 local space_taken_collapsed = Constants.list_win_close.width + 2 -- 1 for pqdding qnd 1 for borders
 
 
@@ -188,14 +188,14 @@ function ViewLayoutColumns:render()
 
         win.opts.col = col_offset -- put the win at the offset
         -- determine the width based on expanded state
-        local width = list.expanded and Constants.list_win.width or Constants.list_win_close.width
+        local width = list.expanded and Constants.list_win.ViewLayoutColumns.width or Constants.list_win_close.width
         win.opts.width = width
         col_offset = col_offset + width + 1 + 1 -- 1 = padding, 1 = border
 
         -- Render the cards of the lists
         -- TODO iterate over the items of the list and render them
         -- put everything in function called render_cards(list) that shall also account for card expand/collapse (x for cards, X for lists)
-        local row_offset = Constants.list_win.row + 1 + 1 -- start at the row of the list + 1
+        local row_offset = Constants.list_win.ViewLayoutColumns.row + 1 + 1 -- start at the row of the list + 1
 
         for c, card in ipairs(list.cards or {}) do
             -- shall set the position of the card window in the list column:
@@ -203,7 +203,7 @@ function ViewLayoutColumns:render()
             local card_win = card.win
             card_win.opts.width = width -- set the width of the card window
             card_win.opts.col = list.win.opts.col -- align with the list
-            local height = card.expanded and Constants.card_win.height or Constants.card_win_close.height
+            local height = card.expanded and Constants.card_win.ViewLayoutColumns.height or Constants.card_win_close.height
             card_win.opts.row = row_offset -- put the card below the list title
             card_win.opts.height = height
             row_offset = row_offset + height + 1 + 1 -- increment the row offset for the next card
@@ -238,7 +238,7 @@ function ViewLayoutColumns:render()
 
         win.opts.col = col_offset -- put the win at the offset
         -- determine the width based on expanded state
-        local width = list.expanded and Constants.list_win.width or Constants.list_win_close.width
+        local width = list.expanded and Constants.list_win.ViewLayoutColumns.width or Constants.list_win_close.width
         win.opts.width = width
         col_offset = col_offset + width + 1 + 1 -- 1 = padding, 1 = border
 
@@ -247,7 +247,7 @@ function ViewLayoutColumns:render()
         return col_offset
     end
 
-    local col_offset = Constants.list_win.col -- offset for which column to put the next list window
+    local col_offset = Constants.list_win.ViewLayoutColumns.col -- offset for which column to put the next list window
     for _, list in pairs(self.lists) do
 
         -- Start by hiding all card windows. We will show them later if necessary (if list is expanded)
