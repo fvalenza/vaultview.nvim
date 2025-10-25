@@ -107,16 +107,16 @@ function VaultView.new()
 
     self.active_board_index = 1 -- TODO only if at leat oneboard created
 
+    table.insert(self.boards_title, "MocBoard")
     local mocBoardData = MocParser.parseBoard(config.vault, config.boards.mocBoard)
-    table.insert(self.boards_title, board_name)
     local context = {
         vaultview = self,
     }
     local board = Board.new("MocBoard", mocBoardData, self.pages_win, context)
+    table.insert(self.boards, board)
     print("Created MocBoard")
     -- vim.notify("MocBoard data parsed with " .. tostring(#mocBoardData.lists) .. " lists.", vim.log.levels.INFO)
     print(vim.inspect(mocBoardData))
-    table.insert(self.boards, board)
     -- tutils.printTable(dailyBoardData, "dailyBoardData")
 
     -- create the boards and give them the pages and views windows so they can draw in it  (at least text in page window, but not sure if necesarry to give view window)

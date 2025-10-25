@@ -40,4 +40,21 @@ M.ViewLayoutCarousel = {
 
 }
 
+M.ViewLayoutColumns = {
+    ["<M-h>"] = { function(layout) layout:move_focus_mostleft() end, mode = "n", noremap = true, nowait = true, },
+    ["h"] = { function(layout) layout:move_focus_left() end, mode = "n", noremap = true, nowait = true, },
+    ["c"] = { function(layout) layout:move_focus_center() end, mode = "n", noremap = true, nowait = true, },
+    ["l"] = { function(layout) layout:move_focus_right() end, mode = "n", noremap = true, nowait = true, },
+    ["<M-l>"] = { function(layout) layout:move_focus_mostright() end, mode = "n", noremap = true, nowait = true, },
+    ["gg"] = { function(layout) layout:move_focus_mostup() end, mode = "n", noremap = true, nowait = true, },
+    ["k"] = { function(layout) layout:move_focus_up() end, mode = "n", noremap = true, nowait = true, },
+    ["j"] = { function(layout) layout:move_focus_down() end, mode = "n", noremap = true, nowait = true, },
+    ["G"] = { function(layout) layout:move_focus_mostdown() end, mode = "n", noremap = true, nowait = true, },
+    X = { function(layout) layout:toggle_expand_list() end, mode = "n", noremap = true, nowait = true, },
+    x = { function(layout) layout:toggle_expand() end, mode = "n", noremap = true, nowait = true, },
+    ["<CR>"] = { function(layout) layout:open_focused_in_nvim() end, mode = "n", noremap = true, nowait = true, },
+    ["o"] = { function(layout) layout:open_focused_in_obsidian() end, mode = "n", noremap = true, nowait = true, },
+
+}
+
 return M

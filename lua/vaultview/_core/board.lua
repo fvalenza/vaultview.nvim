@@ -3,7 +3,8 @@ Board.__index = Board
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
-local ViewLayoutCarousel = require("vaultview._core.viewlayout")
+local ViewLayoutCarousel = require("vaultview._core.viewlayoutcarousel")
+local ViewLayoutColumns = require("vaultview._core.viewlayoutcolumns")
 local utils = require("vaultview.utils.utils")
 
 -- function Board.new(config)
@@ -23,7 +24,7 @@ function Board.new(board_title, board_data, page_selection_win, context)
     for _, page in ipairs(self.board_data) do
         table.insert(self.pages_title, page.title)
         table.insert(self.pages_content, page.lists)
-        local page_viewlayout = ViewLayoutCarousel.new(page.lists, self.context)
+        local page_viewlayout = ViewLayoutColumns.new(page.lists, self.context)
 
         local vl = page_viewlayout
         -- Determine what to render based on the available space and the number of lists
