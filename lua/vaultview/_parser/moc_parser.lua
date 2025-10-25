@@ -274,6 +274,14 @@ function M.arrangeBoardInputs2(entries)
             table.insert(page.lists, list)
         end
 
+        -- Override page title based on first letters of first and last list
+        if #page.lists > 0 then
+            local firstLetter = (page.lists[1].title:sub(1, 1) or ""):lower()
+            local lastLetter = (page.lists[#page.lists].title:sub(1, 1) or ""):lower()
+            page.title = string.format("[%s - %s]", firstLetter, lastLetter)
+        else
+            page.title = "[empty]"
+        end
         table.insert(arranged2, page)
     end
 
