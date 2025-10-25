@@ -35,8 +35,9 @@ function Board.new(board_title, board_data, page_selection_win, context)
         vl.card_focus_index = 1
         -- if list focused has no items, move focus to the next list with items
         local current_list = vl.lists[vl.list_focus_index]
-        if #current_list.cards == 0 then
+        while #current_list.cards == 0 and vl.list_focus_index < #vl.lists do
             vl.list_focus_index = vl.list_focus_index + 1
+            current_list = vl.lists[vl.list_focus_index]
         end
         current_list.cards[vl.card_focus_index].win:focus()
 
@@ -154,8 +155,6 @@ function Board:focus(entry_idx)
         end
     end
 
-
-
     -- local active_page_viewlayout = self.pages_viewlayout[self.active_page_index]
     -- if active_page_viewlayout then
     --     active_page_viewlayout:focus()
@@ -232,7 +231,7 @@ function Board:pick_card()
             for _, item in ipairs(list.items) do
                 table.insert(entry_titles, {
                     title = item.title,
-                    rootfile = item.filepath
+                    rootfile = item.filepath,
                 })
             end
         end
@@ -299,9 +298,7 @@ function Board:pick_content()
                             rootfile = item.filepath,
                         }
                         table.insert(entry_contents, entry_content_)
-
                     end
-
                 end
                 idx = idx + 1
             end
@@ -355,7 +352,6 @@ function Board:pick_content()
             ["q"] = "close",
             ["<ESC>"] = "close",
         },
-
     })
 end
 
