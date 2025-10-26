@@ -128,11 +128,14 @@ function ViewLayoutTrait:make_card_window(title, card_content)
     local class_name = self.__name
     local cfg = Constants.card_win[class_name]
     local lself = self
-    local lcontext = self.context
-    -- print("context is " .. vim.inspect(lcontext))
+    print("Making card window with title:", title)
+    print("Card content:", vim.inspect(card_content))
+    print("Card content lines:", #card_content)
+    local card_height = math.min(cfg.height, math.max(1,#card_content)) -- WARN: Can't put 1 here because "Not enough room" errors
+    print("Card height set to:", card_height)
     local card_win = Snacks.win({
         width = cfg.width,
-        height = cfg.height,
+        height = card_height,
         zindex = cfg.zindex,
         -- border = cfg.border,
         border = "rounded",
@@ -150,6 +153,7 @@ function ViewLayoutTrait:make_card_window(title, card_content)
         -- bo = { modifiable = true, filetype = filetype },
     })
     card_win:hide()
+    card_win.viewlayout_height = card_height -- store the height for later use in render
 
     return card_win
 end

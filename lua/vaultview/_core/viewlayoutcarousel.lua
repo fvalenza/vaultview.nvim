@@ -110,7 +110,7 @@ function ViewLayoutCarousel:render()
             local card_win = card.win
             card_win.opts.width = width -- set the width of the card window
             card_win.opts.col = list.win.opts.col -- align with the list
-            local height = card.expanded and Constants.card_win.height or Constants.card_win_close.height
+            local height = card.expanded and card.win.viewlayout_height or Constants.card_win_close.height
             card_win.opts.row = row_offset -- put the card below the list title
             card_win.opts.height = height
             row_offset = row_offset + height + 1 + 1 -- increment the row offset for the next card
