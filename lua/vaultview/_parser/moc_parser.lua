@@ -219,7 +219,7 @@ function M.arrangeBoardInputs2(entries)
     local arranged2 = {}
     print("Arranged2 board inputs:")
 
-    local maxNumberOfListsPerPage = 4 -- number of lists per page
+    local maxNumberOfListsPerPage = 4 -- number of lists per page -- WARN: depends on the ViewLayoutType....
     local totalEntries = #entries
     print("Total entries:", totalEntries)
     local numPages = math.ceil(totalEntries / maxNumberOfListsPerPage)
