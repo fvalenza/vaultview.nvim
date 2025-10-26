@@ -63,18 +63,24 @@ local config = {
     },
     boards = {
         dailyBoard = {
+            parser = "daily", -- TODO2: make parser selection dynamic
+            viewlayout = "carousel", -- TODO1: make viewlayout selection dynamic
             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             -- daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
             -- show_empty_months = false,
         },
         dailyBoard2 = {
+            parser = "daily", -- TODO2: make parser selection dynamic
+            viewlayout = "carousel", -- TODO1: make viewlayout selection dynamic
             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             -- daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
             -- show_empty_months = false,
         },
         mocBoard = {
+            parser = "moc", -- TODO2: make parser selection dynamic
+            viewlayout = "columns", -- TODO1: make viewlayout selection dynamic
             note_folder_mode = true,
             pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
             file_title = "strip-moc", -- could be "date" or "basename" or "strip-moc"
@@ -93,6 +99,7 @@ function VaultView.new()
     self.boards_title = {}
     self.boards = {}
 
+    -- TODO3: retablir ce bloc aui creer automatiquement tous les boards du config au lieu des tests hardcoded en dessous
     -- iterate through boards in config and create them
     -- for board_name, board_config in pairs(config.boards) do
     --     table.insert(self.boards_title, board_name)
@@ -108,10 +115,12 @@ function VaultView.new()
     self.active_board_index = 1 -- TODO only if at leat oneboard created
 
     table.insert(self.boards_title, "MocBoard")
+    -- TODO2: make parser selection dynamic of 
     local mocBoardData = MocParser.parseBoard(config.vault, config.boards.mocBoard)
     local context = {
         vaultview = self,
     }
+    -- TODO1: make viewlayout selection dynamic
     local board = Board.new("MocBoard", mocBoardData, self.pages_win, context)
     table.insert(self.boards, board)
     print("Created MocBoard")

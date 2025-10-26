@@ -219,6 +219,7 @@ function M.arrangeBoardInputs2(entries)
     local arranged2 = {}
     print("Arranged2 board inputs:")
 
+    -- TODO4: gerer le nombre de listes par page en fonction de la taille de la fenetre ET de la width d'une list_win dans la Config...mais depend du ViewLayoutType WARN
     local maxNumberOfListsPerPage = 4 -- number of lists per page -- WARN: depends on the ViewLayoutType....
     local totalEntries = #entries
     print("Total entries:", totalEntries)

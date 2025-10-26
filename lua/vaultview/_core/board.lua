@@ -156,60 +156,11 @@ function Board:focus_back()
     self.pages_viewlayout[self.active_page_index]:move_focus_horizontal("right")
 end
 
--- TODO
+-- TODO5et faut dire de quelle page elle vient
 function Board:pick_list()
-    local entry_titles = {}
-    for page_idx, page in ipairs(self.board_data) do
-        for _, list in ipairs(page.lists) do
-            for _, item in ipairs(list.items) do
-                table.insert(entry_titles, item.title)
-            end
-        end
-    end
-    print("Entry titles:")
-    print(vim.inspect(entry_titles))
-
-    Snacks.picker.pick({
-        items = entry_titles,
-        finder = function()
-            local finder_items = {}
-            for idx, e in ipairs(entry_titles) do
-                -- `text` is what will be shown. `item` can be the full table so you can use more fields later
-                table.insert(finder_items, {
-                    idx = idx,
-                    text = e,
-                    item = e,
-                })
-            end
-            return finder_items
-        end,
-        format = function(item, _)
-            local ret = {}
-            ret[#ret + 1] = { tostring(item.idx), "SnacksPickerLabel" }
-            ret[#ret + 1] = { " " }
-            ret[#ret + 1] = { item.text, "SnacksPickerComment" }
-            return ret
-        end,
-        confirm = function(picker, item)
-            picker:close()
-            require("vaultview._commands.open.runner").run_focus(item.idx)
-            -- go to the picked page
-            if item then
-                print("Picking page " .. item.text)
-            end
-        end,
-
-        actions = {
-            ["<CR>"] = "confirm",
-            ["q"] = function(picker)
-                picker:close()
-                require("vaultview._commands.open.runner").run_focus()
-            end,
-            ["<ESC>"] = "close",
-        },
-    })
 end
 
+-- TODO5: picker doit proposer "<page>.<list> pour chaque entree au lieu de list pour savoir d'ou elle vient"
 function Board:pick_card()
     local entry_titles = {}
     for page_idx, page in ipairs(self.board_data) do
@@ -269,7 +220,7 @@ function Board:pick_card()
     })
 end
 
---TODO
+-- TODO5Et faut dire de quelle page.list.entry viennent les entrees
 function Board:pick_content()
     local entry_contents = {}
     local idx = 1 -- idx of the card/entry of the content
