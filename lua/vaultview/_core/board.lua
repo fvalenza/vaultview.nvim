@@ -8,7 +8,7 @@ local ViewLayoutColumns = require("vaultview._core.viewlayoutcolumns")
 local utils = require("vaultview.utils.utils")
 
 -- function Board.new(config)
-function Board.new(board_title, board_data, page_selection_win, context)
+function Board.new(board_title, board_data, board_view_layout, page_selection_win, context)
     local self = setmetatable({}, Board)
 
     self.context = context
@@ -24,7 +24,7 @@ function Board.new(board_title, board_data, page_selection_win, context)
     for _, page in ipairs(self.board_data) do
         table.insert(self.pages_title, page.title)
         table.insert(self.pages_content, page.lists)
-        local page_viewlayout = ViewLayoutColumns.new(page.lists, self.context)
+        local page_viewlayout = board_view_layout.new(page.lists, self.context)
 
 
         table.insert(self.pages_viewlayout, page_viewlayout)

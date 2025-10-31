@@ -149,6 +149,10 @@ function ViewLayoutCarousel:render()
         win.opts.width = width
         col_offset = col_offset + width + 1 + 1 -- 1 = padding, 1 = border
 
+        -- height shall be the char_list length + padding + border
+        local height = #char_list_title + 1 + 1 -- 1 = padding, 1 = border
+        win.opts.height = height
+
         list.win:show()
 
         return col_offset
@@ -304,6 +308,7 @@ function ViewLayoutCarousel:move_focus_idx(list_idx, card_idx)
 end
 
 
+-- FIXME: broken lately
 function ViewLayoutCarousel:move_focus_center()
     -- expand all lists and recompute inital layout
     for _, list in ipairs(self.lists) do

@@ -8,6 +8,30 @@ local DailyParser = require("vaultview._parser.daily_parser")
 local MocParser = require("vaultview._parser.moc_parser")
 local tutils = require("vaultview.utils.table_utils")
 
+local parsers = {
+    daily = DailyParser,
+    moc = MocParser,
+}
+
+local function getParserEntryPoint(parserField)
+    if type(parserField) == "string" then
+        local parserModule = parsers[parserField]
+        if not parserModule then
+            error("Unknown parser name: " .. parserField)
+        end
+        return parserModule.parseBoard
+    elseif type(parserField) == "function" then
+        return parserField
+    else
+        error("Invalid parser type: " .. type(parserField))
+    end
+end
+
+local layouts = {
+    carousel = require("vaultview._core.viewlayoutcarousel"),
+    columns = require("vaultview._core.viewlayoutcolumns"),
+}
+
 function VaultView:create_vaultview_windows()
     self.board_selection_win = Snacks.win({
         width = Constants.boards_win.width,
@@ -62,86 +86,70 @@ local config = {
         name = "myVault",
     },
     boards = {
-        dailyBoard = {
-            parser = "daily", -- TODO2: make parser selection dynamic
-            viewlayout = "carousel", -- TODO1: make viewlayout selection dynamic
+        {
+            name = "dailyBoard",
+            parser = "daily",
+            viewlayout = "carousel",
             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
-            -- daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
             -- show_empty_months = false,
         },
-        dailyBoard2 = {
-            parser = "daily", -- TODO2: make parser selection dynamic
-            viewlayout = "carousel", -- TODO1: make viewlayout selection dynamic
+        {
+            name = "dailyBoard2",
+            parser = "daily",
+            viewlayout = "carousel",
             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
-            -- daily_notes_folder = ".", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
             -- show_empty_months = false,
         },
-        mocBoard = {
-            parser = "moc", -- TODO2: make parser selection dynamic
-            viewlayout = "columns", -- TODO1: make viewlayout selection dynamic
+        {
+            name = "mocBoard",
+            parser = "moc",
+            viewlayout = "columns",
             note_folder_mode = true,
             pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
-            file_title = "strip-moc", -- could be "date" or "basename" or "strip-moc"
-        }
+            file_title = "strip-moc", -- TODO: could be "date" or "basename" or "strip-moc". Currently the moc parser always strips because for MY needs it's prettier
+        },
     },
 }
 
 -- function VaultView.new(config)
 function VaultView.new()
     local self = setmetatable({}, VaultView)
-    -- vim.notify("creating vaultview", vim.log.levels.INFO)
 
     self:create_vaultview_windows()
 
-    -- TODO Create all boards
     self.boards_title = {}
     self.boards = {}
+    self.active_board_index = 0
 
-    -- TODO3: retablir ce bloc aui creer automatiquement tous les boards du config au lieu des tests hardcoded en dessous
-    -- iterate through boards in config and create them
-    -- for board_name, board_config in pairs(config.boards) do
-    --     table.insert(self.boards_title, board_name)
-    --
-    --     local BoardData = DailyParser.parseBoard(config.vault, board_config)
-    --     local context = {
-    --         vaultview = self,
-    --     }
-    --     local board = Board.new("DailyBoard", BoardData, self.pages_win, context)
-    --     table.insert(self.boards, board)
-    -- end
+    for _, board_config in ipairs(config.boards) do
+        local board_name = board_config.name or "board_" .. tostring(#self.boards + 1)
+        table.insert(self.boards_title, board_name)
 
-    self.active_board_index = 1 -- TODO only if at leat oneboard created
+        local parserEntryPoint = getParserEntryPoint(board_config.parser)
+        local boardData = parserEntryPoint(config.vault, board_config)
+        local context = {
+            vaultview = self,
+        }
 
-    table.insert(self.boards_title, "MocBoard")
-    -- TODO2: make parser selection dynamic of 
-    local mocBoardData = MocParser.parseBoard(config.vault, config.boards.mocBoard)
-    local context = {
-        vaultview = self,
-    }
-    -- TODO1: make viewlayout selection dynamic
-    local board = Board.new("MocBoard", mocBoardData, self.pages_win, context)
-    table.insert(self.boards, board)
-    print("Created MocBoard")
-    -- vim.notify("MocBoard data parsed with " .. tostring(#mocBoardData.lists) .. " lists.", vim.log.levels.INFO)
-    print(vim.inspect(mocBoardData))
-    -- tutils.printTable(dailyBoardData, "dailyBoardData")
+        local layoutField = board_config.viewlayout
+        local board_viewlayout = type(layoutField) == "string" and layouts[layoutField]
+            or error("Invalid layout type for " .. board_name)
 
-    -- create the boards and give them the pages and views windows so they can draw in it  (at least text in page window, but not sure if necesarry to give view window)
-    -- local context = {
-    --     vaultview = self,
-    -- }
-    -- local board = Board.new("DailyBoard", dailyBoardData, self.pages_win, context)
-    --
-    -- self.board = board
+        local board = Board.new(board_name, boardData, board_viewlayout, self.pages_win, context)
+
+        table.insert(self.boards, board)
+
+        self.active_board_index = 1
+    end
+
 
     return self
 end
 
--- TODO, these 3 functions and in new, have table of boards + index of active board. See how pages are done in board.lua
+-- TODO these 3 functions and in new, have table of boards + index of active board. See how pages are done in board.lua
 function VaultView:go_to_board(index)
-
     if index < 1 or index > #self.boards then
         -- vim.notify("Invalid board index: " .. tostring(index), vim.log.levels.WARN)
         return
@@ -163,7 +171,6 @@ function VaultView:go_to_board(index)
     self.active_board_index = index
 
     self:render()
-
 end
 
 function VaultView:go_to_next_board()
@@ -204,7 +211,7 @@ function VaultView:render_board_selection()
 
     local padding = ""
     if total_len < win_width then
-        padding = string.rep(" ", win_width - (total_len + 1) )
+        padding = string.rep(" ", win_width - (total_len + 1))
     else
         -- If it overflows, just add a single space
         padding = " "
@@ -253,14 +260,13 @@ function VaultView:render()
     self.isDisplayed = true
 end
 
-
 function VaultView:close()
     -- vim.notify("closing vaultview", vim.log.levels.INFO)
     self.board_selection_win:close()
     self.pages_win:close()
     self.views_win:close()
 
-    for _,board in ipairs(self.boards) do
+    for _, board in ipairs(self.boards) do
         board:close()
     end
     self.isDisplayed = false
@@ -321,6 +327,5 @@ function VaultView:pick_content()
 end
 
 local Keymaps = require("vaultview.keymaps")
-
 
 return VaultView
