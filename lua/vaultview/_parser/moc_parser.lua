@@ -215,16 +215,29 @@ function M.parseInputs(inputs, vaultDir)
     return results
 end
 
-function M.arrangeBoardInputs2(entries)
+local Constants = require("vaultview._ui.constants")
+-- TODO1 make this mapping consistent with the one in board.lua in the configuration of the boards + the keys in Constatns
+local layouts = {
+    carousel = "ViewLayoutCarousel",
+    columns = "ViewLayoutColumns",
+}
+function M.arrangeBoardInputs2(entries, boardConfig)
     local arranged2 = {}
     print("Arranged2 board inputs:")
 
-    -- TODO4: gerer le nombre de listes par page en fonction de la taille de la fenetre ET de la width d'une list_win dans la Config...mais depend du ViewLayoutType WARN
-    local maxNumberOfListsPerPage = 4 -- number of lists per page -- WARN: depends on the ViewLayoutType....
+    local totalAvailableWidth = vim.o.columns
+    local viewlayoutType = type(boardConfig.viewlayout) == "string" and layouts[boardConfig.viewlayout]
+    local listWinWidth = Constants.list_win[viewlayoutType].width or 32
+    local paddingBetWeenLists = 2
+    local maxNumberOfListsPerPage = math.max(1, math.floor(totalAvailableWidth / (listWinWidth + paddingBetWeenLists)))
     local totalEntries = #entries
-    print("Total entries:", totalEntries)
     local numPages = math.ceil(totalEntries / maxNumberOfListsPerPage)
-    print("Number of pages needed:", numPages)
+
+    -- print("Total available width:", totalAvailableWidth)
+    -- print("List window width:", listWinWidth)
+    -- print("Max number of lists per page:", maxNumberOfListsPerPage)
+    -- print("Total entries:", totalEntries)
+    -- print("Number of pages needed:", numPages)
 
     for pageIndex = 1, numPages do
         local page = {
@@ -301,7 +314,7 @@ function M.parseBoard(vault, boardConfig)
     print("Final parsed board inputs:")
     print(vim.inspect(boardParsedMocInputs))
 
-    local boardArrangedMocInputs = M.arrangeBoardInputs2(boardParsedMocInputs)
+    local boardArrangedMocInputs = M.arrangeBoardInputs2(boardParsedMocInputs, boardConfig)
     print("arrange2 board inputs:")
     print(vim.inspect(boardArrangedMocInputs))
 
