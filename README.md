@@ -1,16 +1,17 @@
-# A Neovim Plugin Template
+
+# External dependencies
+- [ripgrep]()
 
 
 # Installation
 
-<!-- TODO: (you) - Adjust and add your dependencies as needed here -->
 
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
     "fvalenza/vaultview",
-    dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging" },
+    dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging", "folke/snacks.nvim" },
     -- TODO: (you) - Make sure your first release matches v1.0.0 so it auto-releases!
     version = "v1.*",
 }
@@ -18,9 +19,6 @@
 
 # Configuration
 
-(These are default values)
-
-<!-- TODO: (you) - Remove / Add / Adjust your configuration here -->
 
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 
@@ -44,13 +42,17 @@ return {
 					name = "dailyBoard", -- name of the board as printed in the top of UI
 					parser = "daily", -- parser used to retrieve information to display in the view -> currently supported parsers: "daily", "moc"
 					viewlayout = "carousel", -- how information is displayed in the view -> currently supported layouts: "carousel", "columns"
-					daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+                    subfolder = "vault/0-dailynotes", -- optional subfolder inside vault to limit the scope of the parser
+                    pattern = "yyyy-mm-dd", -- only the filename, without extension -- TODO: support regex
+					-- show_empty_months = false, -- TODO: not implemented yet
 				},
 				{
 					name = "mocBoard",
 					parser = "moc",
 					viewlayout = "columns",
-					pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
+                    subfolder = "vault/1-MOCs",
+                    pattern = "*", -- only the filename, without extension -- TODO: support regex
+					file_title = "strip-moc", -- TODO: could be "date" or "basename" or "strip-moc". Currently the moc parser always strips because for MY needs it's prettier
 				},
 			},
 		}
@@ -71,9 +73,9 @@ return {
 ```
 
 
-# Other Plugins
+# Roadmap
 
-This template is full of various features. But if your plugin is only meant to
-be a simple plugin and you don't want the bells and whistles that this template
-provides, consider instead using
-[nvim-vaultview](https://github.com/ellisonleao/nvim-plugin-template)
+
+# Known Issues
+- [ ] When opening a file associated to an entry with <CR>, and when quitting it to return to main window of the vaultview ("q"), it comes back to the first board instead of the previsouly active one
+- [ ] Action to "center cursor/focus" on viewlayoutcarousel to fix
