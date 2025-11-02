@@ -94,8 +94,6 @@ function ViewLayoutTrait:createLayoutWindows(data)
     return lists
 end
 
--- TODO the height should depend on the number of cards (named item in createLayoutWindows), up
--- to a maximum height defined in Constants
 function ViewLayoutTrait:make_list_window(sum_cards_height)
     local class_name = self.__name
     local cfg = Constants.list_win[class_name]

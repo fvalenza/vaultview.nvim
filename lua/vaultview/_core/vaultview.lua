@@ -9,6 +9,7 @@ local MocParser = require("vaultview._parser.moc_parser")
 local tutils = require("vaultview.utils.table_utils")
 local logging = require("mega.logging")
 local _LOGGER = logging.get_logger("vaultview._core.vaultview")
+local layouts = require("vaultview._core.viewlayouts")
 
 local parsers = {
     daily = DailyParser,
@@ -29,10 +30,6 @@ local function getParserEntryPoint(parserField)
     end
 end
 
-local layouts = {
-    carousel = require("vaultview._core.viewlayoutcarousel"),
-    columns = require("vaultview._core.viewlayoutcolumns"),
-}
 
 function VaultView:create_vaultview_windows()
     self.board_selection_win = Snacks.win({

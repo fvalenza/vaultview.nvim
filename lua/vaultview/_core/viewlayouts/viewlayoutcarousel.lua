@@ -3,11 +3,11 @@ ViewLayoutCarousel.__index = ViewLayoutCarousel
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
-local TraitUtils = require("vaultview.utils.traitutils")
-local ViewLayoutTrait = require("vaultview._core.viewlayouttrait")
 
-TraitUtils.apply(ViewLayoutCarousel, ViewLayoutTrait)
 
+function ViewLayoutCarousel.name()
+    return "ViewLayoutCarousel"
+end
 
 -- function ViewLayoutCarousel.new(config)
 function ViewLayoutCarousel.new(page_data, context)

@@ -2,6 +2,7 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
     require("lldebugger").start()
 end
 
+local layouts = require("vaultview._core.viewlayouts")
 local tutils = require("vaultview.utils.table_utils")
 local utils = require("vaultview.utils.utils")
 
@@ -216,17 +217,13 @@ function M.parseInputs(inputs, vaultDir)
 end
 
 local Constants = require("vaultview._ui.constants")
--- TODO1 make this mapping consistent with the one in board.lua in the configuration of the boards + the keys in Constatns
-local layouts = {
-    carousel = "ViewLayoutCarousel",
-    columns = "ViewLayoutColumns",
-}
+
 function M.arrangeBoardInputs2(entries, boardConfig)
     local arranged2 = {}
     print("Arranged2 board inputs:")
 
     local totalAvailableWidth = vim.o.columns
-    local viewlayoutType = type(boardConfig.viewlayout) == "string" and layouts[boardConfig.viewlayout]
+    local viewlayoutType = type(boardConfig.viewlayout) == "string" and layouts[boardConfig.viewlayout].name()
     local listWinWidth = Constants.list_win[viewlayoutType].width or 32
     local paddingBetWeenLists = 2
     local maxNumberOfListsPerPage = math.max(1, math.floor(totalAvailableWidth / (listWinWidth + paddingBetWeenLists)))

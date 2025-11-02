@@ -3,12 +3,11 @@ ViewLayoutColumns.__index = ViewLayoutColumns
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
-local TraitUtils = require("vaultview.utils.traitutils")
-local ViewLayoutTrait = require("vaultview._core.viewlayouttrait")
-
-TraitUtils.apply(ViewLayoutColumns, ViewLayoutTrait)
 
 
+function ViewLayoutColumns.name()
+    return "ViewLayoutColumns"
+end
 
 -- function ViewLayoutColumns.new(config)
 function ViewLayoutColumns.new(page_data, context)

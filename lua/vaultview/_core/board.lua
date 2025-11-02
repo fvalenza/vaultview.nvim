@@ -3,8 +3,6 @@ Board.__index = Board
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
-local ViewLayoutCarousel = require("vaultview._core.viewlayoutcarousel")
-local ViewLayoutColumns = require("vaultview._core.viewlayoutcolumns")
 local utils = require("vaultview.utils.utils")
 
 -- function Board.new(config)
@@ -14,7 +12,6 @@ function Board.new(board_title, board_data, board_view_layout, page_selection_wi
     self.context = context
     self.page_selection_win = page_selection_win -- The Snacks window where we will display the pages titles
 
-    -- Create ViewLayoutCarousel instance for each page TODO
     self.board_title = board_title
     self.board_data = board_data or {}
 
@@ -150,10 +147,9 @@ function Board:focus(entry_idx)
 end
 
 function Board:focus_back()
-    vim.notify("Get focus back on viewlayout", vim.log.levels.INFO)
-    print("Get focus back on viewlayout")
-    self.pages_viewlayout[self.active_page_index]:move_focus_horizontal("left")
-    self.pages_viewlayout[self.active_page_index]:move_focus_horizontal("right")
+    self.pages_viewlayout[self.active_page_index]:focus()
+    -- self.pages_viewlayout[self.active_page_index]:move_focus_horizontal("left")
+    -- self.pages_viewlayout[self.active_page_index]:move_focus_horizontal("right")
 end
 
 -- TODO5et faut dire de quelle page elle vient
@@ -280,7 +276,6 @@ function Board:pick_content()
             -- end
         end,
         on_close = function()
-            print("Get focus back on viewlayout on close")
             require("vaultview._commands.open.runner").run_focus_back()
         end,
 
