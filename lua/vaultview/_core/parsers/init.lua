@@ -1,12 +1,8 @@
-
 local parsers = {
     daily = require("vaultview._core.parsers.daily_parser"),
-    moc = require("vaultview._core.parsers.moc_parser"),
+    moc   = require("vaultview._core.parsers.moc_parser"),
 }
 
---- Returns the parser entry point (parseBoard function) based on input type.
--- @param parserField (string|function) Name of parser or a custom function.
--- @return function The parseBoard function to use.
 local function getParserEntryPoint(parserField)
     if type(parserField) == "string" then
         local parserModule = parsers[parserField]
@@ -21,5 +17,14 @@ local function getParserEntryPoint(parserField)
     end
 end
 
--- return parsers
-return getParserEntryPoint
+-- Make the module callable like a function
+local M = setmetatable({
+    list = parsers,
+    getEntryPoint = getParserEntryPoint,
+}, {
+    __call = function(_, parserField)
+        return getParserEntryPoint(parserField)
+    end
+})
+
+return M

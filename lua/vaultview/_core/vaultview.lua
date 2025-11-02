@@ -109,8 +109,7 @@ function VaultView.new(config)
         local board_name = board_config.name or "board_" .. tostring(#self.boards + 1)
         table.insert(self.boards_title, board_name)
 
-        local parserEntryPoint = parsers(board_config.parser)
-        local boardData = parserEntryPoint(config.vault, board_config)
+        local boardData = parsers(board_config.parser)(config.vault, board_config)
         local context = {
             vaultview = self,
         }
