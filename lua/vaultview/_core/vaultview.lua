@@ -4,31 +4,12 @@ VaultView.__index = VaultView
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
 local Board = require("vaultview._core.board")
-local DailyParser = require("vaultview._parser.daily_parser")
-local MocParser = require("vaultview._parser.moc_parser")
-local tutils = require("vaultview.utils.table_utils")
+local tutils = require("vaultview._core.utils.table_utils")
 local logging = require("mega.logging")
 local _LOGGER = logging.get_logger("vaultview._core.vaultview")
 local layouts = require("vaultview._core.viewlayouts")
+local parsers = require("vaultview._core.parsers")
 
-local parsers = {
-    daily = DailyParser,
-    moc = MocParser,
-}
-
-local function getParserEntryPoint(parserField)
-    if type(parserField) == "string" then
-        local parserModule = parsers[parserField]
-        if not parserModule then
-            error("Unknown parser name: " .. parserField)
-        end
-        return parserModule.parseBoard
-    elseif type(parserField) == "function" then
-        return parserField
-    else
-        error("Invalid parser type: " .. type(parserField))
-    end
-end
 
 
 function VaultView:create_vaultview_windows()
@@ -128,7 +109,7 @@ function VaultView.new(config)
         local board_name = board_config.name or "board_" .. tostring(#self.boards + 1)
         table.insert(self.boards_title, board_name)
 
-        local parserEntryPoint = getParserEntryPoint(board_config.parser)
+        local parserEntryPoint = parsers(board_config.parser)
         local boardData = parserEntryPoint(config.vault, board_config)
         local context = {
             vaultview = self,

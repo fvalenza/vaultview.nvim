@@ -4,7 +4,7 @@ local configuration = require("vaultview._core.configuration")
 local logging = require("mega.logging")
 local vaultview = require("vaultview._core.vaultview")
 local Snacks = require("snacks")
--- local dprint = require("vaultview.utils.debug")
+-- local dprint = require("vaultview._core.utils.debug")
 
 local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
 

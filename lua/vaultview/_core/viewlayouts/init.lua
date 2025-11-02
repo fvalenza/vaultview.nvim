@@ -1,4 +1,4 @@
-local TraitUtils = require("vaultview.utils.traitutils")
+local TraitUtils = require("vaultview._core.utils.traitutils")
 
 local ViewLayoutTrait = require("vaultview._core.viewlayouts.viewlayouttrait")
 

@@ -3,8 +3,8 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
 end
 
 local layouts = require("vaultview._core.viewlayouts")
-local tutils = require("vaultview.utils.table_utils")
-local utils = require("vaultview.utils.utils")
+local tutils = require("vaultview._core.utils.table_utils")
+local utils = require("vaultview._core.utils.utils")
 
 local function expand_path(path)
     if path:sub(1, 1) == "~" then

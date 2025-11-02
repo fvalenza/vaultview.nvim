@@ -1,6 +1,6 @@
 --- All `vaultview` command definitions.
 
-_G.dprint = require("vaultview.utils.debug")
+_G.dprint = require("vaultview._core.utils.debug")
 
 local cmdparse = require("mega.cmdparse")
 

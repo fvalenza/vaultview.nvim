@@ -2,7 +2,7 @@
 
 local configuration_ = require("vaultview._core.configuration")
 local health = require("vaultview.health")
-local tabler = require("vaultview.utils.tabler")
+local tabler = require("vaultview._core.utils.tabler")
 
 local mock_vim = require("test_utilities.mock_vim")
 

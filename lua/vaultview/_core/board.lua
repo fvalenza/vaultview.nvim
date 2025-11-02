@@ -3,7 +3,7 @@ Board.__index = Board
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
-local utils = require("vaultview.utils.utils")
+local utils = require("vaultview._core.utils.utils")
 
 -- function Board.new(config)
 function Board.new(board_title, board_data, board_view_layout, page_selection_win, context)

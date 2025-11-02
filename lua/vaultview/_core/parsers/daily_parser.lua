@@ -3,8 +3,8 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
 	require("lldebugger").start()
 end
 
-local tutils = require("vaultview.utils.table_utils")
-local utils = require("vaultview.utils.utils")
+local tutils = require("vaultview._core.utils.table_utils")
+local utils = require("vaultview._core.utils.utils")
 
 
 local function expand_path(path)
