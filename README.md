@@ -128,57 +128,6 @@ A template repository used to create Neovim plugins.
 }
 ```
 
-## Lualine
-
-<!-- TODO: (you) - Remove this is you do not want lualine -->
-
-> Note: You can customize lualine colors here or using
-> `vim.g.vaultview_configuration`.
-
-[lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
-
-```lua
-require("lualine").setup {
-    sections = {
-        lualine_y = {
-            -- ... Your other configuration ...
-            {
-                "vaultview",
-                -- NOTE: These will override default values
-                -- display = {
-                --     goodnight_moon = {color={fg="#FFFFFF"}, text="Custom message 1"}},
-                --     hello_world = {color={fg="#333333"}, text="Custom message 2"},
-                -- },
-            },
-        }
-    }
-}
-```
-
-## Telescope
-
-<!-- TODO: (you) - Remove this is you do not want telescope -->
-
-> Note: You can customize telescope colors here or using
-> `vim.g.vaultview_configuration`.
-
-[telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
-
-```lua
-{
-    "nvim-telescope/telescope.nvim",
-    cmd = "Telescope",
-    config = function()
-        -- ... Your other configuration ...
-        require("telescope").load_extension("vaultview")
-    end,
-    dependencies = {
-        "fvalenza/vaultview",
-        "nvim-lua/plenary.nvim",
-    },
-    version = "0.1.*",
-},
-```
 
 ### Colors
 
@@ -198,22 +147,14 @@ vim.api.nvim_set_hl(0, "VaultviewTelescopeSecondary", {link="Question"})
 
 Here are some example commands:
 
-<!-- TODO: (you) - You'll probably want to change all this or remove it. See -->
 
 <!-- plugin/vaultview.lua for details. -->
 
 ```vim
 " A typical subcommand
-:Vaultview hello-world say phrase "Hello, World!" " How are you?"
-:Vaultview hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase
-
-" An example of a flag this repeatable and 3 flags, -a, -b, -c, as one dash
-:Vaultview arbitrary-thing -vvv -abc -f
-
-" Separate commands with completely separate, flexible APIs
-:Vaultview goodnight-moon count-sheep 42
-:Vaultview goodnight-moon read "a book"
-:Vaultview goodnight-moon sleep -z -z -z
+:Vaultview open
+:Vaultview close
+:Vaultview refresh
 ```
 
 # Tests

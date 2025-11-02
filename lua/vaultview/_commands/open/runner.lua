@@ -13,9 +13,6 @@ M.context = {}
 
 
 
---TODO
---- Print `phrase` according to the other options.
----
 function M.run_open()
     dprint("Running open board")
 

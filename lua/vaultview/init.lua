@@ -10,7 +10,6 @@ local M = {}
 
 configuration.initialize_data_if_needed()
 
--- TODO: (you) - Change this file to whatever you need. These are just examples
 
 
 --- [TODO:description]
