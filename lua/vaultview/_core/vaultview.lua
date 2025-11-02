@@ -7,6 +7,8 @@ local Board = require("vaultview._core.board")
 local DailyParser = require("vaultview._parser.daily_parser")
 local MocParser = require("vaultview._parser.moc_parser")
 local tutils = require("vaultview.utils.table_utils")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview._core.vaultview")
 
 local parsers = {
     daily = DailyParser,
@@ -77,45 +79,47 @@ function VaultView:create_vaultview_windows()
     })
 end
 
-local config = {
-    -- markdown_dir = "~/mboard/daily",
-    markdown_dir = "~/mboard",
-    vault = {
-        path = "/home/fvalenza/root-filetree/devel/myVault",
-        -- path = "/home/fvalenza/mboard/daily/",
-        name = "myVault",
-    },
-    boards = {
-        {
-            name = "dailyBoard",
-            parser = "daily",
-            viewlayout = "carousel",
-            daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
-            daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
-            -- show_empty_months = false,
-        },
-        {
-            name = "dailyBoard2",
-            parser = "daily",
-            viewlayout = "carousel",
-            daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
-            daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
-            -- show_empty_months = false,
-        },
-        {
-            name = "mocBoard",
-            parser = "moc",
-            viewlayout = "columns",
-            note_folder_mode = true,
-            pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
-            file_title = "strip-moc", -- TODO: could be "date" or "basename" or "strip-moc". Currently the moc parser always strips because for MY needs it's prettier
-        },
-    },
-}
+-- local config = {
+--     -- markdown_dir = "~/mboard/daily",
+--     markdown_dir = "~/mboard",
+--     vault = {
+--         path = "/home/fvalenza/root-filetree/devel/myVault",
+--         -- path = "/home/fvalenza/mboard/daily/",
+--         name = "myVault",
+--     },
+--     boards = {
+--         {
+--             name = "dailyBoard",
+--             parser = "daily",
+--             viewlayout = "carousel",
+--             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+--             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
+--             -- show_empty_months = false,
+--         },
+--         {
+--             name = "dailyBoard2",
+--             parser = "daily",
+--             viewlayout = "carousel",
+--             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
+--             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
+--             -- show_empty_months = false,
+--         },
+--         {
+--             name = "mocBoard",
+--             parser = "moc",
+--             viewlayout = "columns",
+--             note_folder_mode = true,
+--             pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
+--             file_title = "strip-moc", -- TODO: could be "date" or "basename" or "strip-moc". Currently the moc parser always strips because for MY needs it's prettier
+--         },
+--     },
+-- }
 
--- function VaultView.new(config)
-function VaultView.new()
+function VaultView.new(config)
+-- function VaultView.new()
     local self = setmetatable({}, VaultView)
+    print("Creating VaultView")
+    _LOGGER:debug("Creating VaultView")
 
     self:create_vaultview_windows()
 
@@ -260,7 +264,7 @@ function VaultView:render()
     self.isDisplayed = true
 end
 
-function VaultView:close()
+function VaultView:hide()
     -- vim.notify("closing vaultview", vim.log.levels.INFO)
     self.board_selection_win:close()
     self.pages_win:close()

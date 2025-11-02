@@ -7,8 +7,8 @@
 local configuration_ = require("vaultview._core.configuration")
 local logging_ = require("mega.logging")
 local say_constant = require("vaultview._commands.hello_world.say.constant")
-local tabler = require("vaultview._core.tabler")
-local texter = require("vaultview._core.texter")
+local tabler = require("vaultview.utils.tabler")
+local texter = require("vaultview.utils.texter")
 
 local _LOGGER = logging_.get_logger("vaultview.health")
 

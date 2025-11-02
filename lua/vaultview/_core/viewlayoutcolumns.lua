@@ -78,19 +78,7 @@ function ViewLayoutColumns:render()
             col_offset = render_list(list, col_offset)
     end
 
-    -- Focus the list or the card of the list
-    local current_list = self.lists[self.list_focus_index]
-    local current_card_in_list = current_list.cards[self.card_focus_index]
-    if self.card_focus_index == 0 then
-        -- print("Focusing on list: " .. current_list.title)
-        current_list.win:focus()
-    else
-        if current_card_in_list and current_card_in_list.win then
-            current_card_in_list.win:focus()
-        else
-            -- print("No card to focus in the current list.")
-        end
-    end
+    self:focus()
 end
 
 -- TODO Adding same kind of movement as in neovim when you start to j/k from a last line character

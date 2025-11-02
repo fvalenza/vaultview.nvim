@@ -1,25 +1,21 @@
 --- All `vaultview` command definitions.
 
+_G.dprint = require("vaultview.utils.debug")
+
 local cmdparse = require("mega.cmdparse")
 
 local _PREFIX = "Vaultview"
 
 ---@type mega.cmdparse.ParserCreator
 local _SUBCOMMANDS = function()
-    local arbitrary_thing = require("vaultview._commands.arbitrary_thing.parser")
-    local copy_logs = require("vaultview._commands.copy_logs.parser")
-    local goodnight_moon = require("vaultview._commands.goodnight_moon.parser")
-    local hello_world = require("vaultview._commands.hello_world.parser")
     local open = require("vaultview._commands.open.parser")
+    local close = require("vaultview._commands.close.parser")
 
     local parser = cmdparse.ParameterParser.new({ name = _PREFIX, help = "The root of all commands." })
     local subparsers = parser:add_subparsers({ "commands", help = "All runnable commands." })
 
-    subparsers:add_parser(arbitrary_thing.make_parser())
-    subparsers:add_parser(copy_logs.make_parser())
-    subparsers:add_parser(goodnight_moon.make_parser())
-    subparsers:add_parser(hello_world.make_parser())
     subparsers:add_parser(open.make_parser())
+    subparsers:add_parser(close.make_parser())
 
     return parser
 end
@@ -34,10 +30,3 @@ vim.keymap.set("n", "<Plug>(Vaultview)", function()
 
     vaultview.run_toggle_vaultview()
 end, { desc = "Open your vaultview" })
-
-vim.keymap.set("n", "<Plug>(VaultviewClose)", function()
-
-    local runner = require("vaultview._commands.open.runner")
-    runner.run_close_board()
-
-end, { desc = "Close your vaultview" })

@@ -4,61 +4,70 @@ local configuration = require("vaultview._core.configuration")
 local logging = require("mega.logging")
 local vaultview = require("vaultview._core.vaultview")
 local Snacks = require("snacks")
+-- local dprint = require("vaultview.utils.debug")
 
 local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
 
 local M = {}
 M.context = {}
 
+
+
+--TODO
 --- Print `phrase` according to the other options.
 ---
----@param phrase string[]
----    The text to say.
----@param repeat_ number?
----    A 1-or-more value. The number of times to print `word`.
----@param style string?
----    Control how the text should be shown.
----
-function M.run_open_board()
-    _LOGGER:debug("Running open board")
+function M.run_open()
+    dprint("Running open board")
 
+    local plugin_configuration = configuration.resolve_data(vim.g.vaultview_configuration)
 
-    local data = configuration.resolve_data(vim.g.vaultview_configuration)
+    if not M.context.vv then
+        local vv = vaultview.new(plugin_configuration)
+        M.context.vv = vv
+        vv:render()
+    else
+        dprint("Vaultview context already exists, reusing it") -- debug
+        if not M.context.vv.isDisplayed then
+            M.context.vv:render()
+        end
+    end
 
-
-	-- print("Items in this list: " .. vim.inspect(data)) -- debug, and to see it everything works
-
-    -- vim.notify( "opening vaultview", vim.log.levels.INFO)
-
-    local vv = vaultview.new(data)
-    M.context.vv = vv
-
-    vv:render()
 end
 
 
-function M.run_toggle_board()
+function M.run_toggle()
     _LOGGER:debug("Toggling open board")
 
-    -- If vv is nil or not displayed, open it; otherwise, close it
-    if not M.context.vv or not M.context.vv.isDisplayed then
-        M.run_open_board()
+    if not M.context.vv then
+        M.run_open()
     else
-        M.run_close_board()
+        if not M.context.vv.isDisplayed then
+            M.context.vv:render()
+        else
+            M.context.vv:hide()
+        end
     end
 end
 
 
-function M.run_close_board()
-    _LOGGER:debug("Closing open board")
+--TODO destroy context
+function M.run_close()
+    dprint("run close : CLOSING vaultview") -- debug
 
-    -- vim.notify( "closing vaultview", vim.log.levels.INFO)
 
     if M.context.vv then
-        M.context.vv:close()
+        M.context.vv:hide()
+        M.context.vv = nil
     end
 end
 
+function M.run_hide()
+    dprint("run_hide : hiding rendered vaultview") -- debug
+
+    if M.context.vv then
+        M.context.vv:hide()
+    end
+end
 
 function M.render()
     _LOGGER:debug("Redrawing open board")
@@ -73,8 +82,8 @@ function M.refresh()
     _LOGGER:debug("Refresh board")
 
     if M.context.vv then
-        M.run_close_board()
-        M.run_open_board()
+        M.run_close()
+        M.run_open()
         M:render()
     end
 end

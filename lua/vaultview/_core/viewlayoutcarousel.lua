@@ -176,21 +176,7 @@ function ViewLayoutCarousel:render()
 
     end
 
-    -- Focus the list or the card of the list
-    local current_list = self.lists[self.list_focus_index]
-    local current_card_in_list = current_list.cards[self.card_focus_index]
-    if self.card_focus_index == 0 then
-        -- print("Focusing on list: " .. current_list.title)
-        current_list.win:focus()
-    else
-        -- print("Focusing on card with index: " .. self.card_focus_index)
-        -- print("Focusing on card: " .. current_card_in_list.title)
-        if current_card_in_list and current_card_in_list.win then
-            current_card_in_list.win:focus()
-        else
-            -- print("No card to focus in the current list.")
-        end
-    end
+    self:focus()
     -- We are on a list, toggle the list expand/collapse
 end
 

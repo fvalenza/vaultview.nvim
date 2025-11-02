@@ -1,7 +1,7 @@
 local M = {}
 
 M.generic = {
-    ["q"] = { function() require("vaultview._commands.open.runner").run_close_board() end, mode = "n", noremap = true, nowait = true, },
+    ["q"] = { function() require("vaultview._commands.open.runner").run_hide() end, mode = "n", noremap = true, nowait = true, },
     ["p"] = { function() require("vaultview._commands.open.runner").run_go_to_previous_board() end, mode = "n", noremap = true, nowait = true, },
     ["n"] = { function() require("vaultview._commands.open.runner").run_go_to_next_board() end, mode = "n", noremap = true, nowait = true, },
     ["<S-h>"] = { function() require("vaultview._commands.open.runner").run_go_to_previous_page() end, mode = "n", noremap = true, nowait = true, },
