@@ -187,7 +187,7 @@ function VaultView:render_board_selection()
 
     -- Compute how many spaces to pad before "(h)elp"
     local win_width = vim.api.nvim_win_get_width(win)
-    local help_text = "<C-h> help"
+    local help_text = "(0)help"
     local total_len = #boards_line + #help_text
 
     local padding = ""
