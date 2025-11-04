@@ -1,306 +1,173 @@
-# A Neovim Plugin Template
+<h1 align="center">vaultview.nvim</h1>
 
-A template repository used to create Neovim plugins.
+A Neovim plugin to visualize your notes vault in a board-style view — for quick, contextual overviews without relying on a file tree (that is limited for this sort of overview).
 
-| <!-- --> | <!-- --> |
-|--------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Build Status | [![unittests](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/test.yml?branch=main&style=for-the-badge&label=Unittests)](https://github.com/fvalenza/vaultview/actions/workflows/test.yml) [![documentation](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/documentation.yml?branch=main&style=for-the-badge&label=Documentation)](https://github.com/fvalenza/vaultview/actions/workflows/documentation.yml) [![luacheck](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/luacheck.yml?branch=main&style=for-the-badge&label=Luacheck)](https://github.com/fvalenza/vaultview/actions/workflows/luacheck.yml) [![llscheck](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/llscheck.yml?branch=main&style=for-the-badge&label=llscheck)](https://github.com/fvalenza/vaultview/actions/workflows/llscheck.yml) [![checkhealth](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/checkhealth.yml?branch=main&style=for-the-badge&label=checkhealth)](https://github.com/fvalenza/vaultview/actions/workflows/checkhealth.yml) [![stylua](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/stylua.yml?branch=main&style=for-the-badge&label=Stylua)](https://github.com/fvalenza/vaultview/actions/workflows/stylua.yml) [![urlchecker](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/urlchecker.yml?branch=main&style=for-the-badge&label=URLChecker)](https://github.com/fvalenza/vaultview/actions/workflows/urlchecker.yml) [![mdformat](https://img.shields.io/github/actions/workflow/status/fvalenza/vaultview/mdformat.yml?branch=main&style=for-the-badge&label=mdformat)](https://github.com/fvalenza/vaultview/actions/workflows/mdformat.yml) |
-| License | [![License-MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](https://github.com/fvalenza/vaultview/blob/main/LICENSE) |
-| Social | [![RSS](https://img.shields.io/badge/rss-F88900?style=for-the-badge&logo=rss&logoColor=white)](https://github.com/fvalenza/vaultview/commits/main/doc/news.txt.atom) |
+---
 
-# Features
 
-- Follows [nvim-best-practices](https://github.com/nvim-neorocks/nvim-best-practices)
-- Fast start-up (~1 ms)
-- Auto-release to [luarocks](https://luarocks.org) & [GitHub](https://github.com/fvalenza/vaultview/releases)
-- Automated user documentation (using [panvimdoc](https://github.com/kdheepak/panvimdoc))
-- Automated API documentation (using [mini.doc](https://github.com/echasnovski/mini.doc))
-- Automated HTML documentation + self-publishing using [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material)
-  - Yes, this repository has a website! Check it out at [vaultview](https://colinkennedy.github.io/vaultview)!
-- Vimtags generation
-- Built-in Vim commands
-- A high quality command mode parser
-- Auto-completes your commands at any cursor position
-- No external dependencies[\*](https://github.com/fvalenza/vaultview/wiki/External-Dependencies-Disclaimer)
-- [LuaCATS](https://luals.github.io/wiki/annotations/) annotations and type-hints, everywhere
-- [RSS feed support](https://github.com/fvalenza/vaultview/commits/main/doc/news.txt.atom)
-- Built-in logging to stdout / files
-- Unittests use the full power of native [busted](https://github.com/lunarmodules/busted)
-  - Supports [LuaCov](https://luarocks.org/modules/mpeterv/luacov) for coverage reports!
-- Automated testing matrix supports 12 Neovim/OS combinations
-  - neovim: `[v0.10.0, v0.11.0, stable, nightly]`
-  - os: `[ubuntu-latest, macos-latest, windows-latest]`
-- 100% Lua
-- Uses [Semantic Versioning](https://semver.org)
-- Integrations
-  - [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
-  - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
-  - [`:checkhealth`](https://github.com/fvalenza/vaultview/actions/workflows/checkhealth.yml)
-- Github actions for:
-  - [StyLua](https://github.com/JohnnyMorganz/StyLua) - Auto-formats Lua code
-  - [llscheck](https://github.com/jeffzi/llscheck) - Checks for Lua type mismatches
-  - [luacheck](https://github.com/mpeterv/luacheck) - Checks for Lua code issues
-  - [luarocks](https://luarocks.org) auto-release ([LUAROCKS_API_KEY secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#publishing-to-luarocks) configuration required)
-  - [GitHub](https://github.com/fvalenza/vaultview/releases) auto-release ([PERSONAL_ACCESS_TOKEN secret](https://github.com/nvim-neorocks/sample-luarocks-plugin?tab=readme-ov-file#installing-release-please-recommended) configuration required)
-  - [mdformat](https://github.com/hukkin/mdformat) - Auto-formats project Markdown files
-  - [mini.doc](https://github.com/echasnovski/mini.doc) - API documentation auto-generator
-  - [panvimdoc](https://github.com/kdheepak/panvimdoc) - User documentation auto-generator
-  - [emmylua_doc_cli](https://github.com/CppCXY/emmylua-analyzer-rust/tree/main/crates/emmylua_doc_cli) & [mkdocs-material](https://github.com/squidfunk/mkdocs-material) - Generate HTML from Lua files automatically
-  - [urlchecker](https://github.com/urlstechie/urlchecker-action) - Checks for broken URL links
-  - PR reviews - Reminds users to update `doc/news.txt`
+VaultView allows users to create customizable boards that give a quick, visual overview of their note vault.
+Instead of navigating through a file tree, VaultView parses and displays your notes in boards or matrices — giving you an at-a-glance view of what’s inside and what each note contains.
 
-# Using This Template
+With it, you can:
+- Quickly browse your vault in a structured, board-like interface.
+- See summaries or key content (like headings, links, or metadata) from your notes.
+- Open notes directly in Neovim or Obsidian.
+- Navigate the boards fluidly using Vim motions or custom pickers.
 
-1. Follow the [Wiki instructions](https://github.com/fvalenza/vaultview/wiki/Using-This-Template)
-1. Run `make download-dependencies` so all the Lua LSP features work as expected.
-1. Once you're done, remove this section (the rest of this README.md file should be kept / customized to your needs)
+## Table of Contents
 
-# Installation
+- [Features](#-features)
+    - [Examples](#examples)
+- [How it works](#️-how-it-works)
+- [Why this plugin](#-why-this-plugin)
+- [External dependencies](#external-dependencies)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Commands](#commands)
+- [Roadmap](#roadmap)
+- [Known Issues](#known-issues)
 
-<!-- TODO: (you) - Adjust and add your dependencies as needed here -->
+## ⭐ Features
+- Search / Parse / Display specific files in a matrix or board view
+- Open the corresponding file in Neovim or Obsidian
+- Navigate between board entries using Vim motions or custom pickers
+- Fully customizable boards — define what subset of your vault each one displays
+- Access the files of your vault for quick edit from any Neovim project
+
+### 🪄 Examples
+
+__Daily Notes Board (Carousel Layout):__
+![img](./doc/vaultview_example_dailies_carousel.png)
+
+__MOC Board (Columns Layout):__
+![img](./doc/vaultview_example_moc_columns.png)
+
+__Quick edit of a file from the board:__ 
+![img](./doc/vaultview_example_edit_file_in_neovim.png)
+
+## ⚙️ How it works
+
+A board in VaultView consists of two main parts:
+
+1. Board Data
+
+The data is generated by a parser, which:
+- Takes all (or a subset) of your vault’s files
+- Extracts and aggregates relevant information
+- Organizes it into a structured format:
+```
+Board
+ ├── Pages
+ │    ├── Lists (one column/block per list)
+ │    │    ├── Entries (one card per entry)
+ │    │    │    └── Content (displayed in cards)
+```
+
+__Currently Supported Parsers:__
+- Daily Note Parser -> Retrieves all daily notes in your vault, sorts them by year/month, and extracts headings for each day.
+- MOC Parser -> Finds all your MOC files and, for each one, lists all files linking to it — along with their headings (to display a TOC inside each card).
+
+2. View Layout
+
+The layout determines how the parsed data is displayed.
+
+__Currently Supported Layouts:__
+- Vertical Carousel
+- Columns
+
+## 💡 Why this plugin
+
+I love Obsidian — especially for features like the Excalidraw plugin and great table handling.
+However, when it comes to navigation with hjkl and text editing, nothing beats Neovim.
+
+What I missed most in Obsidian was a quick way to visualize my vault based on certain criteria — for example:
+- Seeing what’s inside all my MOCs (Maps of Content)
+- Browsing through all my Daily Notes
+
+Obsidian has Dataview and Bases, but:
+- They’re confined within Obsidian’s UI.
+- They require a specific query/config language.
+- They lack the power of Vim motions.
+
+I actually started thinking about VaultView before Obsidian Bases even existed — and it turned out to be a great way to learn Lua and Neovim plugin development.
+
+## External dependencies
+- [ripgrep](https://github.com/BurntSushi/ripgrep?tab=readme-ov-file#installation)
+
+
+## Installation
+
 
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
 {
     "fvalenza/vaultview",
-    dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging" },
-    -- TODO: (you) - Make sure your first release matches v1.0.0 so it auto-releases!
-    version = "v1.*",
+    dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging", "folke/snacks.nvim" },
 }
 ```
 
-# Configuration
+## Configuration
 
-(These are default values)
-
-<!-- TODO: (you) - Remove / Add / Adjust your configuration here -->
 
 - [lazy.nvim](https://github.com/folke/lazy.nvim)
 
 ```lua
-{
-    "fvalenza/vaultview",
-    config = function()
-        vim.g.vaultview_configuration = {
-            commands = {
-                goodnight_moon = { read = { phrase = "A good book" } },
-                hello_world = {
-                    say = { ["repeat"] = 1, style = "lowercase" },
-                },
-            },
-            logging = {
-                level = "info",
-                use_console = false,
-                use_file = false,
-            },
-            tools = {
-                lualine = {
-                    arbitrary_thing = {
-                        color = "Visual",
-                        text = " Arbitrary Thing",
-                    },
-                    copy_logs = {
-                        color = "Comment",
-                        text = "󰈔 Copy Logs",
-                    },
-                    goodnight_moon = {
-                        color = "Question",
-                        text = " Goodnight moon",
-                    },
-                    hello_world = {
-                        color = "Title",
-                        text = " Hello, World!",
-                    },
-                },
-                telescope = {
-                    goodnight_moon = {
-                        { "Foo Book", "Author A" },
-                        { "Bar Book Title", "John Doe" },
-                        { "Fizz Drink", "Some Name" },
-                        { "Buzz Bee", "Cool Person" },
-                    },
-                    hello_world = { "Hi there!", "Hello, Sailor!", "What's up, doc?" },
-                },
-            },
-        }
-    end
+return {
+	"fvalenza/vaultview",
+	dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging", "folke/snacks.nvim" },
+
+	keys = {
+		{ "<leader>vv", "<Plug>(Vaultview)", mode = "n", desc = "Open VaultView" },
+	},
+
+	config = function()
+		vim.g.vaultview_configuration = {
+			vault = {
+				path = "/path/to/your/vault", -- full path to your vault
+				name = "myVault",
+			},
+			boards = {
+				{
+					name = "dailyBoard", -- name of the board as printed in the top of UI
+					parser = "daily", -- parser used to retrieve information to display in the view -> currently supported parsers: "daily", "moc"
+					viewlayout = "carousel", -- how information is displayed in the view -> currently supported layouts: "carousel", "columns"
+                    subfolder = "vault/0-dailynotes", -- optional subfolder inside vault to limit the scope of the parser
+                    pattern = "yyyy-mm-dd", -- only the filename, without extension -- TODO: support regex
+					-- show_empty_months = false, -- TODO: not implemented yet
+				},
+				{
+					name = "mocBoard",
+					parser = "moc",
+					viewlayout = "columns",
+                    subfolder = "vault/1-MOCs",
+                    pattern = "*", -- only the filename, without extension -- TODO: support regex
+					file_title = "strip-moc", -- TODO: could be "date" or "basename" or "strip-moc". Currently the moc parser always strips because for MY needs it's prettier
+				},
+			},
+		}
+	end,
 }
+
 ```
 
-## Lualine
-
-<!-- TODO: (you) - Remove this is you do not want lualine -->
-
-> Note: You can customize lualine colors here or using
-> `vim.g.vaultview_configuration`.
-
-[lualine.nvim](https://github.com/nvim-lualine/lualine.nvim)
-
-```lua
-require("lualine").setup {
-    sections = {
-        lualine_y = {
-            -- ... Your other configuration ...
-            {
-                "vaultview",
-                -- NOTE: These will override default values
-                -- display = {
-                --     goodnight_moon = {color={fg="#FFFFFF"}, text="Custom message 1"}},
-                --     hello_world = {color={fg="#333333"}, text="Custom message 2"},
-                -- },
-            },
-        }
-    }
-}
-```
-
-## Telescope
-
-<!-- TODO: (you) - Remove this is you do not want telescope -->
-
-> Note: You can customize telescope colors here or using
-> `vim.g.vaultview_configuration`.
-
-[telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
-
-```lua
-{
-    "nvim-telescope/telescope.nvim",
-    cmd = "Telescope",
-    config = function()
-        -- ... Your other configuration ...
-        require("telescope").load_extension("vaultview")
-    end,
-    dependencies = {
-        "fvalenza/vaultview",
-        "nvim-lua/plenary.nvim",
-    },
-    version = "0.1.*",
-},
-```
-
-### Colors
-
-This plugin provides two default highlights
-
-- `VaultviewTelescopeEntry`
-- `VaultviewTelescopeSecondary`
-
-Both come with default colors that should look nice. If you want to change them, here's how:
-
-```lua
-vim.api.nvim_set_hl(0, "VaultviewTelescopeEntry", {link="Statement"})
-vim.api.nvim_set_hl(0, "VaultviewTelescopeSecondary", {link="Question"})
-```
-
-# Commands
-
-Here are some example commands:
-
-<!-- TODO: (you) - You'll probably want to change all this or remove it. See -->
-
+## Usage
+Once setup and your neovim instance running, you can use the following commands to interact with VaultView.
 <!-- plugin/vaultview.lua for details. -->
 
 ```vim
-" A typical subcommand
-:Vaultview hello-world say phrase "Hello, World!" " How are you?"
-:Vaultview hello-world say phrase "Hello, World!" --repeat=2 --style=lowercase
-
-" An example of a flag this repeatable and 3 flags, -a, -b, -c, as one dash
-:Vaultview arbitrary-thing -vvv -abc -f
-
-" Separate commands with completely separate, flexible APIs
-:Vaultview goodnight-moon count-sheep 42
-:Vaultview goodnight-moon read "a book"
-:Vaultview goodnight-moon sleep -z -z -z
+:Vaultview open
+:Vaultview close
+:Vaultview refresh
 ```
 
-# Tests
+or you can map your preferred keybinding to `<Plug>(Vaultview)` to open the main VaultView window.
 
-## Initialization
 
-Run this line once before calling any `busted` command
+## Roadmap
+Incoming
 
-```sh
-eval $(luarocks path --lua-version 5.1 --bin)
-```
 
-## Running
-
-Run all tests
-
-```sh
-# Using the package manager
-luarocks test --test-type busted
-# Or manually
-busted .
-# Or with Make
-make test
-```
-
-Run test based on tags
-
-```sh
-busted . --tags=simple
-```
-
-# Coverage
-
-Making sure that your plugin is well tested is important.
-`vaultview` can generate a per-line breakdown of exactly where
-your code is lacking tests using [LuaCov](https://luarocks.org/modules/mpeterv/luacov).
-
-## Setup
-
-Make sure to install all dependencies for the unittests + coverage reporter if
-you have not installed them already.
-
-```sh
-luarocks install busted --local
-luarocks install luacov --local
-luarocks install luacov-multiple --local
-```
-
-## Running
-
-```sh
-make coverage-html
-```
-
-This will generate a `luacov.stats.out` & `luacov_html/` directory.
-
-## Viewing
-
-```sh
-(cd luacov_html && python -m http.server)
-```
-
-If it worked, you should see a message like
-`"Serving HTTP on 0.0.0.0 port 8000 (http://0.0.0.0:8000) ..."`
-Open `http://0.0.0.0:8000` in a browser like
-[Firefox](https://www.mozilla.org/en-US/firefox) and you should see a view like this:
-
-![Image](https://github.com/user-attachments/assets/e5b30df8-036a-4886-81b9-affbf5c9e32a)
-
-Just navigate down a few folders until you get to a .lua file and you'll see a breakdown
-of your line coverage like this:
-
-![Image](https://github.com/user-attachments/assets/c5420b16-4be7-4177-92c7-01af0b418816)
-
-# Tracking Updates
-
-See [doc/news.txt](doc/news.txt) for updates.
-
-You can watch this plugin for changes by adding this URL to your RSS feed:
-
-```
-https://github.com/fvalenza/vaultview/commits/main/doc/news.txt.atom
-```
-
-# Other Plugins
-
-This template is full of various features. But if your plugin is only meant to
-be a simple plugin and you don't want the bells and whistles that this template
-provides, consider instead using
-[nvim-vaultview](https://github.com/ellisonleao/nvim-plugin-template)
+## Known Issues
+- [ ] When opening a file associated to an entry with <CR>, and when quitting it to return to main window of the vaultview ("q"), it comes back to the first board instead of the previsouly active one
+- [ ] Action to "center cursor/focus" on viewlayoutcarousel to fix

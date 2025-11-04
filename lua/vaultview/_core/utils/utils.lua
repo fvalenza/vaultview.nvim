@@ -40,6 +40,62 @@ function M.scanDirRecursive(dir)
   return t
 end
 
+
+local uv = vim.loop  -- works in Neovim; use luv for standalone Lua
+
+function M.scandir_recursive(dir, results)
+    results = results or {}
+
+    local fd = uv.fs_scandir(dir)
+    if not fd then
+        return results
+    end
+
+    while true do
+        local name, type = uv.fs_scandir_next(fd)
+        if not name then break end
+
+        local fullpath = dir .. "/" .. name
+
+        if type == "directory" then
+            -- Recurse into subdirectories
+            M.scandir_recursive(fullpath, results)
+        else
+            table.insert(results, fullpath)
+        end
+    end
+
+    return results
+end
+
+function M.scandir_recursive_markdown(dir, results)
+    results = results or {}
+
+    local fd = uv.fs_scandir(dir)
+    if not fd then
+        return results
+    end
+
+    while true do
+        local name, type = uv.fs_scandir_next(fd)
+        if not name then break end
+
+        local fullpath = dir .. "/" .. name
+
+        if type == "directory" then
+            -- Recurse into subdirectories
+            M.scandir_recursive_markdown(fullpath, results)
+        else
+            local _, _, ext = M.SplitPath(name)
+            if ext == "md" then
+                table.insert(results, fullpath)
+            end
+        end
+    end
+
+    return results
+end
+
 function M.scandir(dir)
 	local t = {}
 	local p = io.popen('ls -1 "' .. dir .. '"')
@@ -94,6 +150,16 @@ function M.walk(dir, callback, callback_params)
 end
 
 function M.SplitFilename(strFilename)
+  -- Returns the Path, Filename, and Extension as 3 values
+  if lfs.attributes(strFilename,"mode") == "directory" then
+    local strPath = strFilename:gsub("[\\/]$","")
+    return strPath.."\\","",""
+  end
+  strFilename = strFilename.."."
+  return strFilename:match("^(.-)([^\\/]-%.([^\\/%.]-))%.?$")
+end
+
+function M.SplitPath(strFilename)
   -- Returns the Path, Filename, and Extension as 3 values
   if lfs.attributes(strFilename,"mode") == "directory" then
     local strPath = strFilename:gsub("[\\/]$","")
