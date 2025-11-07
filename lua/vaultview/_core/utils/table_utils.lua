@@ -3,8 +3,6 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
 	require("lldebugger").start()
 end
 
-local inspect = require("inspect").inspect
-
 local M = {}
 
 -- local mixedTable = {
@@ -81,11 +79,6 @@ function M.remove_duplicates(arr)
     end
   end
   return result
-end
-
-function M.printTable(t, name)
-	print("Table: " .. name)
-	print(inspect(t))
 end
 
 return M
