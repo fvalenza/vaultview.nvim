@@ -5,24 +5,6 @@ end
 
 local M = {}
 
--- local mixedTable = {
--- 	["01"] = "January",
--- 	["02"] = "February",
--- 	["10"] = "October",
--- 	["abc"] = "Alphabetic",
--- 	[5] = "Number key",
--- 	["1"] = "One",
--- }
---
--- for k, v in sortedPairs(mixedTable) do
---     print(k, v)
--- end
---
--- local sortedKeys = sortKeys(mixedTable)
--- for _, k in ipairs(sortedKeys) do
--- 	print(k, mixedTable[k])
--- end
-
 function M.sortedPairs(t)
 	local keys = {}
 	for k in pairs(t) do

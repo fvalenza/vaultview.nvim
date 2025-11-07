@@ -123,10 +123,10 @@ function M.arrangeInputsIntoBoardData(boardInputs, boardConfig, vaultRootPath)
     return boardData
 end
 
-function M.parseBoard(vault, boardConfig)
+function M.parseBoard(vault, user_commands, boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 
-    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, boardConfig)
+    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, user_commands, boardConfig)
 
     local boardData = M.arrangeInputsIntoBoardData(boardRawInputs, boardConfig, vaultRootPath)
     M.parseBoardDataEntriesForContent(boardData)

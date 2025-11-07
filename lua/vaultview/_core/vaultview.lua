@@ -57,41 +57,6 @@ function VaultView:create_vaultview_windows()
     })
 end
 
--- local config = {
---     -- markdown_dir = "~/mboard/daily",
---     markdown_dir = "~/mboard",
---     vault = {
---         path = "/home/fvalenza/root-filetree/devel/myVault",
---         -- path = "/home/fvalenza/mboard/daily/",
---         name = "myVault",
---     },
---     boards = {
---         {
---             name = "dailyBoard",
---             parser = "daily",
---             viewlayout = "carousel",
---             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
---             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
---             -- show_empty_months = false,
---         },
---         {
---             name = "dailyBoard2",
---             parser = "daily",
---             viewlayout = "carousel",
---             daily_notes_folder = "vault/0-dailynotes", -- folder inside vault where daily notes are stored. Daily_parser currently do NOT parse recursively so all dailynotes should be in the same dir
---             daily_note_pattern = "%d%d%d%d%-%d%d%-%d%d.md", -- pattern to identify daily notes, currently not used because hardcoded in daily_parser.lua
---             -- show_empty_months = false,
---         },
---         {
---             name = "mocBoard",
---             parser = "moc",
---             viewlayout = "columns",
---             note_folder_mode = true,
---             pattern = "vault/1-MOCs/*.md", -- could be "subdir/*" or "yyyy-mm-dd.md" or "moc-*.md"
---             file_title = "strip-moc", -- TODO: could be "date" or "basename" or "strip-moc". Currently the moc parser always strips because for MY needs it's prettier
---         },
---     },
--- }
 
 function VaultView.new(config)
 -- function VaultView.new()
@@ -109,7 +74,7 @@ function VaultView.new(config)
         local board_name = board_config.name or "board_" .. tostring(#self.boards + 1)
         table.insert(self.boards_title, board_name)
 
-        local boardData = parsers(board_config.parser)(config.vault, board_config)
+        local boardData = parsers(board_config.parser)(config.vault, config.user_commands, board_config)
         local context = {
             vaultview = self,
         }

@@ -111,10 +111,10 @@ end
 ---@param vault configuration of the vault {path: string, name: string}
 ---@param boardConfig configuration of the board {name:string, parser: string|function, viewlayout: string, subfolder: string, pattern: string}
 ---@return The BoardDataStructure as expected by a ViewLayout
-function M.parseBoard(vault, boardConfig)
+function M.parseBoard(vault, user_commands, boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 
-    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, boardConfig)
+    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, user_commands, boardConfig)
 
     local boardData = M.arrangeInputsIntoBoardData(boardRawInputs)
     M.parseBoardDataEntriesForContent(boardData)
