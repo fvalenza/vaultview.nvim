@@ -148,8 +148,23 @@ return {
 		}
 	end,
 }
-
 ```
+
+### Custom parsers
+One can provide in the configuration their own custom parsers by providing a function to the "parser" field of a board configuration.
+The function should take as input the vault subtable of the configuration and the board configuration table:
+
+```lua
+
+--- parse a vault folder to create a board data structure depending on the board configuration
+---@param vault configuration of the vault {path: string, name: string}
+---@param boardConfig configuration of the board {name:string, parser: string|function, viewlayout: string, subfolder: string, pattern: string}
+---@return The BoardDataStructure as expected by a ViewLayout
+parser = function(vault_config, board_config)
+    end
+```
+
+Warning: As this plugin is still in early development, the API for custom parsers may change in future releases + pattern matching is currently very basic (see TODOs).
 
 ## Usage
 Once setup and your neovim instance running, you can use the following commands to interact with VaultView.

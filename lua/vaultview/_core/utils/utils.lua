@@ -3,8 +3,6 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
 	require("lldebugger").start()
 end
 
-local lfs = require("lfs")
-
 local M = {}
 
 function M.expand_path(path)
@@ -149,9 +147,13 @@ function M.walk(dir, callback, callback_params)
   end
 end
 
-function M.SplitFilename(strFilename)
+local function is_dir(path)
+  return vim.fn.isdirectory(path) == 1
+end
+
+function M.SplitPath(strFilename)
   -- Returns the Path, Filename, and Extension as 3 values
-  if lfs.attributes(strFilename,"mode") == "directory" then
+  if is_dir(strFilename) then
     local strPath = strFilename:gsub("[\\/]$","")
     return strPath.."\\","",""
   end
@@ -159,15 +161,7 @@ function M.SplitFilename(strFilename)
   return strFilename:match("^(.-)([^\\/]-%.([^\\/%.]-))%.?$")
 end
 
-function M.SplitPath(strFilename)
-  -- Returns the Path, Filename, and Extension as 3 values
-  if lfs.attributes(strFilename,"mode") == "directory" then
-    local strPath = strFilename:gsub("[\\/]$","")
-    return strPath.."\\","",""
-  end
-  strFilename = strFilename.."."
-  return strFilename:match("^(.-)([^\\/]-%.([^\\/%.]-))%.?$")
-end
+M.SplitFilename = M.SplitPath
 
 
 return M

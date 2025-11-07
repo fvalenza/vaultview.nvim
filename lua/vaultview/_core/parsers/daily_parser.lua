@@ -107,6 +107,10 @@ function M.arrangeInputsIntoBoardData(boardInputs)
 end
 
 
+--- parse a vault folder to create a board data structure depending on the board configuration
+---@param vault configuration of the vault {path: string, name: string}
+---@param boardConfig configuration of the board {name:string, parser: string|function, viewlayout: string, subfolder: string, pattern: string}
+---@return The BoardDataStructure as expected by a ViewLayout
 function M.parseBoard(vault, boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 
