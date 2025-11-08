@@ -23,7 +23,10 @@ With it, you can:
 - [External dependencies](#external-dependencies)
 - [Installation](#installation)
 - [Configuration](#configuration)
-- [Commands](#commands)
+    - [Input and Content selectors](#input-and-content-selectors)
+    - [Custom parsers](#custom-parsers)
+- [Usage](#usage)
+- [Keybinds inside VaultView UI](#keybinds-inside-vaultview-ui)
 - [Roadmap](#roadmap)
 - [Known Issues](#known-issues)
 
@@ -136,7 +139,7 @@ return {
                         "/path/to/file3.md",
                     },
                     lua_function = function(path)
-                        -- Custom Lua function to list files in a specific way
+                        -- Custom Lua function that returns a list of files
                         end,
                     shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
                 },
@@ -218,6 +221,11 @@ Once setup and your neovim instance running, you can use the following commands 
 ```
 
 or you can map your preferred keybinding to `<Plug>(Vaultview)` to open the main VaultView window.
+
+## Keybinds inside VaultView UI
+See [default keybinds](lua/vaultview/keymaps.lua) for details. May change in the future.
+
+It's planned to allow user configuration of keybinds in future releases.
 
 
 ## Roadmap
