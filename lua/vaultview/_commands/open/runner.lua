@@ -4,7 +4,6 @@ local configuration = require("vaultview._core.configuration")
 local logging = require("mega.logging")
 local vaultview = require("vaultview._core.vaultview")
 local Snacks = require("snacks")
--- local dprint = require("vaultview._core.utils.debug")
 
 local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
 
@@ -14,7 +13,6 @@ M.context = {}
 
 
 function M.run_open()
-    dprint("Running open board")
 
     local plugin_configuration = configuration.resolve_data(vim.g.vaultview_configuration)
 
@@ -23,7 +21,6 @@ function M.run_open()
         M.context.vv = vv
         vv:render()
     else
-        dprint("Vaultview context already exists, reusing it") -- debug
         if not M.context.vv.isDisplayed then
             M.context.vv:render()
         end
@@ -49,9 +46,6 @@ end
 
 --TODO destroy context
 function M.run_close()
-    dprint("run close : CLOSING vaultview") -- debug
-
-
     if M.context.vv then
         M.context.vv:hide()
         M.context.vv = nil
@@ -59,8 +53,6 @@ function M.run_close()
 end
 
 function M.run_hide()
-    dprint("run_hide : hiding rendered vaultview") -- debug
-
     if M.context.vv then
         M.context.vv:hide()
     end
