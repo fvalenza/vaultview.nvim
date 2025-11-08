@@ -34,19 +34,41 @@ function ParserTrait.parseVaultForBoardInputs(base_dir, user_commands, board_con
         target_dir = base_dir .. "/" .. subdir
     end
 
-    -- Retrieve the find command template between the user-defined and default ones
+    -- Retrieve the input_selector wanted (from configuration of the board) between the user-defined ones and default ones
     local find_commands = merge_input_selectors(user_commands.input_selectors)
-    local mode = user_commands.input_selector or "all_md"
-    local template = find_commands[mode] -- the find command to be formatted with path where to search
+    local mode = board_config.input_selector or "all_md"
+    local selector = find_commands[mode]
 
-    if not template then
-        error("Unknown find_mode: " .. tostring(mode))
+    if not selector then
+        error("Unknown input_selector mode: " .. tostring(mode))
         return boardData
     end
 
-    -- Build and run the shell command
-    local cmd = string.format(template, target_dir)
-    local board_input_files = vim.fn.systemlist(cmd)
+    local board_input_files
+
+    -- Case 1: string (shell command)
+    if type(selector) == "string" then
+        local cmd = string.format(selector, target_dir)
+        board_input_files = vim.fn.systemlist(cmd)
+
+    -- Case 2: lua function(target_dir) -> list of files
+    elseif type(selector) == "function" then
+        local ok, result = pcall(selector, target_dir)
+        if not ok then
+            error("Error executing input_selector function for mode '" .. mode .. "': " .. tostring(result))
+        end
+        if type(result) ~= "table" then
+            error("Function selector for mode '" .. mode .. "' must return a table, got " .. type(result))
+        end
+        board_input_files = result
+
+    -- Case 3: List of files directly
+    elseif type(selector) == "table" then
+        board_input_files = selector
+
+    else
+        error("Invalid input_selector type for mode '" .. mode .. "': " .. type(selector))
+    end
 
     -- Get interesting stuff needed by the parser to build the board data
     for _, path in ipairs(board_input_files) do

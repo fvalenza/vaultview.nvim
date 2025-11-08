@@ -130,6 +130,15 @@ return {
 			},
             user_commands = {
                 input_selectors = { -- custom input selectors can be defined here and chosen in the board configuration
+                    list_files = { -- Hardcoded list of files
+                        "/path/to/file1.md",
+                        "/path/to/file2.md",
+                        "/path/to/file3.md",
+                    },
+                    lua_function = function(path)
+                        -- Custom Lua function to list files in a specific way
+                        end,
+                    shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
                 },
                 entry_content_selectors = { -- custom content selectors can be defined here and chosen in the board configuration
                 },
@@ -159,7 +168,10 @@ return {
 ```
 
 ### Input and Content selectors
-The plugin comes with some default input and content selectors that can be used in the board configuration:
+The plugin comes with some default input and content selectors that can be used in the board configuration.
+In the configuration one can specify custom ones for input selector as either : a list of files, a shell command returning a list of files, or a Lua function returning a list of files.
+content_selectors only accepts shell commands returning content lines for each entry.
+The current default ones are:
 
 ```lua
 local input_selectors = {
