@@ -37,8 +37,8 @@ local function set_keymap(layout, class_name)
         map[k] = v
     end
 
-    print("Class name in set_list_keymap:", class_name)
-    print("Keymaps:" .. vim.inspect(Keymaps))
+    -- print("Class name in set_list_keymap:", class_name)
+    -- print("Keymaps:" .. vim.inspect(Keymaps))
 
     -- print(vim.inspect(Keymaps[class_name]))
 
@@ -126,11 +126,11 @@ function ViewLayoutTrait:make_card_window(title, card_content)
     local class_name = self.__name
     local cfg = Constants.card_win[class_name]
     local lself = self
-    print("Making card window with title:", title)
-    print("Card content:", vim.inspect(card_content))
-    print("Card content lines:", #card_content)
+    -- print("Making card window with title:", title)
+    -- print("Card content:", vim.inspect(card_content))
+    -- print("Card content lines:", #card_content)
     local card_height = math.min(cfg.height, math.max(1,#card_content)) -- WARN: Can't put 1 here because "Not enough room" errors
-    print("Card height set to:", card_height)
+    -- print("Card height set to:", card_height)
     local card_win = Snacks.win({
         width = cfg.width,
         height = card_height,
@@ -238,11 +238,11 @@ function ViewLayoutTrait:open_focused_in_obsidian()
     local path = vim.fn.fnamemodify(card.filepath, ":p") -- absolute path
     -- https://help.obsidian.md/Extending+Obsidian/Obsidian+URI
     local uri = "obsidian://open?path=" .. vim.fn.escape(path, " ")
-    print("Opening Obsidian URI:", uri)
+    -- print("Opening Obsidian URI:", uri)
 
     local vaultname = "myVault"
     local cmd = string.format("!xdg-open 'obsidian://open?vault=%s&file=%s'", vaultname, card.title)
-    print("Executing command:", cmd)
+    -- print("Executing command:", cmd)
     vim.cmd(cmd)
 end
 

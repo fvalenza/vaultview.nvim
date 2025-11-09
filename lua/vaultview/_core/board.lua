@@ -29,8 +29,8 @@ function Board.new(board_title, board_data, board_view_layout, page_selection_wi
 
     self.active_page_index = 1
 
-    print("Board created with title: " .. self.board_title)
-    print(vim.inspect(self.board_data))
+    -- print("Board created with title: " .. self.board_title)
+    -- print(vim.inspect(self.board_data))
 
     return self
 end
@@ -113,14 +113,14 @@ end
 
 -- Focus on the n-th entry in board_data (across all pages and lists)
 function Board:focus(entry_idx)
-    print("Looking to focus on card with entry_idx:" .. entry_idx)
+    -- print("Looking to focus on card with entry_idx:" .. entry_idx)
     local idx = 1 -- let's find the idx of the entry across all pages and lists of the one selected
     -- find the page whose cards/entries has given title
     for _, pages_viewlayout in ipairs(self.pages_viewlayout) do
         for list_index, list in ipairs(pages_viewlayout.lists) do
-            print("Checking list: " .. list.title)
-            print("List has " .. tostring(#list.cards) .. " cards")
-            print(vim.inspect(list.cards))
+            -- print("Checking list: " .. list.title)
+            -- print("List has " .. tostring(#list.cards) .. " cards")
+            -- print(vim.inspect(list.cards))
             for item_index, item in ipairs(list.cards) do
                 if idx == entry_idx then
                     -- focus this item
@@ -128,9 +128,9 @@ function Board:focus(entry_idx)
                     -- pages_viewlayout.card_focus_index = item_index
                     pages_viewlayout:move_focus_idx(list_index, item_index)
                     -- item.win:focus()
-                    print("Focusing entry idx: " .. tostring(entry_idx))
-                    print("In list: " .. list.title .. " (list index: " .. tostring(list_index) .. ")")
-                    print("Card title: " .. item.title .. " (item index: " .. tostring(item_index) .. ")")
+                    -- print("Focusing entry idx: " .. tostring(entry_idx))
+                    -- print("In list: " .. list.title .. " (list index: " .. tostring(list_index) .. ")")
+                    -- print("Card title: " .. item.title .. " (item index: " .. tostring(item_index) .. ")")
                     return
                 end
                 idx = idx + 1
@@ -169,8 +169,8 @@ function Board:pick_card()
             end
         end
     end
-    print("Entry titles:")
-    print(vim.inspect(entry_titles))
+    -- print("Entry titles:")
+    -- print(vim.inspect(entry_titles))
 
     Snacks.picker.pick({
         items = entry_titles,
@@ -200,11 +200,11 @@ function Board:pick_card()
             require("vaultview._commands.open.runner").run_focus(item.idx)
             -- go to the picked page
             if item then
-                print("Picking page " .. item.text)
+                -- print("Picking page " .. item.text)
             end
         end,
         on_close = function()
-            print("Get focus back on viewlayout on close")
+            -- print("Get focus back on viewlayout on close")
             require("vaultview._commands.open.runner").run_focus_back()
         end,
 
@@ -237,8 +237,8 @@ function Board:pick_content()
             end
         end
     end
-    print("Entry contents:")
-    print(vim.inspect(entry_contents))
+    -- print("Entry contents:")
+    -- print(vim.inspect(entry_contents))
 
     Snacks.picker.pick({
         items = entry_contents,
@@ -268,7 +268,7 @@ function Board:pick_content()
         end,
         confirm = function(picker, item)
             picker:close()
-            print("Selected item:..." .. vim.inspect(item))
+            -- print("Selected item:..." .. vim.inspect(item))
             require("vaultview._commands.open.runner").run_focus(item.entry_idx)
             -- -- go to the picked page
             -- if item then

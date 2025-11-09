@@ -169,7 +169,7 @@ function M.run_open_help()
     -- Get the absolute path to this Lua file
     local current_file = debug.getinfo(1, "S").source:sub(2)
     local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/_doc/help_page.md"  -- go up and in _doc
-    print("Help path is: " .. help_path)
+    -- print("Help path is: " .. help_path)
     vim.notify("Opening help page..." .. help_path , vim.log.levels.INFO)
 
 
