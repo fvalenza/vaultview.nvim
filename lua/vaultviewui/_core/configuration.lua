@@ -1,16 +1,16 @@
---- All functions and data to help customize `vaultview` for this user.
+--- All functions and data to help customize `vaultviewui` for this user.
 
 
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("vaultview._core.configuration")
+local _LOGGER = logging.get_logger("vaultviewui._core.configuration")
 
 local M = {}
 
 -- NOTE: Don't remove this line. It makes the Lua module much easier to reload
 vim.g.loaded_vaultview = false
 
----@type vaultview.Configuration
+---@type vaultviewui.Configuration
 M.DATA = {}
 
 -- TODO: (you) If you use the mega.logging module for built-in logging, keep
@@ -18,7 +18,7 @@ M.DATA = {}
 --
 -- It's recommended to keep the `display` section in any case.
 --
----@type vaultview.Configuration
+---@type vaultviewui.Configuration
 local _DEFAULTS = {
     logging = { level = "info", use_console = false, use_file = false },
 }
@@ -33,7 +33,7 @@ local _EXTRA_DEFAULTS = {
 
 _DEFAULTS = vim.tbl_deep_extend("force", _DEFAULTS, _EXTRA_DEFAULTS)
 
---- Setup `vaultview` for the first time, if needed.
+--- Setup `vaultviewui` for the first time, if needed.
 function M.initialize_data_if_needed()
     if vim.g.loaded_vaultview then
         return
@@ -45,15 +45,15 @@ function M.initialize_data_if_needed()
 
     local configuration = M.DATA.logging or {}
     ---@cast configuration mega.logging.SparseLoggerOptions
-    logging.set_configuration("vaultview", configuration)
+    logging.set_configuration("vaultviewui", configuration)
 
-    _LOGGER:fmt_debug("Initialized vaultview's configuration.")
+    _LOGGER:fmt_debug("Initialized vaultviewui's configuration.")
 end
 
 --- Merge `data` with the user's current configuration.
 ---
----@param data vaultview.Configuration? All extra customizations for this plugin.
----@return vaultview.Configuration # The configuration with 100% filled out values.
+---@param data vaultviewui.Configuration? All extra customizations for this plugin.
+---@return vaultviewui.Configuration # The configuration with 100% filled out values.
 ---
 function M.resolve_data(data)
     M.initialize_data_if_needed()

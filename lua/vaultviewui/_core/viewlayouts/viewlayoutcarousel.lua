@@ -2,7 +2,7 @@ local ViewLayoutCarousel = {}
 ViewLayoutCarousel.__index = ViewLayoutCarousel
 
 local Snacks = require("snacks")
-local Constants = require("vaultview._ui.constants")
+local Constants = require("vaultviewui._ui.constants")
 
 
 function ViewLayoutCarousel.name()

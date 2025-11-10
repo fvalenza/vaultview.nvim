@@ -2,8 +2,8 @@ local Board = {}
 Board.__index = Board
 
 local Snacks = require("snacks")
-local Constants = require("vaultview._ui.constants")
-local utils = require("vaultview._core.utils.utils")
+local Constants = require("vaultviewui._ui.constants")
+local utils = require("vaultviewui._core.utils.utils")
 
 -- function Board.new(config)
 function Board.new(board_title, board_data, board_view_layout, page_selection_win, context)
@@ -197,7 +197,7 @@ function Board:pick_card()
         end,
         confirm = function(picker, item)
             picker:close()
-            require("vaultview._commands.open.runner").run_focus(item.idx)
+            require("vaultviewui._commands.open.runner").run_focus(item.idx)
             -- go to the picked page
             if item then
                 -- print("Picking page " .. item.text)
@@ -205,7 +205,7 @@ function Board:pick_card()
         end,
         on_close = function()
             -- print("Get focus back on viewlayout on close")
-            require("vaultview._commands.open.runner").run_focus_back()
+            require("vaultviewui._commands.open.runner").run_focus_back()
         end,
 
         actions = {
@@ -269,14 +269,14 @@ function Board:pick_content()
         confirm = function(picker, item)
             picker:close()
             -- print("Selected item:..." .. vim.inspect(item))
-            require("vaultview._commands.open.runner").run_focus(item.entry_idx)
+            require("vaultviewui._commands.open.runner").run_focus(item.entry_idx)
             -- -- go to the picked page
             -- if item then
             --     print("Picking page " .. item.text)
             -- end
         end,
         on_close = function()
-            require("vaultview._commands.open.runner").run_focus_back()
+            require("vaultviewui._commands.open.runner").run_focus_back()
         end,
 
         actions = {

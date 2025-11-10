@@ -2,13 +2,13 @@ local VaultView = {}
 VaultView.__index = VaultView
 
 local Snacks = require("snacks")
-local Constants = require("vaultview._ui.constants")
-local Board = require("vaultview._core.board")
-local tutils = require("vaultview._core.utils.table_utils")
+local Constants = require("vaultviewui._ui.constants")
+local Board = require("vaultviewui._core.board")
+local tutils = require("vaultviewui._core.utils.table_utils")
 local logging = require("mega.logging")
-local _LOGGER = logging.get_logger("vaultview._core.vaultview")
-local layouts = require("vaultview._core.viewlayouts")
-local parsers = require("vaultview._core.parsers")
+local _LOGGER = logging.get_logger("vaultviewui._core.vaultviewui")
+local layouts = require("vaultviewui._core.viewlayouts")
+local parsers = require("vaultviewui._core.parsers")
 
 
 
@@ -76,7 +76,7 @@ function VaultView.new(config)
 
         local boardData = parsers(board_config.parser)(config.vault, config.user_commands, board_config)
         local context = {
-            vaultview = self,
+            vaultviewui = self,
         }
 
         local layoutField = board_config.viewlayout
@@ -207,7 +207,7 @@ function VaultView:render()
 end
 
 function VaultView:hide()
-    -- vim.notify("closing vaultview", vim.log.levels.INFO)
+    -- vim.notify("closing vaultviewui", vim.log.levels.INFO)
     self.board_selection_win:close()
     self.pages_win:close()
     self.views_win:close()
@@ -272,6 +272,6 @@ function VaultView:pick_content()
     end
 end
 
-local Keymaps = require("vaultview.keymaps")
+local Keymaps = require("vaultviewui.keymaps")
 
 return VaultView

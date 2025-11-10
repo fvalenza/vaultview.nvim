@@ -1,8 +1,8 @@
 local ViewLayoutTrait = {}
 
 local Snacks = require("snacks")
-local Constants = require("vaultview._ui.constants")
-local Keymaps = require("vaultview.keymaps")
+local Constants = require("vaultviewui._ui.constants")
+local Keymaps = require("vaultviewui.keymaps")
 
 -- these are the same
 -- function ViewLayoutTrait:hide()
@@ -210,7 +210,7 @@ function ViewLayoutTrait:open_focused_in_nvim()
         bo = { modifiable = true,  },
         keys = { q = "close" },
         on_close = function ()
-            require("vaultview._commands.open.runner").refresh() -- HACK to refresh whole board (and data parsing) instead of just the updated card
+            require("vaultviewui._commands.open.runner").refresh() -- HACK to refresh whole board (and data parsing) instead of just the updated card
             -- TODO implement a way to just refresh the card that was edited
         end,
         wo = {

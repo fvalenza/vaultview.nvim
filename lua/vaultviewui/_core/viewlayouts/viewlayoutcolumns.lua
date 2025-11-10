@@ -2,7 +2,7 @@ local ViewLayoutColumns = {}
 ViewLayoutColumns.__index = ViewLayoutColumns
 
 local Snacks = require("snacks")
-local Constants = require("vaultview._ui.constants")
+local Constants = require("vaultviewui._ui.constants")
 
 
 function ViewLayoutColumns.name()
