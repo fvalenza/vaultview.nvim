@@ -11,12 +11,18 @@ local M = {}
 configuration.initialize_data_if_needed()
 
 local build_tabs = function(tabs, width_available, activeTab)
+    dprint("Available width: " .. width_available)
+    local win_width = vim.api.nvim_win_get_width(0)
+    dprint("Window width: " .. win_width)
+
+
     local total_str_w = -1
     for _, v in ipairs(tabs) do
         if v ~= "_pad_" then
             total_str_w = total_str_w + vim.api.nvim_strwidth(v) + 5
         end
     end
+    dprint("Total string width: " .. total_str_w)
 
     local lines = { {}, {}, {} }
     local highlights = {}
@@ -31,6 +37,7 @@ local build_tabs = function(tabs, width_available, activeTab)
                 table.insert(lines[l], { emptychar })
                 colpos[l] = colpos[l] + #emptychar
             end
+            dprint("Inserted padding of length " .. #emptychar)
         else
             local hchar = string.rep("─", vim.api.nvim_strwidth(v) + 2)
             local row_text = {
@@ -72,11 +79,14 @@ local function open_ui_with_tabs()
     -- Header buffer
     local header_buf = vim.api.nvim_create_buf(false, true)
     vim.api.nvim_win_set_buf(0, header_buf)
-    vim.bo[header_buf].buftype = "nofile"
-    vim.bo[header_buf].bufhidden = "wipe"
-    vim.bo[header_buf].modifiable = false
-    vim.wo.winfixheight = true
-    -- vim.cmd("resize 2") -- one line for tabs, one for separator
+
+    -- Window-local options for a clean header
+    vim.wo.number = false
+    vim.wo.relativenumber = false
+    vim.wo.signcolumn = "no"
+    vim.wo.foldcolumn = "0"
+    vim.wo.cursorline = false
+    vim.wo.wrap = false
 
     -- Create highlight groups
     vim.api.nvim_set_hl(0, "TabActive", { fg = "#ffffff", bg = "NONE", bold = true })
@@ -84,7 +94,7 @@ local function open_ui_with_tabs()
     vim.api.nvim_set_hl(0, "TabSeparator", { fg = "#5f5f5f" })
 
     -- Our “tabs”
-    local tabs = { "Overview", "Details", "Logs" , "_pad_", "Settings" }
+    local tabs = { "Overview", "Details", "Logs", "_pad_", "Settings" }
     local current_tab = 1
 
     --- Render the header buffer
@@ -109,17 +119,16 @@ local function open_ui_with_tabs()
         vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, flat_lines)
 
         -- Apply highlights
-	for _, h in ipairs(highlights) do
-	    vim.api.nvim_buf_add_highlight(
-	        header_buf,
-	        -1,
-	        h.group,
-	        h.line,        -- now line-specific
-	        h.start_col,
-	        h.end_col
-	    )
-	end
-
+        for _, h in ipairs(highlights) do
+            vim.api.nvim_buf_add_highlight(
+                header_buf,
+                -1,
+                h.group,
+                h.line, -- now line-specific
+                h.start_col,
+                h.end_col
+            )
+        end
 
         vim.api.nvim_buf_add_highlight(header_buf, -1, "TabSeparator", 3, 0, -1)
         vim.bo[header_buf].modifiable = false
