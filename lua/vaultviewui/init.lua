@@ -79,12 +79,12 @@ local function open_ui_with_tabs()
     -- vim.cmd("resize 2") -- one line for tabs, one for separator
 
     -- Create highlight groups
-    vim.api.nvim_set_hl(0, "TabActive", { fg = "#ffffff", bg = "#005f87", bold = true })
-    vim.api.nvim_set_hl(0, "TabInactive", { fg = "#aaaaaa", bg = "#303030" })
+    vim.api.nvim_set_hl(0, "TabActive", { fg = "#ffffff", bg = "NONE", bold = true })
+    vim.api.nvim_set_hl(0, "TabInactive", { fg = "#aaaaaa", bg = "NONE" })
     vim.api.nvim_set_hl(0, "TabSeparator", { fg = "#5f5f5f" })
 
     -- Our “tabs”
-    local tabs = { "Overview", "Details", "Logs" }
+    local tabs = { "Overview", "Details", "Logs" , "_pad_", "Settings" }
     local current_tab = 1
 
     --- Render the header buffer
@@ -93,10 +93,6 @@ local function open_ui_with_tabs()
         vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, {})
 
         local lines, highlights = build_tabs(tabs, vim.o.columns, tabs[current_tab])
-        dprint("HIGHLIGHTS:")
-        dprint(highlights)
-        dprint("LINES RAW:")
-        dprint(lines)
 
         local flat_lines = {}
 
@@ -109,8 +105,6 @@ local function open_ui_with_tabs()
         end
 
         table.insert(flat_lines, string.rep("─", vim.o.columns))
-        dprint("LINES:")
-        dprint(flat_lines)
 
         vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, flat_lines)
 
