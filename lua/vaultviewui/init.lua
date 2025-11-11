@@ -15,7 +15,6 @@ local build_tabs = function(tabs, width_available, activeTab)
     local win_width = vim.api.nvim_win_get_width(0)
     dprint("Window width: " .. win_width)
 
-
     local total_str_w = -1
     for _, v in ipairs(tabs) do
         if v ~= "_pad_" then
@@ -73,6 +72,98 @@ local build_tabs = function(tabs, width_available, activeTab)
     return lines, highlights
 end
 
+--- Render the header buffer
+local function render_header(header_buf, tabs, current_tab)
+    vim.bo[header_buf].modifiable = true
+    vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, {})
+
+    local lines, highlights = build_tabs(tabs, vim.o.columns, tabs[current_tab])
+
+    local flat_lines = {}
+
+    for _, row in ipairs(lines) do
+        local str_parts = {}
+        for _, cell in ipairs(row) do
+            table.insert(str_parts, cell[1]) -- extract the actual text
+        end
+        table.insert(flat_lines, table.concat(str_parts))
+    end
+
+    table.insert(flat_lines, string.rep("─", vim.o.columns))
+
+    vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, flat_lines)
+
+    -- Apply highlights
+    for _, h in ipairs(highlights) do
+        vim.api.nvim_buf_add_highlight(
+            header_buf,
+            -1,
+            h.group,
+            h.line, -- now line-specific
+            h.start_col,
+            h.end_col
+        )
+    end
+
+    vim.api.nvim_buf_add_highlight(header_buf, -1, "TabSeparator", 3, 0, -1)
+    vim.bo[header_buf].modifiable = false
+    return #flat_lines -- number of header lines (so we know where to start the next section)
+end
+
+local function render_page(header_buf, pages, active_page, start_line)
+    vim.bo[header_buf].modifiable = true
+
+    -- Build the text with separators
+    local page_texts = {}
+    local highlights = {}
+    local col = 0
+
+    for i, name in ipairs(pages) do
+        local label = name
+        if i < #pages then
+            label = label .. " | "
+        end
+
+        table.insert(page_texts, label)
+
+        local len = #label
+        local hl_group = (i == active_page) and "PageActive" or "PageInactive"
+        table.insert(highlights, {
+            group = hl_group,
+            start_col = col,
+            end_col = col + #name, -- only the name, not the separator
+        })
+
+        col = col + len
+    end
+
+    local pages_line = table.concat(page_texts)
+    local line = "<S-h>  <--  " .. pages_line .. "   --> <S-l>"
+
+    local lines = {
+        line,
+        string.rep("─", vim.api.nvim_win_get_width(0)),
+    }
+
+    -- Replace only the two lines of the page section
+    vim.api.nvim_buf_set_lines(header_buf, start_line, -1, false, lines)
+
+    -- Apply highlights
+    local prefix_len = #"<S-h>  <--  "  -- offset before the first page label
+    for _, h in ipairs(highlights) do
+        vim.api.nvim_buf_add_highlight(
+            header_buf,
+            -1,
+            h.group,
+            start_line, -- apply highlight to the first page line
+            prefix_len + h.start_col,
+            prefix_len + h.end_col
+        )
+    end
+
+    vim.bo[header_buf].modifiable = false
+end
+
 local function open_ui_with_tabs()
     vim.cmd("tabnew")
 
@@ -93,48 +184,34 @@ local function open_ui_with_tabs()
     vim.api.nvim_set_hl(0, "TabInactive", { fg = "#aaaaaa", bg = "NONE" })
     vim.api.nvim_set_hl(0, "TabSeparator", { fg = "#5f5f5f" })
 
+    vim.api.nvim_set_hl(0, "PageActive", { fg = "#ffffff", bold = true })
+    vim.api.nvim_set_hl(0, "PageInactive", { fg = "#808080" })
+
     -- Our “tabs”
     local tabs = { "Overview", "Details", "Logs", "_pad_", "Settings" }
+    local pages = { "Page 1", "Page 2", "Page 3" }
+
     local current_tab = 1
+    local current_page = 1
 
-    --- Render the header buffer
-    local function render_header()
-        vim.bo[header_buf].modifiable = true
-        vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, {})
+    -- Draw header and remember where the page section begins
+    local header_line_count = render_header(header_buf, tabs, current_tab)
 
-        local lines, highlights = build_tabs(tabs, vim.o.columns, tabs[current_tab])
+    -- Draw initial page section
+    render_page(header_buf, pages, current_page, header_line_count)
 
-        local flat_lines = {}
+    -- Navigation keys to switch pages
+    vim.keymap.set("n", "<S-h>", function()
+        dprint("Previous page")
+        current_page = (current_page - 2) % #pages + 1
+        render_page(header_buf, pages, current_page, header_line_count)
+    end, { buffer = header_buf, nowait = true })
 
-        for _, row in ipairs(lines) do
-            local str_parts = {}
-            for _, cell in ipairs(row) do
-                table.insert(str_parts, cell[1]) -- extract the actual text
-            end
-            table.insert(flat_lines, table.concat(str_parts))
-        end
-
-        table.insert(flat_lines, string.rep("─", vim.o.columns))
-
-        vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, flat_lines)
-
-        -- Apply highlights
-        for _, h in ipairs(highlights) do
-            vim.api.nvim_buf_add_highlight(
-                header_buf,
-                -1,
-                h.group,
-                h.line, -- now line-specific
-                h.start_col,
-                h.end_col
-            )
-        end
-
-        vim.api.nvim_buf_add_highlight(header_buf, -1, "TabSeparator", 3, 0, -1)
-        vim.bo[header_buf].modifiable = false
-    end
-
-    render_header()
+    vim.keymap.set("n", "<S-l>", function()
+        dprint("Next page")
+        current_page = (current_page % #pages) + 1
+        render_page(header_buf, pages, current_page, header_line_count)
+    end, { buffer = header_buf, nowait = true })
 
     -- Map `q` to close the tab
     vim.keymap.set("n", "q", function()
@@ -142,153 +219,10 @@ local function open_ui_with_tabs()
     end, { buffer = header_buf, nowait = true })
 end
 
-local function open_complex_ui()
-    -- Create a new tab (fullscreen)
-    vim.cmd("tabnew")
-
-    local win = require("snacks").win({
-        file = expanded_path,
-        width = 0,
-        height = 1,
-        zindex = 50,
-        border = "none",
-        relative = "editor",
-        bo = { modifiable = false },
-        keys = { q = "close" },
-        wo = {
-            wrap = true,
-            linebreak = true,
-        },
-    })
-
-    --   -- ────────────────────────────────────────────────
-    --   -- 1. HEADER BUFFER (single line at top)
-    --   -- ────────────────────────────────────────────────
-    --   local header_buf = vim.api.nvim_create_buf(false, true)
-    --   vim.api.nvim_win_set_buf(0, header_buf)
-    --   vim.bo[header_buf].buftype = "nofile"
-    --   vim.bo[header_buf].bufhidden = "wipe"
-    --   vim.bo[header_buf].modifiable = true
-    --   vim.wo.winfixheight = true
-    --   vim.cmd("resize 1") -- only one line tall
-    --
-    --   vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, { "🧭  My Plugin — Header" })
-    --
-    --   -- Optional highlight
-    --   vim.api.nvim_set_hl(0, "MyHeader", { fg = "#ffffff", bg = "#005f87", bold = true })
-    --   vim.api.nvim_buf_add_highlight(header_buf, -1, "MyHeader", 0, 0, -1)
-    --
-    --   -- ────────────────────────────────────────────────
-    --   -- 2. CONTENT AREA (split into columns)
-    --   -- ────────────────────────────────────────────────
-    --   -- Split horizontally (below header)
-    --   vim.cmd("belowright split")
-    --   local content_win = vim.api.nvim_get_current_win()
-    --   vim.cmd("resize " .. (vim.o.lines - 3)) -- leave room for header and cmdline
-    --
-    --   -- Left buffer
-    --   local left_buf = vim.api.nvim_create_buf(false, true)
-    --   vim.api.nvim_win_set_buf(content_win, left_buf)
-    --   vim.bo[left_buf].buftype = "nofile"
-    --   vim.bo[left_buf].bufhidden = "wipe"
-    --   vim.api.nvim_buf_set_lines(left_buf, 0, -1, false, {
-    --     "╔════════════════╗",
-    --     "║   Left Zone    ║",
-    --     "╚════════════════╝",
-    --   })
-    --
-    --   -- Create vertical split for the right zone
-    --   vim.cmd("vsplit")
-    --   local right_win = vim.api.nvim_get_current_win()
-    --   local right_buf = vim.api.nvim_create_buf(false, true)
-    --   vim.api.nvim_win_set_buf(right_win, right_buf)
-    --   vim.bo[right_buf].buftype = "nofile"
-    --   vim.bo[right_buf].bufhidden = "wipe"
-    --   vim.api.nvim_buf_set_lines(right_buf, 0, -1, false, {
-    --     "╔════════════════╗",
-    --     "║   Right Zone   ║",
-    --     "╚════════════════╝",
-    --   })
-    --
-    --   vim.cmd("wincmd =") -- balance columns
-    --
-    --   -- ────────────────────────────────────────────────
-    --   -- 3. Keymaps and behavior
-    --   -- ────────────────────────────────────────────────
-    --   local close_all = function()
-    --     vim.cmd("tabclose")
-    --   end
-    --   for _, buf in ipairs({ header_buf, left_buf, right_buf }) do
-    --     vim.keymap.set("n", "q", close_all, { buffer = buf, nowait = true })
-    --   end
-    --
-    --   -- Prevent accidental resizing of header
-    --   vim.api.nvim_create_autocmd("WinResized", {
-    --     callback = function()
-    --       -- ensure header stays 1 line tall
-    --       vim.cmd("wincmd t")
-    --       vim.cmd("resize 1")
-    --     end
-    --   })
-end
-
--- Open a full-screen plugin window (uses a tab)
-local function open_fullscreen()
-    -- Create a new tab
-    vim.cmd("tabnew")
-
-    -- Create a new buffer for your plugin
-    local buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_win_set_buf(0, buf)
-
-    -- Set some buffer options
-    vim.bo[buf].buftype = "nofile"
-    vim.bo[buf].bufhidden = "wipe"
-    vim.bo[buf].swapfile = false
-    vim.bo[buf].modifiable = true
-
-    -- Example content
-    vim.api.nvim_buf_set_lines(buf, 0, -1, false, {
-        "╔════════════════════════════════════════╗",
-        "║      Welcome to My Plugin Window       ║",
-        "╚════════════════════════════════════════╝",
-        "",
-        "Press q to close.",
-    })
-
-    -- Map `q` to close the tab
-    vim.keymap.set("n", "q", function()
-        vim.cmd("tabclose")
-    end, { buffer = buf, nowait = true })
-end
-
 function M.run_toggle_vaultview()
     dprint("TOTOMONGARS")
 
-    -- open_complex_ui()
     open_ui_with_tabs()
-    -- local list_win = Snacks.win({
-    --     width = cfg.width,
-    --     height = list_height,
-    --     zindex = cfg.zindex,
-    --     -- border = cfg.border,
-    --     border = "rounded",
-    --     relative = "editor",
-    --     row = cfg.row, -- align all lists at top of view_win
-    --     col = cfg.col, -- at creation, put them all at the top left. will be recomputed in render function
-    --     show = true,
-    --     enter = false,
-    --     backdrop = false,
-    --     focusable = true,
-    --     keys = set_keymap(lself, class_name),
-    --     bo = { modifiable = true },
-    --     -- bo = { modifiable = true, filetype = filetype },
-    -- })
-    -- list_win:hide()
-
-    -- local runner = require("vaultview._commands.open.runner")
-    --
-    -- runner.run_toggle()
 end
 
 return M
