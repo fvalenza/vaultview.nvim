@@ -113,6 +113,8 @@ end
 local function render_page(header_buf, pages, active_page, start_line)
     vim.bo[header_buf].modifiable = true
 
+    local win_width = vim.api.nvim_win_get_width(0)
+
     -- Build the text with separators
     local page_texts = {}
     local highlights = {}
@@ -131,41 +133,57 @@ local function render_page(header_buf, pages, active_page, start_line)
         table.insert(highlights, {
             group = hl_group,
             start_col = col,
-            end_col = col + #name, -- only the name, not the separator
+            end_col = col + #name, -- highlight just the page name
         })
 
         col = col + len
     end
 
     local pages_line = table.concat(page_texts)
-    local line = "<S-h>  <--  " .. pages_line .. "   --> <S-l>"
+    local prefix = "<S-h>  <--  "
+    local suffix = "  -->  <S-l>"
+    local full_text = prefix .. pages_line .. suffix
+
+    -- Center the text
+    local padding = math.floor((win_width - #full_text) / 2)
+    if padding < 0 then
+        padding = 0
+    end
+    local padded_line = string.rep(" ", padding) .. full_text
 
     local lines = {
-        line,
-        string.rep("─", vim.api.nvim_win_get_width(0)),
+        padded_line,
+        string.rep("─", win_width),
     }
 
-    -- Replace only the two lines of the page section
     vim.api.nvim_buf_set_lines(header_buf, start_line, -1, false, lines)
 
-    -- Apply highlights
-    local prefix_len = #"<S-h>  <--  "  -- offset before the first page label
+    -- Apply highlights (offset by padding + prefix)
+    local prefix_len = padding + #prefix
     for _, h in ipairs(highlights) do
         vim.api.nvim_buf_add_highlight(
             header_buf,
             -1,
             h.group,
-            start_line, -- apply highlight to the first page line
+            start_line,
             prefix_len + h.start_col,
             prefix_len + h.end_col
         )
     end
 
+    vim.api.nvim_buf_add_highlight(header_buf, -1, "TabSeparator", 5, 0, -1)
     vim.bo[header_buf].modifiable = false
 end
+local highlights = require("vaultviewui._ui.highlights")
+
+local userhl = {
+    TabActive = "String",
+}
 
 local function open_ui_with_tabs()
     vim.cmd("tabnew")
+
+    highlights.apply(userhl)
 
     -- Header buffer
     local header_buf = vim.api.nvim_create_buf(false, true)
@@ -180,16 +198,47 @@ local function open_ui_with_tabs()
     vim.wo.wrap = false
 
     -- Create highlight groups
-    vim.api.nvim_set_hl(0, "TabActive", { fg = "#ffffff", bg = "NONE", bold = true })
-    vim.api.nvim_set_hl(0, "TabInactive", { fg = "#aaaaaa", bg = "NONE" })
-    vim.api.nvim_set_hl(0, "TabSeparator", { fg = "#5f5f5f" })
-
-    vim.api.nvim_set_hl(0, "PageActive", { fg = "#ffffff", bold = true })
-    vim.api.nvim_set_hl(0, "PageInactive", { fg = "#808080" })
+    -- vim.api.nvim_set_hl(0, "TabActive", { fg = "#ffffff", bg = "NONE", bold = true })
+    -- vim.api.nvim_set_hl(0, "TabInactive", { fg = "#aaaaaa", bg = "NONE" })
+    -- vim.api.nvim_set_hl(0, "TabSeparator", { fg = "#5f5f5f" })
+    --
+    -- vim.api.nvim_set_hl(0, "PageActive", { fg = "#ffffff", bold = true })
+    -- vim.api.nvim_set_hl(0, "PageInactive", { fg = "#808080" })
 
     -- Our “tabs”
     local tabs = { "Overview", "Details", "Logs", "_pad_", "Settings" }
-    local pages = { "Page 1", "Page 2", "Page 3" }
+    local pages = {
+        "Page 1",
+        "Page 2",
+        "Page 3",
+        "Page 4",
+        "Page 5",
+        "Page 6",
+        "Page 7",
+        "Page 8",
+        "Page 9",
+        "Page 10",
+        "Page 11",
+        "Page 12",
+        "Page 13",
+        "Page 14",
+        "Page 15",
+        "Page 16",
+        "Page 17",
+        "Page 18",
+        "Page 19",
+        "Page 20",
+        "Page 21",
+        "Page 22",
+        "Page 23",
+        "Page 24",
+        "Page 25",
+        "Page 26",
+        "Page 27",
+        "Page 28",
+        "Page 29",
+        "Page 30",
+    }
 
     local current_tab = 1
     local current_page = 1
