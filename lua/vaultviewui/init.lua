@@ -205,40 +205,8 @@ local function open_ui_with_tabs()
     -- vim.api.nvim_set_hl(0, "PageActive", { fg = "#ffffff", bold = true })
     -- vim.api.nvim_set_hl(0, "PageInactive", { fg = "#808080" })
 
-    -- Our “tabs”
     local tabs = { "Overview", "Details", "Logs", "_pad_", "Settings" }
-    local pages = {
-        "Page 1",
-        "Page 2",
-        "Page 3",
-        "Page 4",
-        "Page 5",
-        "Page 6",
-        "Page 7",
-        "Page 8",
-        "Page 9",
-        "Page 10",
-        "Page 11",
-        "Page 12",
-        "Page 13",
-        "Page 14",
-        "Page 15",
-        "Page 16",
-        "Page 17",
-        "Page 18",
-        "Page 19",
-        "Page 20",
-        "Page 21",
-        "Page 22",
-        "Page 23",
-        "Page 24",
-        "Page 25",
-        "Page 26",
-        "Page 27",
-        "Page 28",
-        "Page 29",
-        "Page 30",
-    }
+    local pages = { "Page 1", "Page 2", "Page 3", }
 
     local current_tab = 1
     local current_page = 1
@@ -268,10 +236,16 @@ local function open_ui_with_tabs()
     end, { buffer = header_buf, nowait = true })
 end
 
-function M.run_toggle_vaultview()
-    dprint("TOTOMONGARS")
+-- function M.run_toggle_vaultview()
+--     dprint("TOTOMONGARS")
+--
+--     open_ui_with_tabs()
+-- end
 
-    open_ui_with_tabs()
+function M.run_toggle_vaultview()
+    local runner = require("vaultviewui._commands.open.runner")
+
+    runner.run_toggle()
 end
 
 return M

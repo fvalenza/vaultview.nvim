@@ -14,6 +14,25 @@ M.floating_window = {
     backdrop = false,
 }
 
+M.header_win = {
+    width = vim.o.columns,
+    height = 6,
+    zindex = 10,
+    -- backdrop = false,
+    row = 0,
+    col = 0,
+}
+
+M.view_win = {
+    width = vim.o.columns,
+    height = vim.o.lines - M.header_win.height,
+    zindex = 10,
+    -- backdrop = false,
+    row = M.header_win.height + 1,
+    col = 0,
+}
+
+
 M.boards_win = {
     -- width = vim.o.columns,
     width = 0,
