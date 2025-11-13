@@ -3,37 +3,53 @@ VaultView.__index = VaultView
 
 local Constants = require("vaultviewui._ui.constants")
 local wf = require("vaultviewui._core.windowfactory")
+local parsers = require("vaultviewui._core.parsers")
+local View = require("vaultviewui._core.view")
+local layouts = require("vaultviewui._core.view.layouts")
 
 function VaultView.new(config)
+    -- TODO to put at plugin loading the creation of highlight groups
+    local highlights = require("vaultviewui._ui.highlights")
+    highlights.apply(userhl)
+
     -- function VaultView.new()
     local self = setmetatable({}, VaultView)
 
+    self.config = config
 
-    self.header_win = wf.create_window({
-        width = Constants.header_win.width,
-        height = Constants.header_win.height,
-        zindex = Constants.header_win.zindex,
-        border = "none",
-        relative = "editor",
-        row = 0,
-        col = 0,
-        text = "header_win",
-        show = true,
-        focusable = true,
-    })
+    self.header_win, self.view_win = wf.create_header_and_view_windows()
 
-    self.view_win = wf.create_window({
-        width = Constants.view_win.width,
-        height = Constants.view_win.height,
-        zindex = Constants.view_win.zindex,
-        border = "none",
-        relative = "editor",
-        row = Constants.view_win.row, -- TODO due to tabline the +1...
-        col = 0,
-        text = "view_win",
-        show = true,
-        focusable = true,
-    })
+    self.boards_names = {}
+    self.active_board_index = 0
+    self.VaultData = {
+        boards = {},
+    }
+
+    for _, board_config in ipairs(config.boards) do
+        self.VaultData.boards.pages = {}
+        local board_name = board_config.name or "board_" .. tostring(#self.boards_names + 1)
+        table.insert(self.boards_names, board_name)
+
+        local boardData = parsers(board_config.parser)(config.vault, config.user_commands, board_config)
+        local dataBoard = {
+            title = board_name,
+            pages = boardData,
+        }
+        table.insert(self.VaultData.boards, dataBoard)
+    end
+    dprint(self.VaultData)
+
+    self.views = {}
+    for i, board_config in ipairs(config.boards) do
+        local board_layout_config = board_config.viewlayout
+        local viewlayout = type(board_layout_config) == "string" and layouts[board_layout_config]
+            or error("Invalid layout type for " .. self.boards_names[i])
+        self.views[i] = View.new(self.VaultData, i, viewlayout, self.header_win)
+    end
+
+    if config.boards and #config.boards > 0 then
+        self.active_board_index = 4 -- WARN: set to 4 for debug only
+    end
 
     return self
 end
@@ -44,8 +60,7 @@ function VaultView:show()
 end
 
 local build_tabs = function(board_names, width_available, index_active_board)
-
-    local activeBoardName= board_names[index_active_board]
+    local activeBoardName = board_names[index_active_board]
 
     local total_str_w = -1
     for _, v in ipairs(board_names) do
@@ -103,7 +118,10 @@ local build_tabs = function(board_names, width_available, index_active_board)
 end
 
 --- Render the header buffer
-local function render_header(win, board_names, active_board_index)
+function VaultView:render_board_selection()
+    local win = self.header_win
+    local board_names = vim.deepcopy(self.boards_names)
+    local active_board_index = self.active_board_index
     local buf = win.buf
     vim.bo[buf].modifiable = true
 
@@ -112,8 +130,8 @@ local function render_header(win, board_names, active_board_index)
     local dims = win:size()
     local win_width = dims.width
 
+    board_names = vim.list_extend(board_names, { "_pad_", "Settings" })
     local lines, highlights = build_tabs(board_names, win_width, active_board_index)
-
     local flat_lines = {}
 
     for _, row in ipairs(lines) do
@@ -146,99 +164,17 @@ local function render_header(win, board_names, active_board_index)
     return #flat_lines -- number of header lines (so we know where to start the next section)
 end
 
-local function render_page(win, pages, active_page, start_line)
-    local buf = win.buf
-    vim.bo[buf].modifiable = true
-
-    local dims = win:size()
-    local win_width = dims.width
-
-    -- Build the text with separators
-    local page_texts = {}
-    local highlights = {}
-    local col = 0
-
-    for i, name in ipairs(pages) do
-        local label = name
-        if i < #pages then
-            label = label .. " | "
-        end
-
-        table.insert(page_texts, label)
-
-        local len = #label
-        local hl_group = (i == active_page) and "PageActive" or "PageInactive"
-        table.insert(highlights, {
-            group = hl_group,
-            start_col = col,
-            end_col = col + #name, -- highlight just the page name
-        })
-
-        col = col + len
-    end
-
-    local pages_line = table.concat(page_texts)
-    local prefix = "<S-h>  <--  "
-    local suffix = "  -->  <S-l>"
-    local full_text = prefix .. pages_line .. suffix
-
-    -- Center the text
-    local padding = math.floor((win_width - #full_text) / 2)
-    if padding < 0 then
-        padding = 0
-    end
-    local padded_line = string.rep(" ", padding) .. full_text
-
-    local lines = {
-        padded_line,
-        string.rep("─", win_width),
-    }
-
-    vim.api.nvim_buf_set_lines(buf, start_line, -1, false, lines)
-
-    -- Apply highlights (offset by padding + prefix)
-    local prefix_len = padding + #prefix
-    for _, h in ipairs(highlights) do
-        vim.api.nvim_buf_add_highlight(
-            buf,
-            -1,
-            h.group,
-            start_line,
-            prefix_len + h.start_col,
-            prefix_len + h.end_col
-        )
-    end
-
-    vim.api.nvim_buf_add_highlight(buf, -1, "TabSeparator", 5, 0, -1)
-    vim.bo[buf].modifiable = false
-end
-
-function VaultView:header_win_render()
-    local highlights = require("vaultviewui._ui.highlights")
-    highlights.apply(userhl)
-
-    local board_names = { "Overview", "Details", "Logs", "_pad_", "Settings" }
-    local pages = { "Page 1", "Page 2", "Page 3" }
-
-    local current_board_index = 1
-    local current_page = 1
-
-    -- Draw header and remember where the page section begins
-    local header_line_count = render_header(self.header_win, board_names, current_board_index)
-
-    -- Draw initial page section
-    render_page(self.header_win, pages, current_page, header_line_count)
-end
-
 function VaultView:render()
-    self:header_win_render()
+    local page_selection_line = self:render_board_selection()
+    self.views[self.active_board_index]:render(page_selection_line)
+    -- local header_line_count = render_board_selection(self.header_win, board_names, current_board_index)
 
     self.header_win:show()
     self.view_win:show()
 end
 
 function VaultView:hide()
-
+    self.views[self.active_board_index]:hide()
     if self.header_win then
         self.header_win:hide()
     end
@@ -249,19 +185,55 @@ function VaultView:hide()
     self.isDisplayed = false
 end
 
-function VaultView:destroy()
+-- function VaultView:destroy()
+--     -- Close the windows first
+--     if self.header_win then
+--         self.header_win:close()
+--         self.header_win = nil
+--     end
+--     if self.view_win then
+--         self.view_win:close()
+--         self.view_win = nil
+--     end
+--
+--     self.isDisplayed = false
+-- end
 
-    -- Close the windows first
-    if self.header_win then
-        self.header_win:close()
-        self.header_win = nil
-    end
-    if self.view_win then
-        self.view_win:close()
-        self.view_win = nil
-    end
+function VaultView:focus_first_list()
+    self.views[self.active_board_index]:focus_first_list()
+end
+function VaultView:focus_previous_list()
+    self.views[self.active_board_index]:focus_previous_list()
+end
+function VaultView:focus_center_list()
+    self.views[self.active_board_index]:focus_center_list()
+end
+function VaultView:focus_next_list()
+    self.views[self.active_board_index]:focus_next_list()
+end
+function VaultView:focus_last_list()
+    self.views[self.active_board_index]:focus_last_list()
+end
 
-    self.isDisplayed = false
+function VaultView:focus_first_entry()
+    self.views[self.active_board_index]:focus_first_entry()
+end
+function VaultView:focus_previous_entry()
+    self.views[self.active_board_index]:focus_previous_entry()
+end
+function VaultView:focus_next_entry()
+    self.views[self.active_board_index]:focus_next_entry()
+end
+function VaultView:focus_last_entry()
+    self.views[self.active_board_index]:focus_last_entry()
+end
+
+function VaultView:open_in_nvim()
+    self.views[self.active_board_index]:open_in_nvim()
+end
+
+function VaultView:open_in_obsidian()
+    self.views[self.active_board_index]:open_in_obsidian(self.config.vault.name) -- TODO if here i dont give self.config.vault but self.config.vault.name, why in parsers i give vault and not vault.path ?
 end
 
 return VaultView

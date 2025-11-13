@@ -4,248 +4,141 @@
 --- package must get a new **major** version.
 ---
 
+local logging = require("mega.logging")
 local configuration = require("vaultviewui._core.configuration")
+local vaultview = require("vaultviewui._core.vaultview")
+
+local _LOGGER = logging.get_logger("vaultviewui.init")
 
 local M = {}
+M.context = {}
 
 configuration.initialize_data_if_needed()
 
-local build_tabs = function(tabs, width_available, activeTab)
-    dprint("Available width: " .. width_available)
-    local win_width = vim.api.nvim_win_get_width(0)
-    dprint("Window width: " .. win_width)
+function M.run_open()
+    M.run_toggle()
+end
 
-    local total_str_w = -1
-    for _, v in ipairs(tabs) do
-        if v ~= "_pad_" then
-            total_str_w = total_str_w + vim.api.nvim_strwidth(v) + 5
-        end
-    end
-    dprint("Total string width: " .. total_str_w)
+function M.run_toggle()
+    _LOGGER:debug("Toggling board")
 
-    local lines = { {}, {}, {} }
-    local highlights = {}
+    local plugin_configuration = configuration.resolve_data(vim.g.vaultview_configuration)
 
-    local datalen = #tabs
-    local colpos = { 0, 0, 0 } -- track byte columns per line
-
-    for i, v in ipairs(tabs) do
-        if v == "_pad_" then
-            local emptychar = string.rep(" ", width_available - total_str_w)
-            for l = 1, 3 do
-                table.insert(lines[l], { emptychar })
-                colpos[l] = colpos[l] + #emptychar
-            end
-            dprint("Inserted padding of length " .. #emptychar)
+    if not M.context.vv then
+        local vv = vaultview.new(plugin_configuration)
+        M.context.vv = vv
+        M.context.vv:show()
+    else
+        if not M.context.vv.isDisplayed then
+            M.context.vv:show()
         else
-            local hchar = string.rep("─", vim.api.nvim_strwidth(v) + 2)
-            local row_text = {
-                "┌" .. hchar .. "┐",
-                "│ " .. v .. " │",
-                "└" .. hchar .. "┘",
-            }
-            local hl = (activeTab == v and "TabActive") or "TabInactive"
-
-            for l = 1, 3 do
-                table.insert(lines[l], { row_text[l] })
-                local byte_len = #row_text[l]
-
-                table.insert(highlights, {
-                    group = hl,
-                    line = l - 1, -- 0-based for nvim_buf_add_highlight
-                    start_col = colpos[l],
-                    end_col = colpos[l] + byte_len,
-                })
-
-                colpos[l] = colpos[l] + byte_len
-            end
-
-            if i ~= datalen then
-                for l = 1, 3 do
-                    table.insert(lines[l], { " " })
-                    colpos[l] = colpos[l] + 1
-                end
-            end
+            M.context.vv:hide()
         end
     end
-
-    return lines, highlights
 end
 
---- Render the header buffer
-local function render_header(header_buf, tabs, current_tab)
-    vim.bo[header_buf].modifiable = true
-    vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, {})
-
-    local lines, highlights = build_tabs(tabs, vim.o.columns, tabs[current_tab])
-
-    local flat_lines = {}
-
-    for _, row in ipairs(lines) do
-        local str_parts = {}
-        for _, cell in ipairs(row) do
-            table.insert(str_parts, cell[1]) -- extract the actual text
-        end
-        table.insert(flat_lines, table.concat(str_parts))
+--TODO destroy context
+function M.run_close()
+    if M.context.vv then
+        M.context.vv:hide()
+        M.context.vv = nil
     end
-
-    table.insert(flat_lines, string.rep("─", vim.o.columns))
-
-    vim.api.nvim_buf_set_lines(header_buf, 0, -1, false, flat_lines)
-
-    -- Apply highlights
-    for _, h in ipairs(highlights) do
-        vim.api.nvim_buf_add_highlight(
-            header_buf,
-            -1,
-            h.group,
-            h.line, -- now line-specific
-            h.start_col,
-            h.end_col
-        )
-    end
-
-    vim.api.nvim_buf_add_highlight(header_buf, -1, "TabSeparator", 3, 0, -1)
-    vim.bo[header_buf].modifiable = false
-    return #flat_lines -- number of header lines (so we know where to start the next section)
 end
 
-local function render_page(header_buf, pages, active_page, start_line)
-    vim.bo[header_buf].modifiable = true
-
-    local win_width = vim.api.nvim_win_get_width(0)
-
-    -- Build the text with separators
-    local page_texts = {}
-    local highlights = {}
-    local col = 0
-
-    for i, name in ipairs(pages) do
-        local label = name
-        if i < #pages then
-            label = label .. " | "
-        end
-
-        table.insert(page_texts, label)
-
-        local len = #label
-        local hl_group = (i == active_page) and "PageActive" or "PageInactive"
-        table.insert(highlights, {
-            group = hl_group,
-            start_col = col,
-            end_col = col + #name, -- highlight just the page name
-        })
-
-        col = col + len
+function M.run_hide()
+    if M.context.vv then
+        M.context.vv:hide()
     end
-
-    local pages_line = table.concat(page_texts)
-    local prefix = "<S-h>  <--  "
-    local suffix = "  -->  <S-l>"
-    local full_text = prefix .. pages_line .. suffix
-
-    -- Center the text
-    local padding = math.floor((win_width - #full_text) / 2)
-    if padding < 0 then
-        padding = 0
-    end
-    local padded_line = string.rep(" ", padding) .. full_text
-
-    local lines = {
-        padded_line,
-        string.rep("─", win_width),
-    }
-
-    vim.api.nvim_buf_set_lines(header_buf, start_line, -1, false, lines)
-
-    -- Apply highlights (offset by padding + prefix)
-    local prefix_len = padding + #prefix
-    for _, h in ipairs(highlights) do
-        vim.api.nvim_buf_add_highlight(
-            header_buf,
-            -1,
-            h.group,
-            start_line,
-            prefix_len + h.start_col,
-            prefix_len + h.end_col
-        )
-    end
-
-    vim.api.nvim_buf_add_highlight(header_buf, -1, "TabSeparator", 5, 0, -1)
-    vim.bo[header_buf].modifiable = false
-end
-local highlights = require("vaultviewui._ui.highlights")
-
-local userhl = {
-    TabActive = "String",
-}
-
-local function open_ui_with_tabs()
-    vim.cmd("tabnew")
-
-    highlights.apply(userhl)
-
-    -- Header buffer
-    local header_buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_win_set_buf(0, header_buf)
-
-    -- Window-local options for a clean header
-    vim.wo.number = false
-    vim.wo.relativenumber = false
-    vim.wo.signcolumn = "no"
-    vim.wo.foldcolumn = "0"
-    vim.wo.cursorline = false
-    vim.wo.wrap = false
-
-    -- Create highlight groups
-    -- vim.api.nvim_set_hl(0, "TabActive", { fg = "#ffffff", bg = "NONE", bold = true })
-    -- vim.api.nvim_set_hl(0, "TabInactive", { fg = "#aaaaaa", bg = "NONE" })
-    -- vim.api.nvim_set_hl(0, "TabSeparator", { fg = "#5f5f5f" })
-    --
-    -- vim.api.nvim_set_hl(0, "PageActive", { fg = "#ffffff", bold = true })
-    -- vim.api.nvim_set_hl(0, "PageInactive", { fg = "#808080" })
-
-    local tabs = { "Overview", "Details", "Logs", "_pad_", "Settings" }
-    local pages = { "Page 1", "Page 2", "Page 3", }
-
-    local current_tab = 1
-    local current_page = 1
-
-    -- Draw header and remember where the page section begins
-    local header_line_count = render_header(header_buf, tabs, current_tab)
-
-    -- Draw initial page section
-    render_page(header_buf, pages, current_page, header_line_count)
-
-    -- Navigation keys to switch pages
-    vim.keymap.set("n", "<S-h>", function()
-        dprint("Previous page")
-        current_page = (current_page - 2) % #pages + 1
-        render_page(header_buf, pages, current_page, header_line_count)
-    end, { buffer = header_buf, nowait = true })
-
-    vim.keymap.set("n", "<S-l>", function()
-        dprint("Next page")
-        current_page = (current_page % #pages) + 1
-        render_page(header_buf, pages, current_page, header_line_count)
-    end, { buffer = header_buf, nowait = true })
-
-    -- Map `q` to close the tab
-    vim.keymap.set("n", "q", function()
-        vim.cmd("tabclose")
-    end, { buffer = header_buf, nowait = true })
 end
 
--- function M.run_toggle_vaultview()
---     dprint("TOTOMONGARS")
---
---     open_ui_with_tabs()
--- end
+function M.focus_first_list()
+    if M.context.vv then
+        M.context.vv:focus_first_list()
+    end
+end
 
-function M.run_toggle_vaultview()
-    local runner = require("vaultviewui._commands.open.runner")
+function M.focus_previous_list()
+    if M.context.vv then
+        M.context.vv:focus_previous_list()
+    end
+end
 
-    runner.run_toggle()
+function M.focus_center_list()
+    if M.context.vv then
+        M.context.vv:focus_center_list()
+    end
+end
+
+function M.focus_next_list()
+    if M.context.vv then
+        M.context.vv:focus_next_list()
+    end
+end
+
+function M.focus_last_list()
+    if M.context.vv then
+        M.context.vv:focus_last_list()
+    end
+end
+
+function M.focus_first_entry()
+    if M.context.vv then
+        M.context.vv:focus_first_entry()
+    end
+end
+
+function M.focus_previous_entry()
+    if M.context.vv then
+        M.context.vv:focus_previous_entry()
+    end
+end
+
+function M.focus_next_entry()
+    if M.context.vv then
+        M.context.vv:focus_next_entry()
+    end
+end
+
+function M.focus_last_entry()
+    if M.context.vv then
+        M.context.vv:focus_last_entry()
+    end
+end
+
+function M.open_in_neovim()
+    if M.context.vv then
+        M.context.vv:open_in_nvim()
+    end
+end
+
+function M.open_in_obsidian()
+    if M.context.vv then
+        M.context.vv:open_in_obsidian()
+    end
+end
+
+function M.run_open_help()
+    -- Get the absolute path to this Lua file
+    local current_file = debug.getinfo(1, "S").source:sub(2)
+    local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/_doc/help_page.md" -- go up and in _doc
+    -- print("Help path is: " .. help_path)
+    vim.notify("Opening help page..." .. help_path, vim.log.levels.INFO)
+
+    -- Open help window with Snacks
+    local help_win = Snacks.win({
+        file = help_path,
+        width = 0.8,
+        height = 0.8,
+        zindex = 60,
+        border = "rounded",
+        relative = "editor",
+        bo = { modifiable = false, filetype = "markdown" },
+        keys = { q = "close" },
+        wo = {
+            wrap = true,
+            linebreak = true,
+        },
+    })
 end
 
 return M

@@ -23,10 +23,10 @@ end
 cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
 
 vim.keymap.set("n", "<Plug>(Vaultviewui)", function()
-    local configuration = require("vaultviewui._core.configuration")
+    -- local configuration = require("vaultviewui._core.configuration")
     local vaultviewui = require("vaultviewui")
+    --
+    -- configuration.initialize_data_if_needed()
 
-    configuration.initialize_data_if_needed()
-
-    vaultviewui.run_toggle_vaultview()
+    vaultviewui.run_toggle()
 end, { desc = "Open your vaultviewui" })
