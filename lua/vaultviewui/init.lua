@@ -137,7 +137,7 @@ end
 
 function M.open_in_neovim()
     if M.context.vv then
-        M.context.vv:open_in_nvim()
+        M.context.vv:open_in_neovim()
     end
 end
 

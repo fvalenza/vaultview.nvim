@@ -280,8 +280,8 @@ function VaultView:focus_last_entry()
     self.views[self.active_board_index]:focus_last_entry()
 end
 
-function VaultView:open_in_nvim()
-    self.views[self.active_board_index]:open_in_nvim()
+function VaultView:open_in_neovim()
+    self.views[self.active_board_index]:open_in_neovim()
 end
 
 function VaultView:open_in_obsidian()

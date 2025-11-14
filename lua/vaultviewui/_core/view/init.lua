@@ -311,7 +311,7 @@ function View:focus_last_entry()
 end
 
 
-function View:open_in_nvim()
+function View:open_in_neovim()
     if self.state.focused.list == 0 or self.state.focused.entry == 0 then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
         return

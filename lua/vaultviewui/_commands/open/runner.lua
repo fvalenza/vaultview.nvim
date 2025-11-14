@@ -54,16 +54,6 @@ function M.render()
     end
 end
 
-function M.refresh()
-    -- DISGUSTING HACK -> close and open again to force refresh of data
-    _LOGGER:debug("Refresh board")
-
-    if M.context.vv then
-        M.run_close()
-        M.run_open()
-        M:render()
-    end
-end
 
 function M.run_go_to_board(index)
     _LOGGER:debug("Go to board: " .. tostring(index))
