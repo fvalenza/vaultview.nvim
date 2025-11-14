@@ -108,17 +108,17 @@ local function merge_content_selectors(user_selectors)
     return merged
 end
 
-function ParserTrait.findContentInEntryFile(path, user_commands, config)
+function ParserTrait.findContentInEntryFile(path, user_commands, boardConfig)
     user_commands = user_commands or {}
-    config = config or {}
+    boardConfig = boardConfig or {}
 
     -- Retrieve the grep command template between the user-defined and default ones
     local grep_commands = merge_content_selectors(user_commands.content_selectors)
-    local mode = config.input_selector or "lvl2headings_noexcalidraw_awk" -- default to awk version
+    local mode = boardConfig.content_selector or "lvl2headings_noexcalidraw_awk" -- default to awk version
     local template = grep_commands[mode]
 
     if not template then
-        error("Unknown input_selector: " .. tostring(mode))
+        error("Unknown content_selector: " .. tostring(mode))
     end
 
     -- Build and run the shell command

@@ -23,7 +23,9 @@ end
 
 function M.setNewContent(window, lines)
     if window and vim.api.nvim_buf_is_valid(window.buf) then
+        vim.bo[window.buf].modifiable = true
         vim.api.nvim_buf_set_lines(window.buf, 0, -1, false, lines)
+        vim.bo[window.buf].modifiable = true
     end
 end
 
@@ -55,7 +57,7 @@ function M.create_header_and_view_windows()
         zindex = Constants.view_win.zindex,
         border = "none",
         relative = "editor",
-        row = Constants.view_win.row, -- TODO due to tabline the +1...
+        row = Constants.view_win.row,
         col = 0,
         text = "",
         show = true,

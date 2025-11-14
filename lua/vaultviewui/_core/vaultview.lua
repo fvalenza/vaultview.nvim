@@ -44,7 +44,7 @@ function VaultView.new(config)
         local board_layout_config = board_config.viewlayout
         local viewlayout = type(board_layout_config) == "string" and layouts[board_layout_config]
             or error("Invalid layout type for " .. self.boards_names[i])
-        self.views[i] = View.new(self.VaultData, i, viewlayout, self.header_win)
+        self.views[i] = View.new(self.VaultData, i, board_config, viewlayout, self.header_win)
     end
 
     if config.boards and #config.boards > 0 then
@@ -286,6 +286,10 @@ end
 
 function VaultView:open_in_obsidian()
     self.views[self.active_board_index]:open_in_obsidian(self.config.vault.name) -- TODO if here i dont give self.config.vault but self.config.vault.name, why in parsers i give vault and not vault.path ?
+end
+
+function VaultView:refresh_focused_entry_content()
+    self.views[self.active_board_index]:refresh_focused_entry_content(self.config.user_commands) -- TODO: I should not have not do it multiple times ? find better way to have this config once (initialize_Data_if_needed...)
 end
 
 return VaultView

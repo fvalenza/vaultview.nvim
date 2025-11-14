@@ -147,6 +147,12 @@ function M.open_in_obsidian()
     end
 end
 
+function M.refresh_focused_entry_content()
+    if M.context.vv then
+        M.context.vv:refresh_focused_entry_content()
+    end
+end
+
 function M.run_open_help()
     -- Get the absolute path to this Lua file
     local current_file = debug.getinfo(1, "S").source:sub(2)

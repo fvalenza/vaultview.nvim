@@ -3,10 +3,11 @@ View.__index = View
 
 local wf = require("vaultviewui._core.windowfactory")
 
-function View.new(VaultData, board_idx, layout, header_win)
+function View.new(VaultData, board_idx, board_config, layout, header_win)
     local self = setmetatable({}, View)
     self.VaultData = VaultData
     self.board_idx = board_idx
+    self.board_config = board_config
     self.pages_names, self.viewWindows = wf.create_board_view_windows(VaultData, board_idx, layout)
     self.header_win = header_win
     self.state = {
@@ -349,8 +350,7 @@ function View:open_in_nvim()
         bo = { modifiable = true },
         keys = { q = "close" },
         on_close = function()
-            -- require("vaultviewui._commands.open.runner").refresh() -- HACK to refresh whole board (and data parsing) instead of just the updated card
-            -- TODO implement a way to just refresh the card that was edited
+            require("vaultviewui").refresh_focused_entry_content()
         end,
         wo = {
             wrap = true,
@@ -379,6 +379,28 @@ function View:open_in_obsidian(vaultname)
     local cmd = string.format("!xdg-open 'obsidian://open?vault=%s&file=%s'", vaultname, title)
     -- print("Executing command:", cmd)
     vim.cmd(cmd)
+end
+
+function View:refresh_focused_entry_content(user_commands)
+    local entry = self:retrieve_focused_entry()
+    if not entry then
+        return
+    end
+
+    local reparsed_content = require("vaultviewui._core.parsers.parsertrait").findContentInEntryFile(
+        entry.filepath,
+        user_commands,
+        self.board_config
+    )
+    local new_content = {}
+
+    for _, line in ipairs(reparsed_content) do
+        table.insert(new_content, "- " .. line)
+    end
+    entry.content = new_content
+    local focused_window = self:getFocusedWindow()
+
+    wf.setNewContent(focused_window, new_content)
 end
 
 return View
