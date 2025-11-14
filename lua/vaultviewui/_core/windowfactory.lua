@@ -158,28 +158,4 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
     return pages_names, windows
 end
 
-local function set_keymap(layout, class_name)
-    local map = {}
-
-    for k, v in pairs(Keymaps.generic) do
-        map[k] = v
-    end
-
-
-    return map
-end
-
--- local function set_keymap(layout, class_name)
---     local map = {}
---
---     for k, v in pairs(Keymaps.generic) do
---         map[k] = v
---     end
---
---     for k, v in pairs(Keymaps[class_name]) do
---         map[k] = { function() v[1](layout) end, mode = v.mode, noremap = v.noremap, nowait = v.nowait }
---     end
---
---     return map
--- end
 return M

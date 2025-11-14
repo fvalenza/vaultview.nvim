@@ -65,24 +65,6 @@ function ViewLayoutTrait:close(viewWindows, viewState)
 end
 
 
-local function set_keymap(layout, class_name)
-    local map = {}
-
-    for k, v in pairs(Keymaps.generic) do
-        map[k] = v
-    end
-
-    -- print("Class name in set_list_keymap:", class_name)
-    -- print("Keymaps:" .. vim.inspect(Keymaps))
-
-    -- print(vim.inspect(Keymaps[class_name]))
-
-    for k, v in pairs(Keymaps[class_name]) do
-        map[k] = { function() v[1](layout) end, mode = v.mode, noremap = v.noremap, nowait = v.nowait }
-    end
-
-    return map
-end
 
 
 

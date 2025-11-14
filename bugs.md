@@ -1,0 +1,1 @@
+- If changing entry by clicking on the window, no update of focused_index is done
