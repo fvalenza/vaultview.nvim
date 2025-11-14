@@ -171,8 +171,12 @@ function View:render_page_selection(start_line)
     vim.api.nvim_buf_add_highlight(buf, -1, "TabSeparator", 5, 0, -1)
     vim.bo[buf].modifiable = false
 end
+
 function View:render(page_selection_line)
-    self:render_page_selection(page_selection_line)
+    if page_selection_line ~= nil then
+        self.page_selection_line = page_selection_line
+    end
+    self:render_page_selection(self.page_selection_line)
     self.layout:render(self.VaultData.boards[self.board_idx], self.viewWindows, self.state)
     self:focus()
 end
@@ -228,6 +232,24 @@ function View:recompute_focused_entry()
     else
         return 1
     end
+end
+
+function View:previous_page()
+    self:hide()
+    self.state.focused.page = self.state.focused.page - 1
+    if self.state.focused.page < 1 then
+        self.state.focused.page = #self.viewWindows.pages
+    end
+    self:render()
+end
+
+function View:next_page()
+    self:hide()
+    self.state.focused.page = self.state.focused.page + 1
+    if self.state.focused.page > #self.viewWindows.pages then
+        self.state.focused.page = 1
+    end
+    self:render()
 end
 
 function View:focus_first_list()
@@ -304,7 +326,6 @@ function View:retrieve_focused_entry()
 end
 
 function View:open_in_nvim()
-
     local entry = self:retrieve_focused_entry()
     if not entry then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
@@ -338,9 +359,7 @@ function View:open_in_nvim()
     })
 end
 
-
 function View:open_in_obsidian(vaultname)
-
     local focused_entry = self:retrieve_focused_entry()
     if not focused_entry then
         -- vim.notify("No focused focused_entry to open", vim.log.levels.WARN)

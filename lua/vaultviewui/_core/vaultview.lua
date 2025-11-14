@@ -48,7 +48,7 @@ function VaultView.new(config)
     end
 
     if config.boards and #config.boards > 0 then
-        self.active_board_index = 4 -- WARN: set to 4 for debug only
+        self.active_board_index = config.initial_board_idx or 1
     end
 
     return self
@@ -198,6 +198,58 @@ end
 --
 --     self.isDisplayed = false
 -- end
+
+function VaultView:goto_board(index)
+    if index == self.active_board_index then
+        return
+    end
+
+    if index >= 1 and index <= #self.boards_names then
+        self:hide()
+        self.active_board_index = index
+        self:render()
+    end
+end
+
+function VaultView:previous_board()
+    if #self.boards_names == 1 then
+        return
+    end
+
+    self:hide()
+
+    self.active_board_index = self.active_board_index - 1
+    if self.active_board_index < 1 then
+        self.active_board_index = #self.boards_names
+    end
+
+    self:render()
+end
+
+function VaultView:next_board()
+    if #self.boards_names == 1 then
+        return
+    end
+
+    self:hide()
+
+    self.active_board_index = self.active_board_index + 1
+    if self.active_board_index > #self.boards_names then
+        self.active_board_index = 1
+    end
+
+    self:render()
+end
+
+
+
+function VaultView:previous_page()
+    self.views[self.active_board_index]:previous_page()
+end
+
+function VaultView:next_page()
+    self.views[self.active_board_index]:next_page()
+end
 
 function VaultView:focus_first_list()
     self.views[self.active_board_index]:focus_first_list()

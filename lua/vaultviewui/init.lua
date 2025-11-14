@@ -51,6 +51,36 @@ function M.run_hide()
     end
 end
 
+function M.goto_previous_board()
+    if M.context.vv then
+        M.context.vv:previous_board()
+    end
+end
+
+function M.goto_next_board()
+    if M.context.vv then
+        M.context.vv:next_board()
+    end
+end
+
+function M.goto_board(index)
+    if M.context.vv then
+        M.context.vv:goto_board(index)
+    end
+end
+
+function M.goto_previous_page()
+    if M.context.vv then
+        M.context.vv:previous_page()
+    end
+end
+
+function M.goto_next_page()
+    if M.context.vv then
+        M.context.vv:next_page()
+    end
+end
+
 function M.focus_first_list()
     if M.context.vv then
         M.context.vv:focus_first_list()
