@@ -310,24 +310,14 @@ function View:focus_last_entry()
     self:focus()
 end
 
-function View:retrieve_focused_entry()
-    local focused_page_idx = self.state.focused.page
-    local focused_list_idx = self.state.focused.list
-    local focused_entry_idx = self.state.focused.entry
-    if focused_entry_idx == 0 then
-        return nil
-    end
-    local entry =
-        self.VaultData.boards[self.board_idx].pages[focused_page_idx].lists[focused_list_idx].items[focused_entry_idx]
-    if not entry or not entry.filepath then
-        return nil
-    end
-
-    return entry
-end
 
 function View:open_in_nvim()
-    local entry = self:retrieve_focused_entry()
+    if self.state.focused.list == 0 or self.state.focused.entry == 0 then
+        -- vim.notify("No focused entry to open", vim.log.levels.WARN)
+        return
+    end
+
+    local entry = self:getDataEntry(self.state.focused.page, self.state.focused.list, self.state.focused.entry)
     if not entry then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
         return
@@ -360,7 +350,12 @@ function View:open_in_nvim()
 end
 
 function View:open_in_obsidian(vaultname)
-    local focused_entry = self:retrieve_focused_entry()
+    if self.state.focused.list == 0 or self.state.focused.entry == 0 then
+        -- vim.notify("No focused entry to open", vim.log.levels.WARN)
+        return
+    end
+
+    local focused_entry = self:getDataEntry(self.state.focused.page, self.state.focused.list, self.state.focused.entry)
     if not focused_entry then
         -- vim.notify("No focused focused_entry to open", vim.log.levels.WARN)
         return
@@ -381,8 +376,27 @@ function View:open_in_obsidian(vaultname)
     vim.cmd(cmd)
 end
 
-function View:refresh_focused_entry_content(user_commands)
-    local entry = self:retrieve_focused_entry()
+function View:getDataEntry(page_idx, list_idx, entry_idx)
+    local entry = self.VaultData.boards[self.board_idx].pages[page_idx].lists[list_idx].items[entry_idx]
+    if not entry then
+        return nil
+    end
+    return entry
+end
+
+function View:getWindowEntry(page_idx, list_idx, entry_idx)
+    local entry_win = self.viewWindows.pages[page_idx].lists[list_idx].items[entry_idx]
+    if not entry_win then
+        return nil
+    end
+    return entry_win
+end
+
+function View:refresh_entry_content(page_idx, list_idx, entry_idx, user_commands)
+    if page_idx == 0 or list_idx == 0 or entry_idx == 0 then
+        return
+    end
+    local entry = self:getDataEntry(page_idx, list_idx, entry_idx)
     if not entry then
         return
     end
@@ -398,9 +412,29 @@ function View:refresh_focused_entry_content(user_commands)
         table.insert(new_content, "- " .. line)
     end
     entry.content = new_content
-    local focused_window = self:getFocusedWindow()
 
-    wf.setNewContent(focused_window, new_content)
+    local entry_win = self:getWindowEntry(page_idx, list_idx, entry_idx)
+
+    wf.setNewContent(entry_win, new_content)
+end
+
+function View:refresh_focused_entry_content(user_commands)
+    self:refresh_entry_content(
+        self.state.focused.page,
+        self.state.focused.list,
+        self.state.focused.entry,
+        user_commands
+    )
+end
+
+function View:fast_refresh()
+    for idx_page, page in ipairs(self.VaultData.boards[self.board_idx].pages) do
+        for idx_list, list in ipairs(page.lists) do
+            for idx_entry, _ in ipairs(list.items) do
+                self:refresh_entry_content(idx_page, idx_list, idx_entry)
+            end
+        end
+    end
 end
 
 return View

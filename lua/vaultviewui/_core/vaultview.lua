@@ -292,4 +292,11 @@ function VaultView:refresh_focused_entry_content()
     self.views[self.active_board_index]:refresh_focused_entry_content(self.config.user_commands) -- TODO: I should not have not do it multiple times ? find better way to have this config once (initialize_Data_if_needed...)
 end
 
+function VaultView:fast_refresh()
+
+    for _, view in ipairs(self.views) do
+        view:fast_refresh()
+    end
+end
+
 return VaultView

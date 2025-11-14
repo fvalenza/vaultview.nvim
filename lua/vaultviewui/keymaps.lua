@@ -16,6 +16,7 @@ M.generic = {
     ["8"] = { function() require("vaultviewui").goto_board(8) end, mode = "n", noremap = true, nowait = true, },
     ["9"] = { function() require("vaultviewui").goto_board(9) end, mode = "n", noremap = true, nowait = true, },
     ["r"] = { function() require("vaultviewui").refresh_focused_entry_content() end, mode = "n", noremap = true, nowait = true, },
+    ["R"] = { function() require("vaultviewui").fast_refresh() end, mode = "n", noremap = true, nowait = true, },
     -- ["<C-f>"] = { function() require("vaultviewui._commands.open.runner").run_pick_list() end, mode = "n", noremap = true, nowait = true, },
     -- ["f"] = { function() require("vaultviewui._commands.open.runner").run_pick_card() end, mode = "n", noremap = true, nowait = true, },
     -- ["F"] = { function() require("vaultviewui._commands.open.runner").run_pick_content() end, mode = "n", noremap = true, nowait = true, },

@@ -153,6 +153,12 @@ function M.refresh_focused_entry_content()
     end
 end
 
+function M.fast_refresh()
+    if M.context.vv then
+        M.context.vv:fast_refresh()
+    end
+end
+
 function M.run_open_help()
     -- Get the absolute path to this Lua file
     local current_file = debug.getinfo(1, "S").source:sub(2)
