@@ -1,7 +1,7 @@
 local M = {}
 
 M.generic = {
-    ["q"] = { function() require("vaultviewui").run_hide() end, mode = "n", noremap = true, nowait = true, },
+    ["q"] = { function() require("vaultviewui").hide() end, mode = "n", noremap = true, nowait = true, },
     ["<S-h>"] = { function() require("vaultviewui").goto_previous_page() end, mode = "n", noremap = true, nowait = true, },
     ["<S-l>"] = { function() require("vaultviewui").goto_next_page() end, mode = "n", noremap = true, nowait = true, },
     ["p"] = { function() require("vaultviewui").goto_previous_board() end, mode = "n", noremap = true, nowait = true, },
@@ -20,7 +20,7 @@ M.generic = {
     -- ["<C-f>"] = { function() require("vaultviewui._commands.open.runner").run_pick_list() end, mode = "n", noremap = true, nowait = true, },
     -- ["f"] = { function() require("vaultviewui._commands.open.runner").run_pick_card() end, mode = "n", noremap = true, nowait = true, },
     -- ["F"] = { function() require("vaultviewui._commands.open.runner").run_pick_content() end, mode = "n", noremap = true, nowait = true, },
-    ["?"] = { function() require("vaultviewui").run_open_help() end, mode = "n", noremap = true, nowait = true, },
+    ["?"] = { function() require("vaultviewui").open_help() end, mode = "n", noremap = true, nowait = true, },
     ["<M-h>"] = { function() require("vaultviewui").focus_first_list() end, mode = "n", noremap = true, nowait = true, },
     ["h"] = { function() require("vaultviewui").focus_previous_list() end, mode = "n", noremap = true, nowait = true, },
     ["c"] = { function() require("vaultviewui").focus_center_list() end, mode = "n", noremap = true, nowait = true, },

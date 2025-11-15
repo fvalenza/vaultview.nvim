@@ -166,6 +166,8 @@ end
 
 function VaultView:render()
     local page_selection_line = self:render_board_selection()
+    dprint("Rendering board index:", self.active_board_index)
+    dprint(self.views)
     self.views[self.active_board_index]:render(page_selection_line)
     -- local header_line_count = render_board_selection(self.header_win, board_names, current_board_index)
 

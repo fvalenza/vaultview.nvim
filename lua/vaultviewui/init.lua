@@ -13,18 +13,15 @@ local _LOGGER = logging.get_logger("vaultviewui.init")
 local M = {}
 M.context = {}
 
-configuration.initialize_data_if_needed()
-
-function M.run_open()
-    M.run_toggle()
+function M.open()
+    M.toggle()
 end
 
-function M.run_toggle()
+function M.toggle()
     _LOGGER:debug("Toggling board")
 
-    local plugin_configuration = configuration.resolve_data(vim.g.vaultview_configuration)
-
     if not M.context.vv then
+        local plugin_configuration = configuration.resolve_data(vim.g.vaultview_configuration)
         local vv = vaultview.new(plugin_configuration)
         M.context.vv = vv
         M.context.vv:show()
@@ -37,15 +34,14 @@ function M.run_toggle()
     end
 end
 
---TODO destroy context
-function M.run_close()
+function M.close()
     if M.context.vv then
         M.context.vv:hide()
         M.context.vv = nil
     end
 end
 
-function M.run_hide()
+function M.hide()
     if M.context.vv then
         M.context.vv:hide()
     end
@@ -159,7 +155,7 @@ function M.fast_refresh()
     end
 end
 
-function M.run_open_help()
+function M.open_help()
     -- Get the absolute path to this Lua file
     local current_file = debug.getinfo(1, "S").source:sub(2)
     local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/_doc/help_page.md" -- go up and in _doc

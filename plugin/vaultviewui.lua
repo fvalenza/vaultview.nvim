@@ -4,7 +4,7 @@ _G.dprint = require("vaultviewui._core.utils.debug")
 
 local cmdparse = require("mega.cmdparse")
 
-local _PREFIX = "Vaultview"
+local _PREFIX = "Vaultviewui"
 
 ---@type mega.cmdparse.ParserCreator
 local _SUBCOMMANDS = function()
@@ -23,10 +23,8 @@ end
 cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
 
 vim.keymap.set("n", "<Plug>(Vaultviewui)", function()
-    -- local configuration = require("vaultviewui._core.configuration")
-    local vaultviewui = require("vaultviewui")
-    --
-    -- configuration.initialize_data_if_needed()
 
-    vaultviewui.run_toggle()
+    require("vaultviewui").toggle()
+
+
 end, { desc = "Open your vaultviewui" })

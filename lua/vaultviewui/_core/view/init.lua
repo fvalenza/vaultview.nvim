@@ -3,22 +3,27 @@ View.__index = View
 
 local wf = require("vaultviewui._core.windowfactory")
 
+-- WARN VaultData is the data from the global VaultData but for the specific board the layout is associated to...shall be renamed to BoardData ?
 function View.new(VaultData, board_idx, board_config, layout, header_win)
     local self = setmetatable({}, View)
     self.VaultData = VaultData
     self.board_idx = board_idx
+    self.viewData = VaultData.boards[board_idx]
     self.board_config = board_config
-    self.pages_names, self.viewWindows = wf.create_board_view_windows(VaultData, board_idx, layout)
     self.header_win = header_win
     self.state = {
-        focused = { page = 1, list = 1, entry = 1 },
-        expanded = {}, -- e.g. expanded[page][entry] = true
+        focused = { page = 1, list = 1, entry = 0 },
+        expanded = {},
     }
+    self.pages_names, self.viewWindows, self.state.expanded = wf.create_board_view_windows(VaultData, board_idx, layout)
 
-    self.layout = layout.new(self.viewWindows, self.state)
+    dprint("Initial View State:", vim.inspect(self.state))
+    dprint("Initial View Windows:", vim.inspect(self.viewWindows))
+    self.layout = layout.new(self.viewData, self.viewWindows, self.state)
 
-    if self.VaultData.boards[board_idx].pages and #self.VaultData.boards[board_idx].pages > 0 then
-        local first_page = self.VaultData.boards[board_idx].pages[1]
+    -- TODO perhaps put it in layout.new
+    if self.viewData.pages and #self.viewData.pages > 0 then
+        local first_page = self.viewData.pages[1]
         if first_page.lists and #first_page.lists > 0 then
             local first_list = first_page.lists[1]
             if first_list.entries and #first_list.entries > 0 then
@@ -27,6 +32,8 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
             end
         end
     end
+
+    self:recompute_focused_entry_index()
 
     return self
 end
@@ -178,7 +185,7 @@ function View:render(page_selection_line)
         self.page_selection_line = page_selection_line
     end
     self:render_page_selection(self.page_selection_line)
-    self.layout:render(self.VaultData.boards[self.board_idx], self.viewWindows, self.state)
+    self.layout:render(self.viewData, self.viewWindows, self.state)
     self:focus()
 end
 
@@ -206,7 +213,27 @@ function View:focus()
     end
 end
 
-function View:recompute_focused_entry()
+function View:recompute_focused_list_index()
+    local focused_page_idx = self.state.focused.page
+    local focused_page = self.viewWindows.pages[focused_page_idx]
+
+    local num_lists = #focused_page.lists
+
+    -- If the current focused_list is greater than num_lists, set it to num_lists
+    -- else if the focused_list is 0, set it to 1 else keep it as is
+
+    if self.state.focused.list > num_lists then
+        return num_lists
+    end
+
+    if self.state.focused.list ~= 0 then
+        return self.state.focused.list
+    else
+        return 1
+    end
+end
+
+function View:recompute_focused_entry_index()
     local focused_page_idx = self.state.focused.page
     local focused_page = self.viewWindows.pages[focused_page_idx]
 
@@ -241,6 +268,8 @@ function View:previous_page()
     if self.state.focused.page < 1 then
         self.state.focused.page = #self.viewWindows.pages
     end
+    self.state.focused.list = self:recompute_focused_list_index()
+    self.state.focused.entry = self:recompute_focused_entry_index()
     self:render()
 end
 
@@ -250,37 +279,41 @@ function View:next_page()
     if self.state.focused.page > #self.viewWindows.pages then
         self.state.focused.page = 1
     end
+    self.state.focused.list = self:recompute_focused_list_index()
+    self.state.focused.entry = self:recompute_focused_entry_index()
     self:render()
 end
 
 function View:focus_first_list()
     self.state.focused.list = 1
-    self.state.focused.entry = self:recompute_focused_entry()
+    self.state.focused.entry = self:recompute_focused_entry_index()
     self:focus()
 end
 
+-- TODO perhaps delegate something to layout as it may change the layout windows?
 function View:focus_previous_list()
     self.state.focused.list = math.max(1, self.state.focused.list - 1)
-    self.state.focused.entry = self:recompute_focused_entry()
+    self.state.focused.entry = self:recompute_focused_entry_index()
     self:focus()
 end
 
+-- TODO perhaps delegate something to layout as it may change the layout windows?
 function View:focus_center_list()
-    self.state.focused.list = math.ceil(#self.viewWindows.pages[self.state.focused.page].lists / 2)
-    self.state.focused.entry = self:recompute_focused_entry()
+    self.state.focused.list = self.state.center_list_index or math.ceil(#self.viewWindows.pages[self.state.focused.page].lists / 2)
+    self.state.focused.entry = self:recompute_focused_entry_index()
     self:focus()
 end
 
 function View:focus_next_list()
     self.state.focused.list =
         math.min(self.state.focused.list + 1, #self.viewWindows.pages[self.state.focused.page].lists)
-    self.state.focused.entry = self:recompute_focused_entry()
+    self.state.focused.entry = self:recompute_focused_entry_index()
     self:focus()
 end
 
 function View:focus_last_list()
     self.state.focused.list = #self.viewWindows.pages[self.state.focused.page].lists
-    self.state.focused.entry = self:recompute_focused_entry()
+    self.state.focused.entry = self:recompute_focused_entry_index()
     self:focus()
 end
 
@@ -309,7 +342,6 @@ function View:focus_last_entry()
     self.state.focused.entry = num_entries
     self:focus()
 end
-
 
 function View:open_in_neovim()
     if self.state.focused.list == 0 or self.state.focused.entry == 0 then
@@ -377,7 +409,7 @@ function View:open_in_obsidian(vaultname)
 end
 
 function View:getDataEntry(page_idx, list_idx, entry_idx)
-    local entry = self.VaultData.boards[self.board_idx].pages[page_idx].lists[list_idx].items[entry_idx]
+    local entry = self.viewData.pages[page_idx].lists[list_idx].items[entry_idx]
     if not entry then
         return nil
     end
@@ -428,7 +460,7 @@ function View:refresh_focused_entry_content(user_commands)
 end
 
 function View:fast_refresh()
-    for idx_page, page in ipairs(self.VaultData.boards[self.board_idx].pages) do
+    for idx_page, page in ipairs(self.viewData.pages) do
         for idx_list, list in ipairs(page.lists) do
             for idx_entry, _ in ipairs(list.items) do
                 self:refresh_entry_content(idx_page, idx_list, idx_entry)
