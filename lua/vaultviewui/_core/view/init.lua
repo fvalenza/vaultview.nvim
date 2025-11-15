@@ -17,8 +17,8 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
     }
     self.pages_names, self.viewWindows, self.state.expanded = wf.create_board_view_windows(VaultData, board_idx, layout)
 
-    dprint("Initial View State:", vim.inspect(self.state))
-    dprint("Initial View Windows:", vim.inspect(self.viewWindows))
+    -- dprint("Initial View State:", vim.inspect(self.state))
+    -- dprint("Initial View Windows:", vim.inspect(self.viewWindows))
     self.layout = layout.new(self.viewData, self.viewWindows, self.state)
 
     -- TODO perhaps put it in layout.new

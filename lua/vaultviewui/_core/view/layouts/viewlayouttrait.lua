@@ -56,7 +56,7 @@ function ViewLayoutTrait:compute_layout_all_expanded(layout_name)
 end
 
 function ViewLayoutTrait:render(viewData, viewWindows, viewState)
-    dprint("Rendering ViewLayoutTrait:", self.__name)
+    -- dprint("Rendering ViewLayoutTrait:", self.__name)
     self:compute_layout() -- TODO probably that it should be called in new, and in functions (ju;p list for example) that may change it
     for _, list in ipairs(self.viewWindows.pages[self.viewState.focused.page].lists) do
         for _, entry in ipairs(list.items or {}) do
