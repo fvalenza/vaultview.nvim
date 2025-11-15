@@ -26,7 +26,7 @@ function M.make_parser()
 
 
     parser:set_execute(function()
-        local runner = require("vaultview._commands.open.runner")
+        local runner = require("vaultviewui._commands.open.runner")
 
         runner.run_open()
     end)
