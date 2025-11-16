@@ -134,15 +134,19 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
     local pages_names = {}
     local windows = { pages = {} }
     local expanded_state = { pages = {}}
+    local show_state = { pages = {}}
 
     for p_idx, page in ipairs(board.pages or {}) do
         expanded_state.pages[p_idx] = { lists = {} }
+        show_state.pages[p_idx] = { lists = {} }
         local page_windows = { lists = {} }
         local page_name = page.title or "page_" .. tostring(p_idx)
 
         for l_idx, list in ipairs(page.lists or {}) do
             expanded_state.pages[p_idx].lists[l_idx] = { items = {} }
             expanded_state.pages[p_idx].lists[l_idx].expanded = true
+            show_state.pages[p_idx].lists[l_idx] = { items = {} }
+            show_state.pages[p_idx].lists[l_idx].show = true
             local list_win = create_list_window(list, layout)
             local list_windows = {
                 win = list_win,
@@ -151,6 +155,7 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
 
             for i_idx, item in ipairs(list.items or {}) do
                 expanded_state.pages[p_idx].lists[l_idx].items[i_idx] = true
+                show_state.pages[p_idx].lists[l_idx].items[i_idx] = true
                 local item_window = create_entry_window(item, layout)
                 table.insert(list_windows.items, item_window)
             end
@@ -162,7 +167,7 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
         table.insert(windows.pages, page_windows)
     end
 
-    return pages_names, windows, expanded_state
+    return pages_names, windows, expanded_state, show_state
 end
 
 return M

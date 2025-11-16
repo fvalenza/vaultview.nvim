@@ -15,13 +15,12 @@ function ViewLayoutColumns.new(viewData, viewWindows, viewState)
     self.viewWindows = viewWindows
     self.viewState = viewState
     self.viewState.center_list_index = math.ceil(#self.viewWindows.pages[self.viewState.focused.page].lists / 2)
-    -- self:compute_layout()
+    self:compute_layout()
 
     return self
 end
 
 function ViewLayoutColumns:compute_layout()
-    self:compute_layout_all_expanded(self.__name)
 end
 
 return ViewLayoutColumns

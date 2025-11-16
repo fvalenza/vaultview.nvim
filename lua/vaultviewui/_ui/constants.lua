@@ -47,12 +47,22 @@ M.list_win = {
 }
 
 M.list_win_close = {
-    width = 3,
-    height = 40,
-    zindex = 20,
-    border = { "", "", "", "│", "╯", "─", "╰", "│" },
-    row = M.header_win.height,
-    col = 1,
+    ViewLayoutCarousel = {
+        width = 3,
+        height = 40,
+        zindex = 20,
+        border = { "", "", "", "│", "╯", "─", "╰", "│" },
+        row = M.header_win.height,
+        col = 1,
+    },
+    ViewLayoutColumns = {
+        width = 3,
+        height = 40,
+        zindex = 20,
+        border = { "", "", "", "│", "╯", "─", "╰", "│" },
+        row = M.header_win.height,
+        col = 1,
+    },
 }
 
 M.card_win = {

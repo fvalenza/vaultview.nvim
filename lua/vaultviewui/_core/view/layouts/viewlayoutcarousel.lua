@@ -15,25 +15,28 @@ function ViewLayoutCarousel.new(viewData, viewWindows, viewState)
     self.viewData = viewData
     self.viewWindows = viewWindows
     self.viewState = viewState
+    self:compute_layout()
 
     return self
 end
 
+function ViewLayoutCarousel:compute_layout()
+    self:compute_visibility_window()
+end
 
 local space_taken_expanded = Constants.list_win[ViewLayoutCarousel.name()].width + 2 -- 1 for padding and 1 for borders
-local space_taken_collapsed = Constants.list_win_close.width + 2 -- 1 for pqdding qnd 1 for borders
+local space_taken_collapsed = Constants.list_win_close[ViewLayoutCarousel.name()].width + 2 -- 1 for pqdding qnd 1 for borders
 
-function ViewLayoutCarousel:collapse_list( viewWindows, page_idx, list_idx)
-    -- modify the snacks win accordingly
+function ViewLayoutCarousel:collapse_list( page_idx, list_idx)
+    self.viewState.expanded.pages[page_idx].lists[list_idx].expanded = false
+
 end
 
 function ViewLayoutCarousel:expand_list(page_idx, list_idx)
-    -- modify the snacks win accordingly
+    self.viewState.expanded.pages[page_idx].lists[list_idx].expanded = true
 end
 
-function ViewLayoutCarousel:compute_layout()
-    self:compute_layout_all_expanded(self.__name)
-
+function ViewLayoutCarousel:compute_visibility_window()
     local viewData = self.viewData
     local viewWindows = self.viewWindows
     local viewState = self.viewState
@@ -47,7 +50,7 @@ function ViewLayoutCarousel:compute_layout()
     while layout_space_taken > available_width and left_idx <= right_idx do
         -- Collapse left side first to gain room
         if viewState.expanded.pages[viewState.focused.page].lists[left_idx].expanded then
-            self:collapse_list(viewWindows, viewState.focused.page, left_idx)
+            self:collapse_list(viewState.focused.page, left_idx)
         end
         left_idx = left_idx + 1
         layout_space_taken = layout_space_taken - (space_taken_expanded - space_taken_collapsed)
@@ -57,7 +60,7 @@ function ViewLayoutCarousel:compute_layout()
 
         -- Collapse right side
         if viewState.expanded.pages[viewState.focused.page].lists[right_idx].expanded then
-            self:collapse_list(viewWindows, viewState.focused.page, right_idx)
+            self:collapse_list(viewState.focused.page, right_idx)
         end
         right_idx = right_idx - 1
         layout_space_taken = layout_space_taken - (space_taken_expanded - space_taken_collapsed)
@@ -72,7 +75,6 @@ function ViewLayoutCarousel:compute_layout()
     self.visibility_window_right = math.min(#viewData.pages[viewState.focused.page].lists, self.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
     viewState.center_list_index = math.ceil((self.last_left_collapsed + self.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
     viewState.focused.list = viewState.center_list_index
-
 end
 
 
@@ -297,7 +299,7 @@ function ViewLayoutCarousel:move_focus_center()
     for _, list in ipairs(self.lists) do
         list.expanded = true
     end
-    self.last_left_collapsed, self.last_right_collapsed, self.layout_space_taken = self:compute_layout()
+    self.last_left_collapsed, self.last_right_collapsed, self.layout_space_taken = self:compute_visibility_window()
     self.visibility_window_left = math.max(1, self.last_left_collapsed + 1) -- Ensure we don't go below 1
     self.visibility_window_right = math.min(#self.lists, self.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
     self.list_focus_index = math.ceil((self.last_left_collapsed + self.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists

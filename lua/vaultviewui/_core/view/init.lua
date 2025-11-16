@@ -14,8 +14,9 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
     self.state = {
         focused = { page = 1, list = 1, entry = 0 },
         expanded = {},
+        show = {},
     }
-    self.pages_names, self.viewWindows, self.state.expanded = wf.create_board_view_windows(VaultData, board_idx, layout)
+    self.pages_names, self.viewWindows, self.state.expanded, self.state.show = wf.create_board_view_windows(VaultData, board_idx, layout)
 
     -- dprint("Initial View State:", vim.inspect(self.state))
     -- dprint("Initial View Windows:", vim.inspect(self.viewWindows))
@@ -185,7 +186,7 @@ function View:render(page_selection_line)
         self.page_selection_line = page_selection_line
     end
     self:render_page_selection(self.page_selection_line)
-    self.layout:render(self.viewData, self.viewWindows, self.state)
+    self.layout:render()
     self:focus()
 end
 
