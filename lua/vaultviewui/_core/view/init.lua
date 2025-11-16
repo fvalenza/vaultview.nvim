@@ -13,13 +13,14 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
     self.header_win = header_win
     self.state = {
         focused = { page = 1, list = 1, entry = 0 },
-        expanded = {},
-        show = {},
+        pages = {},
+        -- expanded = {},
+        -- show = {},
     }
-    self.pages_names, self.viewWindows, self.state.expanded, self.state.show = wf.create_board_view_windows(VaultData, board_idx, layout)
+    self.pages_names, self.viewWindows, self.state.pages = wf.create_board_view_windows(VaultData, board_idx, layout)
 
-    -- dprint("Initial View State:", vim.inspect(self.state))
-    -- dprint("Initial View Windows:", vim.inspect(self.viewWindows))
+    dprint("Initial View State:", vim.inspect(self.state))
+    dprint("Initial View Windows:", vim.inspect(self.viewWindows))
     self.layout = layout.new(self.viewData, self.viewWindows, self.state)
 
     -- TODO perhaps put it in layout.new

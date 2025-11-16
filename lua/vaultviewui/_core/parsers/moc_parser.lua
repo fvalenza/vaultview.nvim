@@ -33,7 +33,7 @@ local function search_wikilink(dir, name)
         dir
     )
 
-    print("Executing command:", cmd)
+    -- print("Executing command:", cmd)
 
     local handle = io.popen(cmd)
     if not handle then

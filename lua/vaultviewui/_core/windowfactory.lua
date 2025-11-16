@@ -133,29 +133,55 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
 
     local pages_names = {}
     local windows = { pages = {} }
-    local expanded_state = { pages = {}}
-    local show_state = { pages = {}}
+    local pages_state = { }
 
     for p_idx, page in ipairs(board.pages or {}) do
-        expanded_state.pages[p_idx] = { lists = {} }
-        show_state.pages[p_idx] = { lists = {} }
+        --------------------------------------------------------
+        -- Create state table for this page
+        --------------------------------------------------------
+        pages_state[p_idx] = {
+            lists_visibility = { first = 0, last = 0 },
+            lists = {}
+        }
+        --------------------------------------------------------
+        -- Create windows table
+        --------------------------------------------------------
         local page_windows = { lists = {} }
-        local page_name = page.title or "page_" .. tostring(p_idx)
+        local page_name = page.title or ("page_" .. tostring(p_idx))
 
         for l_idx, list in ipairs(page.lists or {}) do
-            expanded_state.pages[p_idx].lists[l_idx] = { items = {} }
-            expanded_state.pages[p_idx].lists[l_idx].expanded = true
-            show_state.pages[p_idx].lists[l_idx] = { items = {} }
-            show_state.pages[p_idx].lists[l_idx].show = true
+
+            --------------------------------------------------------------------
+            -- Build list-level state object
+            --------------------------------------------------------------------
+            pages_state[p_idx].lists[l_idx] = {
+                expanded = true,
+                show = true,
+                items_visibility = { first = 0, last = 0 },
+                items = {}
+            }
+
+            --------------------------------------------------------------------
+            -- Create list window
+            --------------------------------------------------------------------
             local list_win = create_list_window(list, layout)
             local list_windows = {
                 win = list_win,
                 items = {},
             }
 
+            --------------------------------------------------------------------
+            -- Iterate items
+            --------------------------------------------------------------------
             for i_idx, item in ipairs(list.items or {}) do
-                expanded_state.pages[p_idx].lists[l_idx].items[i_idx] = true
-                show_state.pages[p_idx].lists[l_idx].items[i_idx] = true
+
+                -- Add item-level state
+                pages_state[p_idx].lists[l_idx].items[i_idx] = {
+                    expanded = true,
+                    show = true,
+                }
+
+                -- Create window for the item
                 local item_window = create_entry_window(item, layout)
                 table.insert(list_windows.items, item_window)
             end
@@ -163,11 +189,14 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
             table.insert(page_windows.lists, list_windows)
         end
 
+        --------------------------------------------------------
+        -- Add page
+        --------------------------------------------------------
         table.insert(pages_names, page_name)
         table.insert(windows.pages, page_windows)
     end
 
-    return pages_names, windows, expanded_state, show_state
+    return pages_names, windows, pages_state
 end
 
 return M

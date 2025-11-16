@@ -28,12 +28,12 @@ local space_taken_expanded = Constants.list_win[ViewLayoutCarousel.name()].width
 local space_taken_collapsed = Constants.list_win_close[ViewLayoutCarousel.name()].width + 2 -- 1 for pqdding qnd 1 for borders
 
 function ViewLayoutCarousel:collapse_list( page_idx, list_idx)
-    self.viewState.expanded.pages[page_idx].lists[list_idx].expanded = false
+    self.viewState.pages[page_idx].lists[list_idx].expanded = false
 
 end
 
 function ViewLayoutCarousel:expand_list(page_idx, list_idx)
-    self.viewState.expanded.pages[page_idx].lists[list_idx].expanded = true
+    self.viewState.pages[page_idx].lists[list_idx].expanded = true
 end
 
 function ViewLayoutCarousel:compute_visibility_window()
@@ -49,7 +49,7 @@ function ViewLayoutCarousel:compute_visibility_window()
     local right_idx = #viewData.pages[viewState.focused.page].lists
     while layout_space_taken > available_width and left_idx <= right_idx do
         -- Collapse left side first to gain room
-        if viewState.expanded.pages[viewState.focused.page].lists[left_idx].expanded then
+        if viewState.pages[viewState.focused.page].lists[left_idx].expanded then
             self:collapse_list(viewState.focused.page, left_idx)
         end
         left_idx = left_idx + 1
@@ -59,7 +59,7 @@ function ViewLayoutCarousel:compute_visibility_window()
         end
 
         -- Collapse right side
-        if viewState.expanded.pages[viewState.focused.page].lists[right_idx].expanded then
+        if viewState.pages[viewState.focused.page].lists[right_idx].expanded then
             self:collapse_list(viewState.focused.page, right_idx)
         end
         right_idx = right_idx - 1
@@ -182,73 +182,73 @@ end
 -- TODO Adding same kind of movement as in neovim when you start to j/k from a last line character
 -- When going to shorter lines, it should not move the focus to the next line but stay on the last character of the current line
 -- When going to longer lines, it should stay at the index/number of the start
-function ViewLayoutCarousel:move_focus_horizontal(direction)
-    local direction_index = 0
-    if direction == "left" then
-        direction_index = -1
-    elseif direction == "right" then
-        direction_index = 1
-    else
-        -- print("Invalid horizontal direction: " .. tostring(direction))
-        return
-    end
-
-    -- print("Visibility window: " .. self.visibility_window_left .. " to " .. self.visibility_window_right)
-
-    local old_index = self.list_focus_index or 1
-    local old_list = self.lists[old_index]
-    local old_card_index = old_list.card_focus_index or 0 -- 0 = header, >0 = card number
-
-    -- print("Moving focus " .. direction .. " from index: " .. old_index)
-
-    local new_index = old_index + direction_index
-    new_index = math.max(1, math.min(new_index, #self.lists))
-
-    -- Expand/collapse logic for visibility
-    if new_index < self.visibility_window_left then
-        -- print("Expanding left list")
-        self.lists[new_index].expanded = true
-        self:collapse_list(self.visibility_window_right) -- Collapse the righttmost list
-        self.visibility_window_left = new_index
-        self.visibility_window_right = self.visibility_window_right - 1
-        self.last_left_collapsed = new_index
-        self.last_right_collapsed = self.last_right_collapsed - 1
-        self:render()
-    elseif new_index > self.visibility_window_right then
-        -- print("Expanding right list")
-        self.lists[new_index].expanded = true
-        self:collapse_list(self.visibility_window_left) -- Collapse the leftmost list
-        self.visibility_window_right = new_index
-        self.visibility_window_left = self.visibility_window_left + 1
-        self.last_right_collapsed = new_index
-        self.last_leftcollapsed = self.last_right_collapsed + 1
-        self:render()
-    end
-
-    -- Update index
-    self.list_focus_index = new_index
-    local new_list = self.lists[new_index]
-
-    -- If target list has fewer cards than old_card_index, reset to header
-    if #new_list.cards == 0 then
-        new_list.card_focus_index = 0
-    elseif #new_list.cards < old_card_index then
-        new_list.card_focus_index = #new_list.cards
-    else
-        new_list.card_focus_index = old_card_index
-    end
-
-    -- Focus correct window (list header or card)
-    if new_list.card_focus_index == 0 then
-        new_list.win:focus()
-    else
-        new_list.cards[new_list.card_focus_index].win:focus()
-    end
-
-    -- print(
-    --     "Moving focus from " .. old_index .. " to " .. new_index .. " (card index: " .. new_list.card_focus_index .. ")"
-    -- )
-end
+-- function ViewLayoutCarousel:move_focus_horizontal(direction)
+--     local direction_index = 0
+--     if direction == "left" then
+--         direction_index = -1
+--     elseif direction == "right" then
+--         direction_index = 1
+--     else
+--         -- print("Invalid horizontal direction: " .. tostring(direction))
+--         return
+--     end
+--
+--     -- print("Visibility window: " .. self.visibility_window_left .. " to " .. self.visibility_window_right)
+--
+--     local old_index = self.list_focus_index or 1
+--     local old_list = self.lists[old_index]
+--     local old_card_index = old_list.card_focus_index or 0 -- 0 = header, >0 = card number
+--
+--     -- print("Moving focus " .. direction .. " from index: " .. old_index)
+--
+--     local new_index = old_index + direction_index
+--     new_index = math.max(1, math.min(new_index, #self.lists))
+--
+--     -- Expand/collapse logic for visibility
+--     if new_index < self.visibility_window_left then
+--         -- print("Expanding left list")
+--         self.lists[new_index].expanded = true
+--         self:collapse_list(self.visibility_window_right) -- Collapse the righttmost list
+--         self.visibility_window_left = new_index
+--         self.visibility_window_right = self.visibility_window_right - 1
+--         self.last_left_collapsed = new_index
+--         self.last_right_collapsed = self.last_right_collapsed - 1
+--         self:render()
+--     elseif new_index > self.visibility_window_right then
+--         -- print("Expanding right list")
+--         self.lists[new_index].expanded = true
+--         self:collapse_list(self.visibility_window_left) -- Collapse the leftmost list
+--         self.visibility_window_right = new_index
+--         self.visibility_window_left = self.visibility_window_left + 1
+--         self.last_right_collapsed = new_index
+--         self.last_leftcollapsed = self.last_right_collapsed + 1
+--         self:render()
+--     end
+--
+--     -- Update index
+--     self.list_focus_index = new_index
+--     local new_list = self.lists[new_index]
+--
+--     -- If target list has fewer cards than old_card_index, reset to header
+--     if #new_list.cards == 0 then
+--         new_list.card_focus_index = 0
+--     elseif #new_list.cards < old_card_index then
+--         new_list.card_focus_index = #new_list.cards
+--     else
+--         new_list.card_focus_index = old_card_index
+--     end
+--
+--     -- Focus correct window (list header or card)
+--     if new_list.card_focus_index == 0 then
+--         new_list.win:focus()
+--     else
+--         new_list.cards[new_list.card_focus_index].win:focus()
+--     end
+--
+--     -- print(
+--     --     "Moving focus from " .. old_index .. " to " .. new_index .. " (card index: " .. new_list.card_focus_index .. ")"
+--     -- )
+-- end
 
 function ViewLayoutCarousel:move_focus_idx(list_idx, card_idx)
     -- Determine if current list_focus_index is left or right of the new list_idx
@@ -294,17 +294,17 @@ end
 
 
 -- FIXME: broken lately
-function ViewLayoutCarousel:move_focus_center()
-    -- expand all lists and recompute inital layout
-    for _, list in ipairs(self.lists) do
-        list.expanded = true
-    end
-    self.last_left_collapsed, self.last_right_collapsed, self.layout_space_taken = self:compute_visibility_window()
-    self.visibility_window_left = math.max(1, self.last_left_collapsed + 1) -- Ensure we don't go below 1
-    self.visibility_window_right = math.min(#self.lists, self.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
-    self.list_focus_index = math.ceil((self.last_left_collapsed + self.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
-    self:render()
-end
+-- function ViewLayoutCarousel:move_focus_center()
+--     -- expand all lists and recompute inital layout
+--     for _, list in ipairs(self.lists) do
+--         list.expanded = true
+--     end
+--     self.last_left_collapsed, self.last_right_collapsed, self.layout_space_taken = self:compute_visibility_window()
+--     self.visibility_window_left = math.max(1, self.last_left_collapsed + 1) -- Ensure we don't go below 1
+--     self.visibility_window_right = math.min(#self.lists, self.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
+--     self.list_focus_index = math.ceil((self.last_left_collapsed + self.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
+--     self:render()
+-- end
 
 
 

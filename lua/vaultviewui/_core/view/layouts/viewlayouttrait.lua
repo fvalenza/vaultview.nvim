@@ -28,7 +28,7 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
 
     for idx_list, list in ipairs(viewData.pages[focused_page].lists or {}) do
         local list_win = viewWindows.pages[focused_page].lists[idx_list].win
-        local list_expanded = viewState.expanded.pages[focused_page].lists[idx_list].expanded
+        local list_expanded = viewState.pages[focused_page].lists[idx_list].expanded
 
         --------------------------------------------------------------------
         -- Determine width depending on list expanded/collapsed
@@ -84,7 +84,7 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
         --------------------------------------------------------------------
         if not list_expanded then
             for card_index, _ in ipairs(list.items or {}) do
-                viewState.show.pages[focused_page].lists[idx_list].items[card_index] = false
+                viewState.pages[focused_page].lists[idx_list].items[card_index].show = false
             end
             goto continue_lists
         end
@@ -120,10 +120,10 @@ function ViewLayoutTrait:render()
     local viewState = self.viewState
     self:compute_windows_rendering() -- TODO probably that it should be called in new, and in functions (ju;p list for example) that may change it
     for list_idx, list in ipairs(self.viewWindows.pages[self.viewState.focused.page].lists) do
-        if viewState.show.pages[viewState.focused.page].lists then
+        if viewState.pages[viewState.focused.page].lists[list_idx].show then
             for item_idx, entry in ipairs(list.items or {}) do
                 if entry then
-                    if viewState.show.pages[viewState.focused.page].lists[list_idx].items[item_idx] then
+                    if viewState.pages[viewState.focused.page].lists[list_idx].items[item_idx].show then
                         entry:show()
                     else
                         entry:hide()
