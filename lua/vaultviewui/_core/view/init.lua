@@ -170,24 +170,21 @@ function View:render_page_selection(start_line)
         string.rep("─", win_width),
     }
 
-    vim.api.nvim_buf_set_lines(buf, start_line, -1, false, lines)
+    vim.api.nvim_buf_set_lines(buf, self.page_selection_line, -1, false, lines)
 
     -- Apply highlights (offset by padding + prefix)
     local prefix_len = padding + #prefix
     for _, h in ipairs(highlights) do
-        vim.api.nvim_buf_add_highlight(buf, -1, h.group, start_line, prefix_len + h.start_col, prefix_len + h.end_col)
+        vim.api.nvim_buf_add_highlight(buf, -1, h.group, self.page_selection_line, prefix_len + h.start_col, prefix_len + h.end_col)
     end
 
     vim.api.nvim_buf_add_highlight(buf, -1, "TabSeparator", 5, 0, -1)
     vim.bo[buf].modifiable = false
 end
 
-function View:render(page_selection_line)
-    if page_selection_line ~= nil then
-        self.page_selection_line = page_selection_line
-    end
+function View:render(debug)
     self:render_page_selection(self.page_selection_line)
-    self.layout:render()
+    self.layout:render(debug)
     self:focus()
 end
 
@@ -301,17 +298,51 @@ end
 
 -- TODO perhaps delegate something to layout as it may change the layout windows?
 function View:focus_center_list()
-    self.state.focused.list = self.state.center_list_index or math.ceil(#self.viewWindows.pages[self.state.focused.page].lists / 2)
+    self.state.focused.list = self.state.center_list_index
+        or math.ceil(#self.viewWindows.pages[self.state.focused.page].lists / 2)
     self.state.focused.entry = self:recompute_focused_entry_index()
     self:focus()
 end
 
 function View:focus_next_list()
+    dprint("Focusing next list from", self.state.focused.list)
+    local start_lists_visibility = self.state.pages[self.state.focused.page].lists_visibility.first
+    local end_lists_visibility = self.state.pages[self.state.focused.page].lists_visibility.last
+
+    dprint("Current lists visibility:", start_lists_visibility, end_lists_visibility)
+    -- compute new focused list
     self.state.focused.list =
         math.min(self.state.focused.list + 1, #self.viewWindows.pages[self.state.focused.page].lists)
+
+    -- adjust lists visibility if needed
+    if self.state.focused.list > end_lists_visibility then
+        dprint("Adjusting lists visibility for next list focus")
+        -- self.state.pages[self.state.focused.page].lists[start_lists_visibility].expanded = false
+        -- self.state.pages[self.state.focused.page].lists[self.state.focused.list].expanded = true
+        self.layout:collapse_list(self.state.focused.page, start_lists_visibility)
+        self.layout:expand_list(self.state.focused.page, self.state.focused.list)
+
+        self.layout:set_lists_visibility_window(
+            self.state.focused.page,
+            start_lists_visibility + 1,
+            self.state.focused.list
+        )
+
+        -- self.state.pages[self.state.focused.page].lists_visibility.last = self.state.focused.list
+        -- self.state.pages[self.state.focused.page].lists_visibility.first = self.state.pages[self.state.focused.page].lists_visibility.first
+            -- + 1
+    end
+    dprint("old focused entry:", self.state.focused.entry)
     self.state.focused.entry = self:recompute_focused_entry_index()
+    dprint("new focused entry:", self.state.focused.entry)
+    self:render(true)
     self:focus()
 end
+
+-- function View:recompute_focused_indexes()
+--     self.state.focused.list = self:recompute_focused_list_index()
+--     self.state.focused.entry = self:recompute_focused_entry_index()
+-- end
 
 function View:focus_last_list()
     self.state.focused.list = #self.viewWindows.pages[self.state.focused.page].lists
