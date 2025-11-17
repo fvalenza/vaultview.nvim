@@ -24,6 +24,7 @@ function ViewLayoutCarousel:compute_layout()
     for p_idx, _ in ipairs(self.viewData.pages) do
         self:compute_visibility_window(p_idx)
     end
+    self.viewState.focused.list = self.viewState.pages[self.viewState.focused.page].center_list_index
 end
 
 local space_taken_expanded = Constants.list_win[ViewLayoutCarousel.name()].width + 2 -- 1 for padding and 1 for borders
@@ -71,12 +72,11 @@ function ViewLayoutCarousel:compute_visibility_window(page_idx)
     self.layout_space_taken = layout_space_taken
 
     local visibility_window_left = math.max(1, self.last_left_collapsed + 1) -- Ensure we don't go below 1
-    local visibility_window_right = math.min(#viewData.pages[viewState.focused.page].lists, self.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
-    viewState.pages[viewState.focused.page].lists_visibility.first = visibility_window_left
-    viewState.pages[viewState.focused.page].lists_visibility.last = visibility_window_right
-    viewState.pages[viewState.focused.page].lists_visibility.length = visibility_window_length
-    viewState.center_list_index = math.ceil((self.last_left_collapsed + self.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
-    viewState.focused.list = viewState.center_list_index
+    local visibility_window_right = math.min(#viewData.pages[page_idx].lists, self.last_right_collapsed - 1) -- Ensure we don't go above the number of lists
+    viewState.pages[page_idx].lists_visibility.first = visibility_window_left
+    viewState.pages[page_idx].lists_visibility.last = visibility_window_right
+    viewState.pages[page_idx].lists_visibility.length = visibility_window_length
+    viewState.pages[page_idx].center_list_index = math.ceil((self.last_left_collapsed + self.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
     dprint("End of compute_visibility_window Carousel")
 end
 

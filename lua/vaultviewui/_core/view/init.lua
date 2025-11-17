@@ -277,6 +277,7 @@ function View:previous_page()
     self.state.focused.list = self:recompute_focused_list_index()
     self.state.focused.entry = self:recompute_focused_entry_index()
     self:render()
+    self:focus()
 end
 
 function View:next_page()
@@ -288,6 +289,7 @@ function View:next_page()
     self.state.focused.list = self:recompute_focused_list_index()
     self.state.focused.entry = self:recompute_focused_entry_index()
     self:render()
+    self:focus()
 end
 
 function View:focus_first_list()
@@ -323,7 +325,7 @@ end
 -- TODO perhaps delegate something to layout as it may change the layout windows?
 function View:focus_center_list()
     local current_focused_list = self.state.focused.list
-    local focused_list_target = self.state.center_list_index
+    local focused_list_target = self.state.pages[self.state.focused.page].center_list_index
 
     if current_focused_list > focused_list_target then
         while current_focused_list > focused_list_target do
