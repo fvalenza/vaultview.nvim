@@ -5,7 +5,6 @@ end
 local tutils = require("vaultviewui._core.utils.table_utils")
 local utils = require("vaultviewui._core.utils.utils")
 
--- TODO pour le parseDirForBoardInput ca peut etre soit regex nom de fichier, soit nom de dossier et tout prendre dedans, etc, trouver une configuration qui permet tout ca
 local M = {}
 
 local monthsMap = {

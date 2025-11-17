@@ -140,7 +140,7 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
         -- Create state table for this page
         --------------------------------------------------------
         pages_state[p_idx] = {
-            lists_visibility = { first = 0, last = 0 },
+            lists_visibility = { first = 0, last = 0, length = 0 },
             lists = {}
         }
         --------------------------------------------------------
@@ -157,7 +157,7 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
             pages_state[p_idx].lists[l_idx] = {
                 expanded = true,
                 show = true,
-                items_visibility = { first = 0, last = 0 },
+                entries_visibility = { first = 0, last = 0, length = 0 },
                 items = {}
             }
 

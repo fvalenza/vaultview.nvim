@@ -322,7 +322,6 @@ function View:focus_previous_list()
     self:focus()
 end
 
--- TODO perhaps delegate something to layout as it may change the layout windows?
 function View:focus_center_list()
     local current_focused_list = self.state.focused.list
     local focused_list_target = self.state.pages[self.state.focused.page].center_list_index

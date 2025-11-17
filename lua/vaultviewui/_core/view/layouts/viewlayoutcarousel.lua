@@ -20,9 +20,15 @@ function ViewLayoutCarousel.new(viewData, viewWindows, viewState)
     return self
 end
 
+-- compute the initial layout of the view.
+-- Shall be called once in constructor.
+-- After that, expand/collapse_list and expand/collapse_entry shall be called to update the layout
 function ViewLayoutCarousel:compute_layout()
     for p_idx, _ in ipairs(self.viewData.pages) do
-        self:compute_visibility_window(p_idx)
+        self:compute_lists_in_page_visibility_window(p_idx)
+        for l_idx, _ in ipairs(self.viewData.pages[p_idx].lists) do
+            self:compute_entries_in_list_visibility_window(p_idx, l_idx)
+        end
     end
     self.viewState.focused.list = self.viewState.pages[self.viewState.focused.page].center_list_index
 end
@@ -31,8 +37,7 @@ local space_taken_expanded = Constants.list_win[ViewLayoutCarousel.name()].width
 local space_taken_collapsed = Constants.list_win_close[ViewLayoutCarousel.name()].width + 2 -- 1 for pqdding qnd 1 for borders
 
 
---TODO compute_initial_visibility_window ??
-function ViewLayoutCarousel:compute_visibility_window(page_idx)
+function ViewLayoutCarousel:compute_lists_in_page_visibility_window(page_idx)
     local viewData = self.viewData
     local viewWindows = self.viewWindows
     local viewState = self.viewState
@@ -77,10 +82,12 @@ function ViewLayoutCarousel:compute_visibility_window(page_idx)
     viewState.pages[page_idx].lists_visibility.last = visibility_window_right
     viewState.pages[page_idx].lists_visibility.length = visibility_window_length
     viewState.pages[page_idx].center_list_index = math.ceil((self.last_left_collapsed + self.last_right_collapsed) / 2) -- Set the focus index to the middle of the collapsed lists
-    dprint("End of compute_visibility_window Carousel")
 end
 
 
+function ViewLayoutCarousel:compute_entries_in_list_visibility_window(p_idx, l_idx)
+    --TODO
+end
 
 
 function ViewLayoutCarousel:move_focus_idx(list_idx, card_idx)
