@@ -17,6 +17,35 @@ end
 --     -- Default implementation does nothing
 -- end
 
+function ViewLayoutTrait:set_lists_visibility_window(page_idx, left_idx, right_idx)
+    self.viewState.pages[page_idx].lists_visibility.first = left_idx
+    self.viewState.pages[page_idx].lists_visibility.last = right_idx
+    self.viewState.pages[page_idx].lists_visibility.length = right_idx - left_idx + 1
+end
+
+function ViewLayoutTrait:collapse_list( page_idx, list_idx)
+    dprint("Collapsing list:", list_idx, "on page:", page_idx)
+    self.viewState.pages[page_idx].lists[list_idx].expanded = false
+
+    -- put to false all the .show of the items
+    for _, item in ipairs(self.viewState.pages[page_idx].lists[list_idx].items ) do
+        item.show = false
+    end
+
+end
+
+-- TODO1 as i modified expand_list and collapse_list to set the .show of the items, i may need to be just stupid as fuck in render()
+-- + this function should then be in layouttrait i think !!!
+-- TODO3 Update things if needed in layoutcolumns and be sure to factorize correctly
+function ViewLayoutTrait:expand_list(page_idx, list_idx)
+    self.viewState.pages[page_idx].lists[list_idx].expanded = true
+
+    -- put to false all the .show of the items
+    for _, item in ipairs(self.viewState.pages[page_idx].lists[list_idx].items ) do
+        item.show = true
+    end
+end
+
 function ViewLayoutTrait:compute_windows_rendering(layout_name)
     local viewData = self.viewData
     local viewWindows = self.viewWindows
@@ -83,9 +112,9 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
         -- EXPANDED LIST: show all cards, we will compute their position later
         --------------------------------------------------------------------
         if not list_expanded then
-            for card_index, _ in ipairs(list.items or {}) do
-                viewState.pages[focused_page].lists[idx_list].items[card_index].show = false
-            end
+            -- for card_index, _ in ipairs(list.items or {}) do
+            --     viewState.pages[focused_page].lists[idx_list].items[card_index].show = false
+            -- end
             goto continue_lists
         end
         --TODO if list is expanded, show all cards, but we will also compute their visibilitywindow/position
@@ -113,11 +142,14 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
     end
 end
 
-function ViewLayoutTrait:render()
+function ViewLayoutTrait:render(debug)
     -- dprint("Rendering ViewLayoutTrait:", self.__name)
     local viewData = self.viewData
     local viewWindows = self.viewWindows
     local viewState = self.viewState
+    if debug then
+        dprint("viewState:", viewState)
+    end
     self:compute_windows_rendering() -- TODO probably that it should be called in new, and in functions (ju;p list for example) that may change it
     for list_idx, list in ipairs(self.viewWindows.pages[self.viewState.focused.page].lists) do
         if viewState.pages[viewState.focused.page].lists[list_idx].show then

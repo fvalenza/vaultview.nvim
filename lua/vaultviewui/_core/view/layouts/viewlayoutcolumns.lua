@@ -21,6 +21,17 @@ function ViewLayoutColumns.new(viewData, viewWindows, viewState)
 end
 
 function ViewLayoutColumns:compute_layout()
+    for p_idx, _ in ipairs(self.viewData.pages) do
+        self:compute_visibility_window(p_idx)
+    end
+end
+
+function ViewLayoutColumns:compute_visibility_window(page_idx)
+    local viewData = self.viewData
+    local viewWindows = self.viewWindows
+    local viewState = self.viewState
+
+    self:set_lists_visibility_window(page_idx, 1, #viewState.pages[viewState.focused.page].lists)
 end
 
 return ViewLayoutColumns
