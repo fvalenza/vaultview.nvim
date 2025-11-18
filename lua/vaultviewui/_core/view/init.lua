@@ -386,15 +386,97 @@ function View:focus_first_entry()
 end
 
 function View:focus_previous_entry()
-    self.state.focused.entry = math.max(1, self.state.focused.entry - 1)
-    self:focus()
+    local state = self.state
+    local page_idx  = state.focused.page
+    local list_idx  = state.focused.list
+    local entry_idx = state.focused.entry
+
+    local list_state = state.pages[page_idx].lists[list_idx]
+    local pages      = list_state.list_pages
+    local cur_page   = list_state.current_page
+
+    local pstart = pages[cur_page].start
+    local pend   = pages[cur_page].stop
+
+    --------------------------------------------------------------------
+    -- Move *within* current page
+    --------------------------------------------------------------------
+    if entry_idx > pstart then
+        state.focused.entry = entry_idx - 1
+        self:render()
+        return self:focus()
+    end
+
+    --------------------------------------------------------------------
+    -- Move to previous page
+    --------------------------------------------------------------------
+    if cur_page > 1 then
+        list_state.current_page = cur_page - 1
+
+        -- move focus to last entry of previous page
+        local prev_range = pages[cur_page - 1]
+        state.focused.entry = prev_range.stop
+
+        self:render()  -- <<< IMPORTANT
+        return self:focus()
+    end
+
+    --------------------------------------------------------------------
+    -- At very beginning → clamp
+    --------------------------------------------------------------------
+    state.focused.entry = pstart
+    self:render()
+    return self:focus()
 end
 
+
+
 function View:focus_next_entry()
-    local num_entries = #self.viewWindows.pages[self.state.focused.page].lists[self.state.focused.list].items
-    self.state.focused.entry = math.min(self.state.focused.entry + 1, num_entries)
-    self:focus()
+    local state = self.state
+    local page_idx  = state.focused.page
+    local list_idx  = state.focused.list
+    local entry_idx = state.focused.entry
+
+    local list_state = state.pages[page_idx].lists[list_idx]
+    local pages      = list_state.list_pages
+    local cur_page   = list_state.current_page
+
+    local pstart = pages[cur_page].start
+    local pend   = pages[cur_page].stop
+
+    local num_entries = #self.viewWindows.pages[page_idx].lists[list_idx].items
+
+    --------------------------------------------------------------------
+    -- Move within current page
+    --------------------------------------------------------------------
+    if entry_idx < pend then
+        state.focused.entry = entry_idx + 1
+        self:render()
+        return self:focus()
+    end
+
+    --------------------------------------------------------------------
+    -- Move to next page
+    --------------------------------------------------------------------
+    if cur_page < #pages then
+        list_state.current_page = cur_page + 1
+
+        -- move focus to first entry of next page
+        local next_range = pages[cur_page + 1]
+        state.focused.entry = next_range.start
+
+        self:render() -- <<< IMPORTANT
+        return self:focus()
+    end
+
+    --------------------------------------------------------------------
+    -- At last entry of last page → clamp
+    --------------------------------------------------------------------
+    state.focused.entry = num_entries
+    self:render()
+    return self:focus()
 end
+
 
 function View:focus_last_entry()
     local num_entries = #self.viewWindows.pages[self.state.focused.page].lists[self.state.focused.list].items
