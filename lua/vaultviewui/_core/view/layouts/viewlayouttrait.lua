@@ -77,6 +77,7 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
             list_win.opts.wo.winbar = fmt:format(list.title, #list.items)
 
             vim.api.nvim_buf_set_lines(list_win.buf, 0, -1, false, {})
+            list_win.opts.height = Constants.list_win[layout_name].height
         else
             local fmt = " %d "
             list_win.opts.wo.winbar = fmt:format(#list.items)
@@ -111,34 +112,36 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
         --------------------------------------------------------------------
         -- EXPANDED LIST: compute entries's window position as they will be rendered
         --------------------------------------------------------------------
-        local row_offset = Constants.list_win[layout_name].row + 1 + 1
+        local base_row = Constants.list_win[layout_name].row + 1 + 1 -- starting row for displaying entry windows
 
-        -- TODO the positioning of entries shall depend on the visibility window of entries in the list ?
-        for card_index, card in ipairs(list.items or {}) do -- TODO harmonize naming in whole codebase. entry or items but not card anyway
+        local list_state = viewState.pages[focused_page].lists[idx_list]
+        local list_pages = list_state.list_pages -- the ranges of entries per page
 
-            -- local entries_visibility_window_first = viewState.pages[focused_page].lists[idx_list].entries_visibility.first
-            -- local entries_visibility_window_last = viewState.pages[focused_page].lists[idx_list].entries_visibility.last
-            -- -- if not entry in visibility window, skip
-            -- if not (card_index >= entries_visibility_window_first and card_index <= entries_visibility_window_last) then
-            --     self.viewState.pages[focused_page].lists[idx_list].items[card_index].show = false -- TODO, is it necesarry ? or we assume it was already done in compute_layout + when changing focus of entry
-            --     goto continue_cards
-            -- end
-            -- if not viewState.pages[focused_page].lists[idx_list].items[card_index].show then
-            --     goto continue_cards
-            -- end
-            local card_win = viewWindows.pages[focused_page].lists[idx_list].items[card_index]
+        -- For each page, compute row offsets independently
+        for page_num, page_range in ipairs(list_pages) do
+            local row_offset = base_row
 
-            card_win.opts.width = width
-            card_win.opts.col = list_win.opts.col + 1
-            local card_expanded = viewState.pages[focused_page].lists[idx_list].items[card_index].expanded
-            local height = card_expanded and Constants.card_win[layout_name].height or Constants.card_win_close.height
+            local first = page_range.start
+            local last = page_range.stop
 
-            card_win.opts.row = row_offset
-            card_win.opts.height = height
+            for card_index = first, last do
+                local card = list.items[card_index]
+                if card then
+                    local card_win = viewWindows.pages[focused_page].lists[idx_list].items[card_index]
 
-            row_offset = row_offset + height + 1 + 1
+                    card_win.opts.width = width
+                    card_win.opts.col = list_win.opts.col + 1
 
-            ::continue_cards::
+                    local card_expanded = list_state.items[card_index].expanded
+                    local height = card_expanded and Constants.card_win[layout_name].height
+                        or Constants.card_win_close.height
+
+                    card_win.opts.row = row_offset
+                    card_win.opts.height = height
+
+                    row_offset = row_offset + height + 1 + 1
+                end
+            end
         end
 
         ::continue_lists::
@@ -146,34 +149,70 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
 end
 
 function ViewLayoutTrait:render(debug)
-    -- dprint("Rendering ViewLayoutTrait:", self.__name)
-    local viewData = self.viewData
+    local viewData    = self.viewData
     local viewWindows = self.viewWindows
-    local viewState = self.viewState
+    local viewState   = self.viewState
+
     if debug then
         dprint("viewState:", viewState)
     end
+
     self:compute_windows_rendering()
-    for list_idx, list in ipairs(self.viewWindows.pages[self.viewState.focused.page].lists) do
-        if viewState.pages[viewState.focused.page].lists[list_idx].show then
-            for item_idx, entry in ipairs(list.items or {}) do
-                if entry then
-                    if viewState.pages[viewState.focused.page].lists[list_idx].items[item_idx].show then
-                        entry:show()
-                    else
-                        entry:hide()
-                    end
-                end
+
+    local focused_page = viewState.focused.page
+
+    for list_idx, list_win_obj in ipairs(self.viewWindows.pages[focused_page].lists) do
+        local list_state = viewState.pages[focused_page].lists[list_idx]
+
+        --------------------------------------------------------------------
+        -- If the entire list is hidden (list_state.show), hide everything
+        --------------------------------------------------------------------
+        if not list_state.show then
+            list_win_obj.win:hide()
+            for _, entry_win in ipairs(list_win_obj.items or {}) do
+                entry_win:hide()
             end
-            list.win:show()
-        else
-            for _, entry in ipairs(list.items or {}) do
-                if entry then
-                    entry:hide()
-                end
-            end
-            list.win:hide()
+            goto continue_lists
         end
+
+        --------------------------------------------------------------------
+        -- Show the list window itself
+        --------------------------------------------------------------------
+        list_win_obj.win:show()
+
+        --------------------------------------------------------------------
+        -- If the list is COLLAPSED: hide all entry windows
+        --------------------------------------------------------------------
+        if not list_state.expanded then
+            for _, entry_win in ipairs(list_win_obj.items or {}) do
+                entry_win:hide()
+            end
+            goto continue_lists
+        end
+
+        --------------------------------------------------------------------
+        -- LIST IS EXPANDED → Show only entries of current page
+        --------------------------------------------------------------------
+        local current_page = list_state.current_page
+        local page_info    = list_state.list_pages[current_page]
+        if not page_info then
+            -- no entries to render
+            goto continue_lists
+        end
+        local first_idx    = page_info.start
+        local last_idx     = page_info.stop
+
+        for item_idx, entry_win in ipairs(list_win_obj.items or {}) do
+            if entry_win then
+                if item_idx >= first_idx and item_idx <= last_idx then
+                    entry_win:show()
+                else
+                    entry_win:hide()
+                end
+            end
+        end
+
+        ::continue_lists::
     end
 end
 
