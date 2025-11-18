@@ -76,8 +76,8 @@ local function create_entry_window(entry, layout)
         width = cfg.width,
         height = cfg.height,
         zindex = cfg.zindex,
-        -- border = cfg.border,
-        border = "rounded",
+        border = cfg.border,
+        -- border = "rounded",
         relative = "editor",
         row = cfg.row, -- align all lists at top of view_win
         col = cfg.col, -- at creation, put them all at the top left. will be recomputed in render function
@@ -133,7 +133,7 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
 
     local pages_names = {}
     local windows = { pages = {} }
-    local pages_state = { }
+    local pages_state = {}
 
     for p_idx, page in ipairs(board.pages or {}) do
         --------------------------------------------------------
@@ -141,7 +141,7 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
         --------------------------------------------------------
         pages_state[p_idx] = {
             lists_visibility = { first = 0, last = 0, length = 0 },
-            lists = {}
+            lists = {},
         }
         --------------------------------------------------------
         -- Create windows table
@@ -152,13 +152,32 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
         for l_idx, list in ipairs(page.lists or {}) do
 
             --------------------------------------------------------------------
+            -- Build list pagination
+            --------------------------------------------------------------------
+            local num_entries_in_list = #list.items or 0
+            local max_entries_per_list_page = 2
+            local num_pages_needed = math.ceil(num_entries_in_list / max_entries_per_list_page)
+
+            local list_pages = {}
+
+            for page_start = 1, num_entries_in_list, max_entries_per_list_page do
+                local page_end = math.min(page_start + max_entries_per_list_page - 1, num_entries_in_list)
+                table.insert(list_pages, {
+                    start = page_start,
+                    stop = page_end,
+                })
+            end
+
+            --------------------------------------------------------------------
             -- Build list-level state object
             --------------------------------------------------------------------
             pages_state[p_idx].lists[l_idx] = {
                 expanded = true,
                 show = true,
                 entries_visibility = { first = 0, last = 0, length = 0 },
-                items = {}
+                items = {},
+                list_pages = list_pages,
+                current_page = 1,
             }
 
             --------------------------------------------------------------------
@@ -174,7 +193,6 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
             -- Iterate items
             --------------------------------------------------------------------
             for i_idx, item in ipairs(list.items or {}) do
-
                 -- Add item-level state
                 pages_state[p_idx].lists[l_idx].items[i_idx] = {
                     expanded = true,

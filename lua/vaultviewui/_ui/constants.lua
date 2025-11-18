@@ -5,7 +5,6 @@ local padding = {
     left = 1,
 }
 
-
 M.header_win = {
     width = vim.o.columns,
     height = 6,
@@ -23,9 +22,6 @@ M.view_win = {
     row = M.header_win.height + 1,
     col = 0,
 }
-
-
-
 
 M.list_win = {
     ViewLayoutColumns = {
@@ -70,7 +66,8 @@ M.card_win = {
         width = 67,
         height = 6,
         zindex = 30,
-        border = { "", "", "", "│", "╯", "─", "╰", "│" },
+        -- border = { "", "", "", "│", "╯", "─", "╰", "│" },
+        border = { "", "─", "", "", "", "", "", "" },
         -- row = M.boards_win.height + M.pages_win.height +  3 * padding.top, -- Could be 2 * padding if no border
         -- col = 1,
     },
@@ -79,7 +76,7 @@ M.card_win = {
         width = 32,
         height = 6,
         zindex = 30,
-        border = { "", "", "", "│", "╯", "─", "╰", "│" },
+        border = { "", "─", "", "", "", "", "", "" },
         -- row = M.boards_win.height + M.pages_win.height +  3 * padding.top, -- Could be 2 * padding if no border
         -- col = 1,
     },
@@ -93,4 +90,13 @@ M.card_win_close = {
     -- col = 1,
 }
 
+
+M.card_closing_list = {
+    width = 32,
+    height = 0,
+    zindex = 30,
+    border = { "", "▁", "", "", "", "", "", "" },
+    -- row = M.boards_win.height + M.pages_win.height +  3 * padding.top, -- Could be 2 * padding if no border
+    -- col = 1,
+}
 return M

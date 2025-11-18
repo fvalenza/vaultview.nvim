@@ -129,9 +129,9 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
             local card_win = viewWindows.pages[focused_page].lists[idx_list].items[card_index]
 
             card_win.opts.width = width
-            card_win.opts.col = list_win.opts.col
-
-            local height = card.expanded and card.win.viewlayout_height or Constants.card_win_close.height
+            card_win.opts.col = list_win.opts.col + 1
+            local card_expanded = viewState.pages[focused_page].lists[idx_list].items[card_index].expanded
+            local height = card_expanded and Constants.card_win[layout_name].height or Constants.card_win_close.height
 
             card_win.opts.row = row_offset
             card_win.opts.height = height
