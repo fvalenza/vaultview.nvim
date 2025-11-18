@@ -160,7 +160,6 @@ function M.open_help()
     local current_file = debug.getinfo(1, "S").source:sub(2)
     local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/_doc/help_page.md" -- go up and in _doc
     -- print("Help path is: " .. help_path)
-    vim.notify("Opening help page..." .. help_path, vim.log.levels.INFO)
 
     -- Open help window with Snacks
     local help_win = Snacks.win({

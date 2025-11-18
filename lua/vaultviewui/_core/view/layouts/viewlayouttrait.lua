@@ -53,6 +53,9 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
     for idx_list, list in ipairs(viewData.pages[focused_page].lists or {}) do
         local list_win = viewWindows.pages[focused_page].lists[idx_list].win
         local list_expanded = viewState.pages[focused_page].lists[idx_list].expanded
+        local list_entry_page = viewState.pages[focused_page].lists[idx_list].current_page
+        local num_entry_pages = #viewState.pages[focused_page].lists[idx_list].list_pages
+        local num_entries = #list.items
 
         --------------------------------------------------------------------
         -- Determine width depending on list expanded/collapsed
@@ -78,6 +81,21 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
 
             vim.api.nvim_buf_set_lines(list_win.buf, 0, -1, false, {})
             list_win.opts.height = Constants.list_win[layout_name].height
+
+            if num_entry_pages == 0 then
+                list_win.opts.footer = {
+                    { "<S-j> ↑ ", "Comment" },
+                    { "-", "Normal" },
+                    { " ↓ <S-k>", "Comment" },
+                }
+            else
+                list_win.opts.footer = {
+                    { "<S-j> ↑ ", "Comment" },
+                    { list_entry_page .. "/" .. num_entry_pages, "Normal" },
+                    -- { "page " .. focused_page .. "/" .. num_entry_pages, "Normal" },
+                    { " ↓ <S-k>", "Comment" },
+                }
+            end
         else
             local fmt = " %d "
             list_win.opts.wo.winbar = fmt:format(#list.items)
@@ -96,6 +114,9 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
             -- height shall be the char_list length + padding + border
             height = #char_list_title + 1 + 1 -- 1 = padding, 1 = border
             list_win.opts.height = height
+
+            -- Resets footer
+            list_win.opts.footer = ""
         end
 
         list_win.opts.col = col_offset -- put the list_win at the offset
@@ -149,9 +170,9 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
 end
 
 function ViewLayoutTrait:render(debug)
-    local viewData    = self.viewData
+    local viewData = self.viewData
     local viewWindows = self.viewWindows
-    local viewState   = self.viewState
+    local viewState = self.viewState
 
     if debug then
         dprint("viewState:", viewState)
@@ -194,13 +215,13 @@ function ViewLayoutTrait:render(debug)
         -- LIST IS EXPANDED → Show only entries of current page
         --------------------------------------------------------------------
         local current_page = list_state.current_page
-        local page_info    = list_state.list_pages[current_page]
+        local page_info = list_state.list_pages[current_page]
         if not page_info then
             -- no entries to render
             goto continue_lists
         end
-        local first_idx    = page_info.start
-        local last_idx     = page_info.stop
+        local first_idx = page_info.start
+        local last_idx = page_info.stop
 
         for item_idx, entry_win in ipairs(list_win_obj.items or {}) do
             if entry_win then

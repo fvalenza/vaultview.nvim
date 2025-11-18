@@ -465,7 +465,7 @@ function View:focus_next_entry()
         local next_range = pages[cur_page + 1]
         state.focused.entry = next_range.start
 
-        self:render() -- <<< IMPORTANT
+        self:render()
         return self:focus()
     end
 
