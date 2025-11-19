@@ -391,6 +391,13 @@ function View:focus_previous_entry()
     local list_idx  = state.focused.list
     local entry_idx = state.focused.entry
 
+    local num_entries = #self.viewWindows.pages[page_idx].lists[list_idx].items
+
+    if num_entries == 0 then
+        vim.notify("No entries in the current list to focus", vim.log.levels.WARN)
+        return
+    end
+
     local list_state = state.pages[page_idx].lists[list_idx]
     local pages      = list_state.list_pages
     local cur_page   = list_state.current_page
@@ -437,6 +444,12 @@ function View:focus_next_entry()
     local list_idx  = state.focused.list
     local entry_idx = state.focused.entry
 
+    local num_entries = #self.viewWindows.pages[page_idx].lists[list_idx].items
+
+    if num_entries == 0 then
+        return
+    end
+
     local list_state = state.pages[page_idx].lists[list_idx]
     local pages      = list_state.list_pages
     local cur_page   = list_state.current_page
@@ -444,7 +457,6 @@ function View:focus_next_entry()
     local pstart = pages[cur_page].start
     local pend   = pages[cur_page].stop
 
-    local num_entries = #self.viewWindows.pages[page_idx].lists[list_idx].items
 
     --------------------------------------------------------------------
     -- Move within current page
