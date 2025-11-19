@@ -189,9 +189,9 @@ function View:render_page_selection(start_line)
     vim.bo[buf].modifiable = false
 end
 
-function View:render(debug)
+function View:render()
     self:render_page_selection(self.page_selection_line)
-    self.layout:render(debug)
+    self.layout:render()
     self:focus()
 end
 
@@ -356,6 +356,7 @@ function View:focus_previous_list()
 
     -- compute new focused list
     self.state.focused.list = math.max(1, self.state.focused.list - 1)
+    self.state.focused.entry = self:compute_entry_index_after_list_jump(old_focused_list, self.state.focused.list)
 
     -- adjust lists visibility if needed
     if self.state.focused.list < start_lists_visibility then
@@ -367,11 +368,9 @@ function View:focus_previous_list()
             self.state.focused.list,
             end_lists_visibility - 1
         )
+        self:render()
     end
 
-    -- self.state.focused.entry = self:recompute_focused_entry_index()
-    self.state.focused.entry = self:compute_entry_index_after_list_jump(old_focused_list, self.state.focused.list)
-    self:render(true)
     self:focus()
 end
 
@@ -402,6 +401,7 @@ function View:focus_next_list()
     -- compute new focused list
     self.state.focused.list =
         math.min(self.state.focused.list + 1, #self.viewWindows.pages[self.state.focused.page].lists)
+    self.state.focused.entry = self:compute_entry_index_after_list_jump(old_focused_list, self.state.focused.list)
 
     -- adjust lists visibility if needed
     if self.state.focused.list > end_lists_visibility then
@@ -413,11 +413,10 @@ function View:focus_next_list()
             start_lists_visibility + 1,
             self.state.focused.list
         )
+        -- render only if visibility changed
+        self:render()
     end
 
-    -- self.state.focused.entry = self:recompute_focused_entry_index()
-    self.state.focused.entry = self:compute_entry_index_after_list_jump(old_focused_list, self.state.focused.list)
-    self:render(true)
     self:focus()
 end
 

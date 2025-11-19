@@ -164,14 +164,10 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
     end
 end
 
-function ViewLayoutTrait:render(debug)
+function ViewLayoutTrait:render()
     local viewData = self.viewData
     local viewWindows = self.viewWindows
     local viewState = self.viewState
-
-    if debug then
-        dprint("viewState:", viewState)
-    end
 
     self:compute_windows_rendering()
 
