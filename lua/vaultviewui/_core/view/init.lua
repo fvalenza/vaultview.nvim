@@ -219,7 +219,7 @@ function View:focus()
     end
 end
 
-function View:recompute_focused_list_index()
+function View:compute_focused_list_index_for_current_page()
     local focused_page_idx = self.state.focused.page
     local focused_page = self.viewWindows.pages[focused_page_idx]
 
@@ -257,16 +257,14 @@ function View:compute_entry_index_after_list_jump(from_list_idx, to_list_idx)
     if new_list_num_entries == 0 then
         return 0
     end
-    local old_pstart, old_pend, old_list_state, old_list_pages, old_list_cur_page
+    local old_pstart, old_list_state, old_list_pages, old_list_cur_page
     if old_list_num_entries == 0 then
       old_pstart = 1
-      old_pend = 1
     else
         old_list_state = state.pages[focused_page_idx].lists[old_focused_list_idx]
         old_list_pages = old_list_state.list_pages
         old_list_cur_page = old_list_state.current_page
         old_pstart = old_list_pages[old_list_cur_page].start
-        old_pend = old_list_pages[old_list_cur_page].stop
     end
 
 
@@ -275,7 +273,6 @@ function View:compute_entry_index_after_list_jump(from_list_idx, to_list_idx)
     local pages = list_state.list_pages
     local cur_page = list_state.current_page
     local pstart = pages[cur_page].start
-    local pend = pages[cur_page].stop
 
     if old_list_num_entries == 0 then
         return pstart
@@ -295,17 +292,15 @@ function View:compute_entry_index_after_list_jump(from_list_idx, to_list_idx)
     end
 end
 
+-- If there are no entries, focus on 0.
+-- else:
+-- If the current focused_entry is greater than num_entries, set it to num_entries
+-- else if the focused_entry is 0, set it to 1 else keep it as is
 function View:compute_focused_entry_index_for_current_list()
     local focused_page = self.viewWindows.pages[self.state.focused.page]
-
     local focused_list = focused_page.lists[self.state.focused.list]
-
     local num_entries = #focused_list.items
 
-    -- If there are no entries, focus on 0.
-    -- else:
-    -- If the current focused_entry is greater than num_entries, set it to num_entries
-    -- else if the focused_entry is 0, set it to 1 else keep it as is
 
     if num_entries == 0 then
         return 0
@@ -328,7 +323,7 @@ function View:previous_page()
     if self.state.focused.page < 1 then
         self.state.focused.page = #self.viewWindows.pages
     end
-    self.state.focused.list = self:recompute_focused_list_index()
+    self.state.focused.list = self:compute_focused_list_index_for_current_page()
     self.state.focused.entry = self:compute_focused_entry_index_for_current_list()
     self:render()
     self:focus()
@@ -340,7 +335,7 @@ function View:next_page()
     if self.state.focused.page > #self.viewWindows.pages then
         self.state.focused.page = 1
     end
-    self.state.focused.list = self:recompute_focused_list_index()
+    self.state.focused.list = self:compute_focused_list_index_for_current_page()
     self.state.focused.entry = self:compute_focused_entry_index_for_current_list()
     self:render()
     self:focus()
@@ -376,10 +371,6 @@ function View:focus_previous_list()
 
     -- self.state.focused.entry = self:recompute_focused_entry_index()
     self.state.focused.entry = self:compute_entry_index_after_list_jump(old_focused_list, self.state.focused.list)
-    vim.notify(
-        "Focused entry index after list jump: " .. tostring(self.state.focused.entry),
-        vim.log.levels.DEBUG
-    )
     self:render(true)
     self:focus()
 end
@@ -426,10 +417,6 @@ function View:focus_next_list()
 
     -- self.state.focused.entry = self:recompute_focused_entry_index()
     self.state.focused.entry = self:compute_entry_index_after_list_jump(old_focused_list, self.state.focused.list)
-    vim.notify(
-        "Focused entry index after list jump: " .. tostring(self.state.focused.entry),
-        vim.log.levels.DEBUG
-    )
     self:render(true)
     self:focus()
 end
@@ -441,12 +428,27 @@ function View:focus_last_list()
 end
 
 function View:focus_first_entry()
-    if #self.viewWindows.pages[self.state.focused.page].lists[self.state.focused.list].items == 0 then
+
+    local num_entries = #self.viewWindows.pages[self.state.focused.page].lists[self.state.focused.list].items
+    if num_entries == 0 then
         self.state.focused.entry = 0
-    else
-        self.state.focused.entry = 1
+        return
     end
-    self:focus()
+    local state = self.state
+    local page_idx = state.focused.page
+    local list_idx = state.focused.list
+    local list_state = state.pages[page_idx].lists[list_idx]
+    local cur_entry_page = list_state.current_page
+
+
+    if cur_entry_page == 1 then
+        self.state.focused.entry = 1
+        self:focus()
+    else
+        list_state.current_page = 1
+        self.state.focused.entry = 1
+        self:render()
+    end
 end
 
 function View:focus_previous_entry()
@@ -458,16 +460,15 @@ function View:focus_previous_entry()
     local num_entries = #self.viewWindows.pages[page_idx].lists[list_idx].items
 
     if num_entries == 0 then
-        vim.notify("No entries in the current list to focus", vim.log.levels.WARN)
         return
     end
 
     local list_state = state.pages[page_idx].lists[list_idx]
-    local pages = list_state.list_pages
-    local cur_page = list_state.current_page
+    local entry_pages = list_state.list_pages
+    local cur_entry_page = list_state.current_page
 
-    local pstart = pages[cur_page].start
-    local pend = pages[cur_page].stop
+    local pstart = entry_pages[cur_entry_page].start
+    local pend = entry_pages[cur_entry_page].stop
 
     --------------------------------------------------------------------
     -- Move *within* current page
@@ -481,11 +482,11 @@ function View:focus_previous_entry()
     --------------------------------------------------------------------
     -- Move to previous page
     --------------------------------------------------------------------
-    if cur_page > 1 then
-        list_state.current_page = cur_page - 1
+    if cur_entry_page > 1 then
+        list_state.current_page = cur_entry_page - 1
 
         -- move focus to last entry of previous page
-        local prev_range = pages[cur_page - 1]
+        local prev_range = entry_pages[cur_entry_page - 1]
         state.focused.entry = prev_range.stop
 
         self:render() -- <<< IMPORTANT
@@ -513,11 +514,11 @@ function View:focus_next_entry()
     end
 
     local list_state = state.pages[page_idx].lists[list_idx]
-    local pages = list_state.list_pages
-    local cur_page = list_state.current_page
+    local entry_pages = list_state.list_pages
+    local cur_entry_page = list_state.current_page
 
-    local pstart = pages[cur_page].start
-    local pend = pages[cur_page].stop
+    local pstart = entry_pages[cur_entry_page].start
+    local pend = entry_pages[cur_entry_page].stop
 
     --------------------------------------------------------------------
     -- Move within current page
@@ -531,11 +532,11 @@ function View:focus_next_entry()
     --------------------------------------------------------------------
     -- Move to next page
     --------------------------------------------------------------------
-    if cur_page < #pages then
-        list_state.current_page = cur_page + 1
+    if cur_entry_page < #entry_pages then
+        list_state.current_page = cur_entry_page + 1
 
         -- move focus to first entry of next page
-        local next_range = pages[cur_page + 1]
+        local next_range = entry_pages[cur_entry_page + 1]
         state.focused.entry = next_range.start
 
         self:render()
@@ -551,9 +552,22 @@ function View:focus_next_entry()
 end
 
 function View:focus_last_entry()
+    local state = self.state
+    local page_idx = state.focused.page
+    local list_idx = state.focused.list
+    local list_state = state.pages[page_idx].lists[list_idx]
+    local entry_pages = list_state.list_pages
+    local cur_entry_page = list_state.current_page
     local num_entries = #self.viewWindows.pages[self.state.focused.page].lists[self.state.focused.list].items
-    self.state.focused.entry = num_entries
-    self:focus()
+
+    if cur_entry_page == #entry_pages then
+        self.state.focused.entry = num_entries
+        self:focus()
+    else
+        list_state.current_page = #entry_pages
+        self.state.focused.entry = num_entries
+        self:render()
+    end
 end
 
 function View:open_in_neovim()

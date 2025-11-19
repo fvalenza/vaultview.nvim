@@ -11,11 +11,6 @@ function ViewLayoutTrait:debug()
     dprint(self.viewState)
 end
 
--- TODO vim.notify this to force implementation in subclasses
--- function ViewLayoutTrait:compute_layout(viewData, viewWindows, viewState)
---     dprint("Computing layout for ViewLayoutTrait:", self.__name)
---     -- Default implementation does nothing
--- end
 
 function ViewLayoutTrait:set_lists_visibility_window(page_idx, left_idx, right_idx)
     self.viewState.pages[page_idx].lists_visibility.first = left_idx
