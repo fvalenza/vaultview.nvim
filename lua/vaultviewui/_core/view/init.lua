@@ -146,7 +146,6 @@ function View:focus()
 
     if focused_window then
         focused_window:focus()
-
     end
 end
 
@@ -188,15 +187,13 @@ function View:compute_entry_index_after_list_jump(from_list_idx, to_list_idx)
     end
     local old_pstart, old_list_state, old_list_pages, old_list_cur_page
     if old_list_num_entries == 0 then
-      old_pstart = 1
+        old_pstart = 1
     else
         old_list_state = state.pages[focused_page_idx].lists[old_focused_list_idx]
         old_list_pages = old_list_state.list_pages
         old_list_cur_page = old_list_state.current_page
         old_pstart = old_list_pages[old_list_cur_page].start
     end
-
-
 
     local list_state = state.pages[focused_page_idx].lists[focused_list_idx]
     local pages = list_state.list_pages
@@ -229,7 +226,6 @@ function View:compute_focused_entry_index_for_current_list()
     local focused_page = self.viewWindows.pages[self.state.focused.page]
     local focused_list = focused_page.lists[self.state.focused.list]
     local num_entries = #focused_list.items
-
 
     if num_entries == 0 then
         return 0
@@ -354,7 +350,6 @@ function View:focus_last_list()
 end
 
 function View:focus_first_entry()
-
     local num_entries = #self.viewWindows.pages[self.state.focused.page].lists[self.state.focused.list].items
     if num_entries == 0 then
         self.state.focused.entry = 0
@@ -365,7 +360,6 @@ function View:focus_first_entry()
     local list_idx = state.focused.list
     local list_state = state.pages[page_idx].lists[list_idx]
     local cur_entry_page = list_state.current_page
-
 
     if cur_entry_page == 1 then
         self.state.focused.entry = 1
@@ -400,7 +394,6 @@ function View:focus_previous_entry()
     --------------------------------------------------------------------
     if entry_idx > pstart then
         state.focused.entry = entry_idx - 1
-        self:render()
         return self:focus()
     end
 
@@ -414,7 +407,9 @@ function View:focus_previous_entry()
         local prev_range = entry_pages[cur_entry_page - 1]
         state.focused.entry = prev_range.stop
 
-        self:render()
+        self.layout:compute_single_list(page_idx, list_idx)
+        self.layout:render_single_list(page_idx, list_idx)
+
         return self:focus()
     end
 
@@ -422,7 +417,6 @@ function View:focus_previous_entry()
     -- At very beginning → clamp
     --------------------------------------------------------------------
     state.focused.entry = pstart
-    self:render()
     return self:focus()
 end
 
@@ -450,7 +444,6 @@ function View:focus_next_entry()
     --------------------------------------------------------------------
     if entry_idx < pend then
         state.focused.entry = entry_idx + 1
-        self:render()
         return self:focus()
     end
 
@@ -464,7 +457,9 @@ function View:focus_next_entry()
         local next_range = entry_pages[cur_entry_page + 1]
         state.focused.entry = next_range.start
 
-        self:render()
+        self.layout:compute_single_list(page_idx, list_idx)
+        self.layout:render_single_list(page_idx, list_idx)
+
         return self:focus()
     end
 
@@ -472,9 +467,9 @@ function View:focus_next_entry()
     -- At last entry of last page → clamp
     --------------------------------------------------------------------
     state.focused.entry = num_entries
-    self:render()
     return self:focus()
 end
+
 
 function View:focus_last_entry()
     local state = self.state

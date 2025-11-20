@@ -145,6 +145,13 @@ end
 --------------------------------------------------------------------
 -- Helper: Render a single LIST (show/hide windows)
 --------------------------------------------------------------------
+function ViewLayoutTrait:render_single_list(page_idx, list_idx)
+    local list_state = self.viewState.pages[page_idx].lists[list_idx]
+    local list_win_obj = self.viewWindows.pages[page_idx].lists[list_idx]
+
+    self:render_list(list_idx, list_state, list_win_obj)
+end
+
 function ViewLayoutTrait:render_list(idx_list, list_state, list_win_obj)
     -- Fully hidden list
     if not list_state.show then
@@ -184,6 +191,25 @@ end
 -- Compute the position of each window for list/entry depending on the state
 -- Update title on list window wheter it's expanded or collapsed
 --------------------------------------------------------------------
+function ViewLayoutTrait:compute_single_list(page_idx, list_idx)
+    local layout_name = self.__name
+    local page = self.viewData.pages[page_idx]
+    local windows = self.viewWindows.pages[page_idx]
+    local state = self.viewState.pages[page_idx]
+
+    local list = page.lists[list_idx]
+    local list_state = state.lists[list_idx]
+    local list_win_obj = windows.lists[list_idx]
+    local list_win = list_win_obj.win
+
+    local col_offset = list_win.opts.col
+
+    self:compute_list_window_rendering(
+        list_idx, list, list_state, list_win,
+        layout_name, col_offset
+    )
+end
+
 function ViewLayoutTrait:compute_windows_rendering(layout_name)
     layout_name = layout_name or self.__name
 
