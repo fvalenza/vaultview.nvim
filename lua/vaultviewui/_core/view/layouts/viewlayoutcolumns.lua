@@ -37,11 +37,8 @@ function ViewLayoutColumns:compute_lists_in_page_visibility_window(page_idx)
 end
 
 function ViewLayoutColumns:compute_entries_in_list_visibility_window(page_idx, list_idx)
-    --TODO
-    local viewState = self.viewState
-    viewState.pages[page_idx].lists[list_idx].entries_visibility.start = 1
-    viewState.pages[page_idx].lists[list_idx].entries_visibility.last = 5
-    viewState.pages[page_idx].lists[list_idx].entries_visibility.length = 5
+    --TODO(roadmap) This function will be necessary when "Display entries in list as stack" will be available.
+    --For ViewLayoutColumns, the visibility of entries in list will be "all" (start = 1, end = num_entries, length = num_entries ; perhaps do not forget to take into account pagination of entries)
 end
 
 return ViewLayoutColumns

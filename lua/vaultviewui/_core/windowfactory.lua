@@ -77,27 +77,44 @@ local function create_entry_window(entry, layout)
         height = cfg.height,
         zindex = cfg.zindex,
         border = cfg.border,
-        -- border = "rounded",
         relative = "editor",
-        row = cfg.row, -- align all lists at top of view_win
+        row = cfg.row, -- align all windows at top of view_win
         col = cfg.col, -- at creation, put them all at the top left. will be recomputed in render function
         text = entry.content,
         title = entry.title,
         show = true,
-        -- enter = false,
         enter = true,
         backdrop = false,
         focusable = true,
         keys = Keymaps.generic,
+        -- bo = { modifiable = true, filetype = "markdown" }, -- FIXME this causes performance issues ?
         bo = { modifiable = true },
-        -- bo = { modifiable = true, filetype = filetype },
     })
+    -- TODO(roadmap) highlight focused/unfocused entry windows either with events here or autocommands ? Or force highlight manually at each focus/unfocus
+    -- vim.api.nvim_set_option_value("winhighlight", "Normal:EntryWindowInactive", { win = card_win.win })
+    --
+    -- card_win:on({ "BufEnter" }, function()
+    --     vim.notify("Entry window focused: ")
+    --     vim.api.nvim_set_option_value("winhighlight", "Normal:EntryWindowActive", { win = card_win.win })
+    -- end, { buf = true })
+    --
+    -- card_win:on({ "BufLeave" }, function()
+    --     vim.notify("Leaving window focused: ")
+    --     vim.api.nvim_set_option_value("winhighlight", "Normal:EntryWindowInactive", { win = card_win.win })
+    -- end, { buf = true })
+
+    -- card_win:on("WinEnter", function()
+    --     local winid = card_win.id
+    --     vim.notify("Entry window focused: " .. tostring(winid))
+    --     require("vaultviewui").focus_entry_with_id(winid)
+    -- end)
+    -- TODO(roadmap) end of my tries
+
     card_win:hide()
 
     return card_win
 end
 
--- Helper: create a list "title" window (container for its items)
 local function create_list_window(list, layout)
     local class_name = layout.name()
     local cfg = Constants.list_win[class_name]
@@ -112,13 +129,12 @@ local function create_list_window(list, layout)
         row = cfg.row, -- align all lists at top of view_win
         col = cfg.col, -- at creation, put them all at the top left. will be recomputed in render function
         show = true,
-        -- enter = false,
-        enter = true,
+        enter = false,
         backdrop = false,
         focusable = true,
         keys = Keymaps.generic,
+        -- bo = { modifiable = true, filetype = "markdown" }, -- FIXME this causes performance issues ?
         bo = { modifiable = true },
-        -- bo = { modifiable = true, filetype = filetype },
     })
     list_win:hide()
 
@@ -150,12 +166,14 @@ function M.create_board_view_windows(VaultData, board_idx, layout)
         local page_name = page.title or ("page_" .. tostring(p_idx))
 
         for l_idx, list in ipairs(page.lists or {}) do
-
             --------------------------------------------------------------------
             -- Build list pagination
             --------------------------------------------------------------------
+            local class_name = layout.name()
+            local list_win_cfg = Constants.list_win[class_name]
+            local card_win_cfg = Constants.card_win[class_name]
             local num_entries_in_list = #list.items or 0
-            local max_entries_per_list_page = 2
+            local max_entries_per_list_page = math.floor(list_win_cfg.height / (card_win_cfg.height + 1 + 1)) -- +1 = top border of card_win, + 1 = space between cards
             local num_pages_needed = math.ceil(num_entries_in_list / max_entries_per_list_page)
 
             local list_pages = {}

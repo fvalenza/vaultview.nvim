@@ -8,6 +8,8 @@ M.defaults = {
     TabSeparator = { fg = "#5f5f5f" },
     PageActive   = "Title",
     PageInactive = "Normal",
+    EntryWindowActive = {bg = "#303040"},
+    EntryWindowInactive = {bg = "#202020"},
 }
 
 --- Apply or link highlights

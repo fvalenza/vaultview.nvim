@@ -41,6 +41,12 @@ function M.close()
     end
 end
 
+function M.reload()
+    M.close()
+
+    M.open()
+end
+
 function M.hide()
     if M.context.vv then
         M.context.vv:hide()
@@ -156,10 +162,8 @@ function M.fast_refresh()
 end
 
 function M.open_help()
-    -- Get the absolute path to this Lua file
     local current_file = debug.getinfo(1, "S").source:sub(2)
     local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/_doc/help_page.md" -- go up and in _doc
-    -- print("Help path is: " .. help_path)
 
     -- Open help window with Snacks
     local help_win = Snacks.win({

@@ -8,11 +8,6 @@ local View = require("vaultviewui._core.view")
 local layouts = require("vaultviewui._core.view.layouts")
 
 function VaultView.new(config)
-    -- TODO to put at plugin loading the creation of highlight groups
-    local highlights = require("vaultviewui._ui.highlights")
-    highlights.apply(userhl)
-
-    -- function VaultView.new()
     local self = setmetatable({}, VaultView)
 
     self.config = config
@@ -44,6 +39,7 @@ function VaultView.new(config)
         local board_layout_config = board_config.viewlayout
         local viewlayout = type(board_layout_config) == "string" and layouts[board_layout_config]
             or error("Invalid layout type for " .. self.boards_names[i])
+        -- TODO(roadmap) Do not create all view at once, only create when needed
         self.views[i] = View.new(self.VaultData, i, board_config, viewlayout, self.header_win)
     end
 
@@ -188,19 +184,6 @@ function VaultView:hide()
     self.isDisplayed = false
 end
 
--- function VaultView:destroy()
---     -- Close the windows first
---     if self.header_win then
---         self.header_win:close()
---         self.header_win = nil
---     end
---     if self.view_win then
---         self.view_win:close()
---         self.view_win = nil
---     end
---
---     self.isDisplayed = false
--- end
 
 function VaultView:goto_board(index)
     if index == self.active_board_index then
@@ -281,6 +264,12 @@ function VaultView:focus_next_entry()
 end
 function VaultView:focus_last_entry()
     self.views[self.active_board_index]:focus_last_entry()
+end
+function VaultView:focus_entry_with_id(entry_id)
+    self.views[self.active_board_index]:focus_entry_with_id(entry_id)
+end
+function VaultView:focus_list_with_id(entry_id)
+    self.views[self.active_board_index]:focus_list_with_id(entry_id)
 end
 
 function VaultView:open_in_neovim()

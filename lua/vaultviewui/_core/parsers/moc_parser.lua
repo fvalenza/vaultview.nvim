@@ -26,14 +26,13 @@ end
 local function search_wikilink(dir, name)
     -- escape [ and ] for rg (Lua pattern -> literal)
     local pattern = "\\[\\[" .. name .. "\\]\\]" -- e.g. [[MyNote]]
+
     -- wrap in quotes for shell safety
     local cmd = string.format(
         'rg --no-config --type=md --no-heading --with-filename --line-number --column "%s" "%s"',
         pattern,
         dir
     )
-
-    -- print("Executing command:", cmd)
 
     local handle = io.popen(cmd)
     if not handle then
@@ -87,7 +86,6 @@ function M.arrangeInputsIntoBoardData(boardInputs, boardConfig, vaultRootPath)
             local notesBacklinking = search_wikilink(vaultRootPath, board_input.name)
             local unique_results = tutils.remove_duplicates(notesBacklinking)
 
-            -- necessary ??
             -- Sort wikilinks by filename before parsing them (using utils.SplitFilename)
             table.sort(unique_results, function(a, b)
                 local _, afname = utils.SplitFilename(a)
@@ -123,6 +121,10 @@ function M.arrangeInputsIntoBoardData(boardInputs, boardConfig, vaultRootPath)
     return boardData
 end
 
+--- parse a vault folder to create a board data structure depending on the board configuration
+---@param vault configuration of the vault {path: string, name: string}
+---@param boardConfig configuration of the board {name:string, parser: string|function, viewlayout: string, subfolder: string, pattern: string}
+---@return The BoardDataStructure as expected by a ViewLayout
 function M.parseBoard(vault, user_commands, boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 

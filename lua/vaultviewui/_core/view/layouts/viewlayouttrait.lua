@@ -1,8 +1,6 @@
 local ViewLayoutTrait = {}
 
-local Snacks = require("snacks")
 local Constants = require("vaultviewui._ui.constants")
-local Keymaps = require("vaultviewui.keymaps")
 
 function ViewLayoutTrait:debug()
     dprint("ViewLayoutTrait debug:")
@@ -60,8 +58,6 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
         if list_expanded then
             width = Constants.list_win[layout_name].width
             -- height shall be dynamic depending on cards number
-
-            -- local list_height = math.min(cfg.height, 2 + sum_cards_height) -- WARN: Can't put 1 here because "Not enough room" errors
         else
             width = Constants.list_win_close[layout_name].width
             -- height shall be dynamic depending in title length
@@ -75,20 +71,19 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
             list_win.opts.wo.winbar = fmt:format(list.title, #list.items)
 
             vim.api.nvim_buf_set_lines(list_win.buf, 0, -1, false, {})
-            list_win.opts.height = Constants.list_win[layout_name].height
+            list_win.opts.height = Constants.list_win[layout_name].height -- TODO  shall be  max  available height
 
             if num_entry_pages == 0 then
                 list_win.opts.footer = {
-                    { "<S-j> ↑ ", "Comment" },
+                    { "<A-j> ↑ ", "Comment" }, -- TODO(roadmap) keymap shall not be hardcoded. See same for page change
                     { "-", "Normal" },
-                    { " ↓ <S-k>", "Comment" },
+                    { " ↓ <A-k>", "Comment" },
                 }
             else
                 list_win.opts.footer = {
-                    { "<S-j> ↑ ", "Comment" },
+                    { "<A-j> ↑ ", "Comment" },
                     { list_entry_page .. "/" .. num_entry_pages, "Normal" },
-                    -- { "page " .. focused_page .. "/" .. num_entry_pages, "Normal" },
-                    { " ↓ <S-k>", "Comment" },
+                    { " ↓ <A-k>", "Comment" },
                 }
             end
         else
@@ -106,7 +101,6 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
             local char_list_title = stringToCharList(list.title)
             vim.api.nvim_buf_set_lines(list_win.buf, -1, -1, false, char_list_title)
 
-            -- height shall be the char_list length + padding + border
             height = #char_list_title + 1 + 1 -- 1 = padding, 1 = border
             list_win.opts.height = height
 
@@ -115,7 +109,7 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
         end
 
         list_win.opts.col = col_offset -- put the list_win at the offset
-        list_win.opts.width = width -- with the compute width (depending on expanded/collapsed status)
+        list_win.opts.width = width -- with the computed width (depending on expanded/collapsed status)
         col_offset = col_offset + width + 1 + 1 -- move to next column 1=padding, 1=border
 
         --------------------------------------------------------------------
@@ -149,7 +143,7 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
                     card_win.opts.col = list_win.opts.col + 1
 
                     local card_expanded = list_state.items[card_index].expanded
-                    local height = card_expanded and Constants.card_win[layout_name].height
+                    height = card_expanded and Constants.card_win[layout_name].height
                         or Constants.card_win_close.height
 
                     card_win.opts.row = row_offset
@@ -165,16 +159,13 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
 end
 
 function ViewLayoutTrait:render()
-    local viewData = self.viewData
-    local viewWindows = self.viewWindows
-    local viewState = self.viewState
 
     self:compute_windows_rendering()
 
-    local focused_page = viewState.focused.page
+    local focused_page = self.viewState.focused.page
 
     for list_idx, list_win_obj in ipairs(self.viewWindows.pages[focused_page].lists) do
-        local list_state = viewState.pages[focused_page].lists[list_idx]
+        local list_state = self.viewState.pages[focused_page].lists[list_idx]
 
         --------------------------------------------------------------------
         -- If the entire list is hidden (list_state.show), hide everything
@@ -228,9 +219,6 @@ function ViewLayoutTrait:render()
     end
 end
 
--- these are the same
--- function ViewLayoutTrait:hide()
--- ViewLayoutTrait.hide = function(self)
 function ViewLayoutTrait:hide(viewWindows, viewState)
     local focused_page_idx = viewState.focused.page
     for _, list in ipairs(viewWindows.pages[focused_page_idx].lists) do

@@ -3,7 +3,7 @@ View.__index = View
 
 local wf = require("vaultviewui._core.windowfactory")
 
--- WARN VaultData is the data from the global VaultData but for the specific board the layout is associated to...shall be renamed to BoardData ?
+--INFO VaultData is the data from the global VaultData but for the specific board the layout is associated to...shall be renamed to BoardData ?
 function View.new(VaultData, board_idx, board_config, layout, header_win)
     local self = setmetatable({}, View)
     self.VaultData = VaultData
@@ -14,9 +14,10 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
     self.state = {
         focused = { page = 1, list = 1, entry = 0 },
         pages = {},
-        -- expanded = {},
-        -- show = {},
     }
+    -- TODO(roadmap) Do not create all windows at once, only create those needed for the current page, and create others on demand when needed
+    -- This can be done with a boolean "loaded" flag in self.state.pages and when switching page, check if loaded, if not create windows for that page
+    -- but we will need self.pages_names to be initialized here anyway and create at least the first page windows + state
     self.pages_names, self.viewWindows, self.state.pages = wf.create_board_view_windows(VaultData, board_idx, layout)
 
     dprint("Initial View State:", vim.inspect(self.state))
@@ -43,82 +44,11 @@ end
 function View:debug()
     dprint("View Debug Info:")
     dprint("Board Index:", self.board_idx)
-    self.state.expansion = true
+    dprint("ViewData:", self.viewData)
     self.layout:debug()
-    dprint("State:", vim.inspect(self.state))
 end
 
--- -- Internal helper to mark expansion state
--- function View:is_expanded(page_idx, entry_idx)
---     return self.state.expanded[page_idx] and self.state.expanded[page_idx][entry_idx]
--- end
---
--- function View:set_expanded(page_idx, entry_idx, value)
---     self.state.expanded[page_idx] = self.state.expanded[page_idx] or {}
---     self.state.expanded[page_idx][entry_idx] = value
--- end
---
--- -- Create or update a single entry
--- function View:render_entry(page_idx, entry_idx, opts)
---     local board_idx = self.board_idx
---     local entry = Data.Boards[board_idx].pages[page_idx].entries[entry_idx]
---     local expanded = self:is_expanded(page_idx, entry_idx)
---
---     local buf = UIState:get_buffer(board_idx, page_idx, entry_idx)
---     local win = UIState:get_window(board_idx, page_idx, entry_idx)
---
---     if not buf or not vim.api.nvim_buf_is_valid(buf) then
---         buf = vim.api.nvim_create_buf(false, true)
---         vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
---         UIState:set(board_idx, page_idx, entry_idx, buf, win)
---     end
---
---     local lines = expanded and entry.content or { entry.content[1] .. " ..." }
---     vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
---
---     if not win or not vim.api.nvim_win_is_valid(win) then
---         win = vim.api.nvim_open_win(buf, false, {
---             relative = "editor",
---             width = opts.width or 40,
---             height = #lines + 1,
---             row = opts.row or 2 + (entry_idx - 1) * 5,
---             col = opts.col or 10,
---             style = "minimal",
---             border = "rounded",
---         })
---         UIState:set(board_idx, page_idx, entry_idx, buf, win)
---     end
---
---     if self.state.focused.page == page_idx and self.state.focused.entry == entry_idx then
---         vim.api.nvim_win_set_option(win, "winhl", "Normal:Visual")
---     else
---         vim.api.nvim_win_set_option(win, "winhl", "Normal:Normal")
---     end
--- end
---
--- function View:focus_next_entry()
---     local f = self.state.focused
---     f.entry = f.entry + 1
---     self:render_board()
--- end
---
--- function View:toggle_entry_expansion()
---     local f = self.state.focused
---     local current = self:is_expanded(f.page, f.entry)
---     self:set_expanded(f.page, f.entry, not current)
---     self:render_board()
--- end
---
--- function View:render_board()
---     local board = Data.Boards[self.board_idx]
---     for page_idx, page in ipairs(board.pages) do
---         for entry_idx, _ in ipairs(page.entries) do
---             self:render_entry(page_idx, entry_idx, { col = 5, width = 40 })
---         end
---     end
--- end
-
-function View:render_page_selection(start_line)
+function View:render_page_selection()
     local win = self.header_win
     local pages = self.pages_names
     local active_page = self.state.focused.page
@@ -154,7 +84,7 @@ function View:render_page_selection(start_line)
     end
 
     local pages_line = table.concat(page_texts)
-    local prefix = "<S-h>  <--  "
+    local prefix = "<S-h>  <--  " -- TODO (roadmap) prefix and suffix shall be the one from keymaps of the actions "next_page/previous_page", taking into account user remaps
     local suffix = "  -->  <S-l>"
     local full_text = prefix .. pages_line .. suffix
 
@@ -190,7 +120,7 @@ function View:render_page_selection(start_line)
 end
 
 function View:render()
-    self:render_page_selection(self.page_selection_line)
+    self:render_page_selection()
     self.layout:render()
     self:focus()
 end
@@ -216,17 +146,16 @@ function View:focus()
 
     if focused_window then
         focused_window:focus()
+
     end
 end
 
+-- If the current focused_list is greater than num_lists, set it to num_lists
+-- else if the focused_list is 0, set it to 1 else keep it as is
 function View:compute_focused_list_index_for_current_page()
     local focused_page_idx = self.state.focused.page
     local focused_page = self.viewWindows.pages[focused_page_idx]
-
     local num_lists = #focused_page.lists
-
-    -- If the current focused_list is greater than num_lists, set it to num_lists
-    -- else if the focused_list is 0, set it to 1 else keep it as is
 
     if self.state.focused.list > num_lists then
         return num_lists
@@ -352,7 +281,6 @@ function View:focus_previous_list()
     local end_lists_visibility = self.state.pages[self.state.focused.page].lists_visibility.last
 
     local old_focused_list = self.state.focused.list
-    local old_focused_entry = self.state.focused.entry
 
     -- compute new focused list
     self.state.focused.list = math.max(1, self.state.focused.list - 1)
@@ -396,7 +324,6 @@ function View:focus_next_list()
     local end_lists_visibility = self.state.pages[self.state.focused.page].lists_visibility.last
 
     local old_focused_list = self.state.focused.list
-    local old_focused_entry = self.state.focused.entry
 
     -- compute new focused list
     self.state.focused.list =
@@ -467,10 +394,9 @@ function View:focus_previous_entry()
     local cur_entry_page = list_state.current_page
 
     local pstart = entry_pages[cur_entry_page].start
-    local pend = entry_pages[cur_entry_page].stop
 
     --------------------------------------------------------------------
-    -- Move *within* current page
+    -- Move within current entries page
     --------------------------------------------------------------------
     if entry_idx > pstart then
         state.focused.entry = entry_idx - 1
@@ -479,7 +405,7 @@ function View:focus_previous_entry()
     end
 
     --------------------------------------------------------------------
-    -- Move to previous page
+    -- Move to previous entries page
     --------------------------------------------------------------------
     if cur_entry_page > 1 then
         list_state.current_page = cur_entry_page - 1
@@ -488,7 +414,7 @@ function View:focus_previous_entry()
         local prev_range = entry_pages[cur_entry_page - 1]
         state.focused.entry = prev_range.stop
 
-        self:render() -- <<< IMPORTANT
+        self:render()
         return self:focus()
     end
 
@@ -569,6 +495,36 @@ function View:focus_last_entry()
     end
 end
 
+function View:focus_entry_with_id(snacksWinId)
+    for p_idx, page in ipairs(self.viewWindows.pages) do
+        for l_idx, list in ipairs(page.lists) do
+            for e_idx, entry in ipairs(list.items) do
+                if entry.win_id == snacksWinId then
+                    self.state.focused.page = p_idx
+                    self.state.focused.list = l_idx
+                    self.state.focused.entry = e_idx
+                    self:render()
+                    return self:focus()
+                end
+            end
+        end
+    end
+end
+
+function View:focus_list_with_id(snacksWinId)
+    for p_idx, page in ipairs(self.viewWindows.pages) do
+        for l_idx, list in ipairs(page.lists) do
+            if list.win.win_id == snacksWinId then
+                self.state.focused.page = p_idx
+                self.state.focused.list = l_idx
+                self.state.focused.entry = 0
+                self:render()
+                return self:focus()
+            end
+        end
+    end
+end
+
 function View:open_in_neovim()
     if self.state.focused.list == 0 or self.state.focused.entry == 0 then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
@@ -588,7 +544,7 @@ function View:open_in_neovim()
         return
     end
 
-    local win = require("snacks").win({
+    require("snacks").win({
         file = expanded_path,
         width = 0.9,
         height = 0.95,
@@ -627,13 +583,12 @@ function View:open_in_obsidian(vaultname)
     local path = vim.fn.fnamemodify(filepath, ":p") -- absolute path
     -- https://help.obsidian.md/Extending+Obsidian/Obsidian+URI
     local uri = "obsidian://open?path=" .. vim.fn.escape(path, " ")
-    -- print("Opening Obsidian URI:", uri)
 
     local cmd = string.format("!xdg-open 'obsidian://open?vault=%s&file=%s'", vaultname, title)
-    -- print("Executing command:", cmd)
     vim.cmd(cmd)
 end
 
+-- returns the entry from the table viewData at given page, list and entry indexes
 function View:getDataEntry(page_idx, list_idx, entry_idx)
     local entry = self.viewData.pages[page_idx].lists[list_idx].items[entry_idx]
     if not entry then
@@ -642,6 +597,7 @@ function View:getDataEntry(page_idx, list_idx, entry_idx)
     return entry
 end
 
+-- returns the Snacks window object from the table viewWindows at given page, list and entry indexes
 function View:getWindowEntry(page_idx, list_idx, entry_idx)
     local entry_win = self.viewWindows.pages[page_idx].lists[list_idx].items[entry_idx]
     if not entry_win then
@@ -650,6 +606,7 @@ function View:getWindowEntry(page_idx, list_idx, entry_idx)
     return entry_win
 end
 
+-- refreshes the content of the entry at given page, list and entry indexes
 function View:refresh_entry_content(page_idx, list_idx, entry_idx, user_commands)
     if page_idx == 0 or list_idx == 0 or entry_idx == 0 then
         return
@@ -685,6 +642,7 @@ function View:refresh_focused_entry_content(user_commands)
     )
 end
 
+-- reshresh all entries content in the view (without reparsing the whole board)
 function View:fast_refresh()
     for idx_page, page in ipairs(self.viewData.pages) do
         for idx_list, list in ipairs(page.lists) do
