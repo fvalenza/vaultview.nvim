@@ -1,3 +1,16 @@
+---
+--- ParserTrait: Mixin/trait for parsing vault files into board data structures.
+--- Provides methods for:
+---   1. Selecting input files to build board pages/lists (parseVaultForBoardInputs)
+---   2. Extracting content from entry files (findContentInEntryFile)
+---   3. Populating board entries with parsed content (parseBoardDataEntriesForContent)
+---
+--- The functions of this trait is intended to be applied to other parsers to provide them default implementation.
+--- These parsers can also overwrite them if necessary
+---
+---
+--- @module ParserTrait
+---
 local ParserTrait = {}
 
 local utils = require("vaultviewui._core.utils.utils")
@@ -13,7 +26,9 @@ local input_selectors = {
     ["yyyy-mm-dd_md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
 }
 
--- Merge user-defined find commands with defaults
+--- Merge user-defined input selectors with defaults
+--- @param user_selectors table? User-defined input selectors
+--- @return table Merged input selectors
 local function merge_input_selectors(user_selectors)
     local merged = vim.deepcopy(input_selectors)
     if type(user_selectors) == "table" then
@@ -24,6 +39,11 @@ local function merge_input_selectors(user_selectors)
     return merged
 end
 
+--- Parse vault directory to get the list of files to use as board inputs
+--- @param base_dir string Base vault directory path
+--- @param user_commands table Table of user-defined input/content selectors -- TODO(roadmap): merge table in configuraiton.lua
+--- @param board_config table Configuration for the board (input_selector, subfolder, etc.)
+--- @return table[] List of board input objects: { name = string, path = string }
 function ParserTrait.parseVaultForBoardInputs(base_dir, user_commands, board_config)
     local boardData = {}
 
@@ -97,7 +117,9 @@ local content_selectors = {
     tasks = [=[grep -E '^\s*-\s*\[[ x]\]' %q | sed -E 's/^\s*-\s*\[[ x]\]\s*//' ]=], -- TODO test
 }
 
--- Merge user-defined grep commands with defaults
+--- Merge user-defined content selectors with defaults
+--- @param user_selectors table? User-defined content selectors
+--- @return table Merged content selectors
 local function merge_content_selectors(user_selectors)
     local merged = vim.deepcopy(content_selectors)
     if type(user_selectors) == "table" then
@@ -108,12 +130,17 @@ local function merge_content_selectors(user_selectors)
     return merged
 end
 
+--- Extract content lines from a file
+--- @param path string File path
+--- @param user_commands table? User-defined commands (input + content selectors)
+--- @param boardConfig table? Board configuration (content_selector)
+--- @return string[] Lines of content
 function ParserTrait.findContentInEntryFile(path, user_commands, boardConfig)
     user_commands = user_commands or {}
     boardConfig = boardConfig or {}
 
     -- Retrieve the grep command template between the user-defined and default ones
-    local grep_commands = merge_content_selectors(user_commands.content_selectors)
+    local grep_commands = merge_content_selectors(user_commands.content_selectors) -- TODO(roadmap) when merge at plugin loading, no need to merge again so to remove here
     local mode = boardConfig.content_selector or "lvl2headings_noexcalidraw_awk" -- default to awk version
     local template = grep_commands[mode]
 
@@ -132,6 +159,8 @@ function ParserTrait.findContentInEntryFile(path, user_commands, boardConfig)
     return lines
 end
 
+--- Populate all entries in boardData with content from their files
+--- @param boardData table Board data structure: pages → lists → entries
 function ParserTrait.parseBoardDataEntriesForContent(boardData)
     for _, page in ipairs(boardData) do
         for _, list in ipairs(page.lists) do

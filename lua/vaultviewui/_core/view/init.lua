@@ -1,13 +1,44 @@
---- Represents a View for ONE Vault Board
--- The View is in charge of holding the data of the associated board , the state of the view (which page/list/entry
--- is focused, if the windows shall be expanded/collapsed, if they shall be shown/hidden, ...),
--- and the windows objects
+--- # View
+--- View Wrapper for **one Vault Board**.
+---
+--- A View handles:
+--- - board-specific data
+--- - UI state (focused page/list/entry)
+--- - window objects for every list and entry
+--- - rendering, focusing, paging, list navigation
+--- - actions such as “open in Neovim”, “open in Obsidian”, “refresh”
+---
+--- Each View instance is tied to:
+--- - One board (`VaultData.boards[board_idx]`)
+--- - One layout implementation
+--- - A set of windows created by `windowfactory.create_board_view_windows`
+---
+--- Some actions of the View might be delegated to the layout
+---
+--- @class View
+--- @field VaultData table                     Board-scoped vault data
+--- @field board_idx integer                   Index of the board this view represents
+--- @field viewData table                      Data of the selected board
+--- @field board_config table                  Per-board plugin configuration
+--- @field header_win table                    Snacks window object for the header
+--- @field layout table                        Layout instance controlling positioning
+--- @field pages_names string[]                List of page names from Vault data
+--- @field viewWindows table                   Window objects for all pages/lists/entries
+--- @field state table                         UI navigation state
 local View = {}
 View.__index = View
 
 local wf = require("vaultviewui._core.windowfactory")
 
---INFO VaultData is the data from the global VaultData but for the specific board the layout is associated to...shall be renamed to BoardData ?
+--- Create a new View instance for a given board index (among the boards configured by user in plugin setup).
+---
+--- @param VaultData table       The entire vault data (global)
+--- @param board_idx integer     Index of the board this View handles
+--- @param board_config table    User configuration for this board
+--- @param layout table          Layout class/table with .new() constructor
+--- @param header_win table      Snacks window instance for page selection header
+---
+--- @return View                 New View instance
 function View.new(VaultData, board_idx, board_config, layout, header_win)
     local self = setmetatable({}, View)
     self.VaultData = VaultData
@@ -43,6 +74,7 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
     return self
 end
 
+--- Print debugging information about the current View.
 function View:debug()
     dprint("View Debug Info:")
     dprint("Board Index:", self.board_idx)
@@ -50,6 +82,7 @@ function View:debug()
     self.layout:debug()
 end
 
+--- Render the header page selection bar.
 function View:render_page_selection()
     local win = self.header_win
     local pages = self.pages_names
@@ -121,16 +154,21 @@ function View:render_page_selection()
     vim.bo[buf].modifiable = false
 end
 
+--- Render the entire View (PArt concerning the page selection in the header + layout).
 function View:render()
     self:render_page_selection()
     self.layout:render()
     self:focus()
 end
 
+--- Hide all windows associated with this view's layout.
 function View:hide()
     self.layout:hide(self.viewWindows, self.state)
 end
 
+--- Get the window object currently focused (based on indexes of the viewState).
+---
+--- @return table|nil window     The Snacks window currently focused
 function View:getFocusedWindow()
     local focused_page_idx, focused_list_idx, focused_entry_idx =
         self.state.focused.page, self.state.focused.list, self.state.focused.entry
@@ -143,6 +181,7 @@ function View:getFocusedWindow()
     end
 end
 
+--- Put cursor focus on the currently focused window (based on indexes of the viewState).
 function View:focus()
     local focused_window = self:getFocusedWindow()
 
@@ -151,8 +190,12 @@ function View:focus()
     end
 end
 
--- If the current focused_list is greater than num_lists, set it to num_lists
--- else if the focused_list is 0, set it to 1 else keep it as is
+--- Compute the valid focused list index after changing page.
+---
+--- If the current focused_list is greater than num_lists, set it to num_lists
+--- else if the focused_list is 0, set it to 1 else keep it as is
+---
+--- @return integer list_idx
 function View:compute_focused_list_index_for_current_page()
     local focused_page_idx = self.state.focused.page
     local focused_page = self.viewWindows.pages[focused_page_idx]
@@ -169,11 +212,17 @@ function View:compute_focused_list_index_for_current_page()
     end
 end
 
--- If there are no entries, focus on 0.
--- else:
--- If the current focused_entry is greater than num_entries, set it to num_entries
--- else if the focused_entry is 0, set it to 1 else keep it as is
--- Takes into account that the lists may be on different list_pages
+--- Compute the entry index after jumping from one list to another.
+---
+--- If there are no entries, focus on 0.
+--- else:
+--- If the current focused_entry is greater than num_entries, set it to num_entries
+--- else if the focused_entry is 0, set it to 1 else keep it as is
+--- Takes into account that the lists may be on different list_pages
+---
+--- @param from_list_idx integer
+--- @param to_list_idx integer
+--- @return integer entry_idx
 function View:compute_entry_index_after_list_jump(from_list_idx, to_list_idx)
     local state = self.state
     local focused_page_idx = state.focused.page
@@ -220,10 +269,13 @@ function View:compute_entry_index_after_list_jump(from_list_idx, to_list_idx)
     end
 end
 
--- If there are no entries, focus on 0.
--- else:
--- If the current focused_entry is greater than num_entries, set it to num_entries
--- else if the focused_entry is 0, set it to 1 else keep it as is
+--- Compute valid entry index in current list after changes.
+---
+--- If there are no entries, focus on 0.
+--- else:
+--- If the current focused_entry is greater than num_entries, set it to num_entries
+--- else if the focused_entry is 0, set it to 1 else keep it as is
+--- @return integer entry_idx
 function View:compute_focused_entry_index_for_current_list()
     local focused_page = self.viewWindows.pages[self.state.focused.page]
     local focused_list = focused_page.lists[self.state.focused.list]
@@ -244,6 +296,7 @@ function View:compute_focused_entry_index_for_current_list()
     end
 end
 
+--- Focus previous page (cyclic).
 function View:previous_page()
     self:hide()
     self.state.focused.page = self.state.focused.page - 1
@@ -256,6 +309,7 @@ function View:previous_page()
     self:focus()
 end
 
+--- Focus next page (cyclic).
 function View:next_page()
     self:hide()
     self.state.focused.page = self.state.focused.page + 1
@@ -268,12 +322,14 @@ function View:next_page()
     self:focus()
 end
 
+--- Focus the first list in the page.
 function View:focus_first_list()
     while self.state.focused.list > 1 do
         self:focus_previous_list()
     end
 end
 
+--- Move focus to previous list.
 function View:focus_previous_list()
     local start_lists_visibility = self.state.pages[self.state.focused.page].lists_visibility.first
     local end_lists_visibility = self.state.pages[self.state.focused.page].lists_visibility.last
@@ -300,6 +356,7 @@ function View:focus_previous_list()
     self:focus()
 end
 
+--- Focus center list on the screen.
 function View:focus_center_list()
     local current_focused_list = self.state.focused.list
     local focused_list_target = self.state.pages[self.state.focused.page].center_list_index
@@ -345,12 +402,14 @@ function View:focus_next_list()
     self:focus()
 end
 
+--- Focus last list in the page.
 function View:focus_last_list()
     while self.state.focused.list < #self.viewWindows.pages[self.state.focused.page].lists do
         self:focus_next_list()
     end
 end
 
+--- Focus first entry of current list.
 function View:focus_first_entry()
     local num_entries = #self.viewWindows.pages[self.state.focused.page].lists[self.state.focused.list].items
     if num_entries == 0 then
@@ -373,6 +432,7 @@ function View:focus_first_entry()
     end
 end
 
+--- Focus previous entry in current list/page.
 function View:focus_previous_entry()
     local state = self.state
     local page_idx = state.focused.page
@@ -422,6 +482,7 @@ function View:focus_previous_entry()
     return self:focus()
 end
 
+--- Focus next entry in current list/page.
 function View:focus_next_entry()
     local state = self.state
     local page_idx = state.focused.page
@@ -472,7 +533,7 @@ function View:focus_next_entry()
     return self:focus()
 end
 
-
+--- Focus last entry in current list.
 function View:focus_last_entry()
     local state = self.state
     local page_idx = state.focused.page
@@ -492,6 +553,7 @@ function View:focus_last_entry()
     end
 end
 
+--- Move to previous entry page (if paginated).
 function View:focus_previous_entry_page()
     local state = self.state
     local page_idx = state.focused.page
@@ -515,6 +577,7 @@ function View:focus_previous_entry_page()
     end
 end
 
+--- Move to next entry page (if paginated).
 function View:focus_next_entry_page()
     local state = self.state
     local page_idx = state.focused.page
@@ -554,6 +617,9 @@ function View:focus_entry_with_id(snacksWinId)
     end
 end
 
+--- Focus a list for which window has the given Snacks window ID.
+---
+--- @param snacksWinId integer
 function View:focus_list_with_id(snacksWinId)
     for p_idx, page in ipairs(self.viewWindows.pages) do
         for l_idx, list in ipairs(page.lists) do
@@ -568,6 +634,7 @@ function View:focus_list_with_id(snacksWinId)
     end
 end
 
+--- Open focused entry in a Neovim floating window.
 function View:open_in_neovim()
     if self.state.focused.list == 0 or self.state.focused.entry == 0 then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
@@ -606,6 +673,9 @@ function View:open_in_neovim()
     })
 end
 
+--- Open focused entry in Obsidian using URI.
+---
+--- @param vaultname string
 function View:open_in_obsidian(vaultname)
     if self.state.focused.list == 0 or self.state.focused.entry == 0 then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
@@ -631,7 +701,12 @@ function View:open_in_obsidian(vaultname)
     vim.cmd(cmd)
 end
 
--- returns the entry from the table viewData at given page, list and entry indexes
+--- Retrieve the entry from the table viewData at given page, list and entry indexes
+---
+--- @param page_idx integer
+--- @param list_idx integer
+--- @param entry_idx integer
+--- @return table|nil entry
 function View:getDataEntry(page_idx, list_idx, entry_idx)
     local entry = self.viewData.pages[page_idx].lists[list_idx].items[entry_idx]
     if not entry then
@@ -640,7 +715,12 @@ function View:getDataEntry(page_idx, list_idx, entry_idx)
     return entry
 end
 
--- returns the Snacks window object from the table viewWindows at given page, list and entry indexes
+--- Retrieve the Snacks window object from the table viewWindows at given page, list and entry indexes
+---
+--- @param page_idx integer
+--- @param list_idx integer
+--- @param entry_idx integer
+--- @return table|nil win
 function View:getWindowEntry(page_idx, list_idx, entry_idx)
     local entry_win = self.viewWindows.pages[page_idx].lists[list_idx].items[entry_idx]
     if not entry_win then
@@ -649,7 +729,12 @@ function View:getWindowEntry(page_idx, list_idx, entry_idx)
     return entry_win
 end
 
--- refreshes the content of the entry at given page, list and entry indexes
+--- Reparse and refresh the content of a specific entry.
+---
+--- @param page_idx integer
+--- @param list_idx integer
+--- @param entry_idx integer
+--- @param user_commands table|nil Optional parser commands
 function View:refresh_entry_content(page_idx, list_idx, entry_idx, user_commands)
     if page_idx == 0 or list_idx == 0 or entry_idx == 0 then
         return
@@ -676,6 +761,9 @@ function View:refresh_entry_content(page_idx, list_idx, entry_idx, user_commands
     wf.setNewContent(entry_win, new_content)
 end
 
+--- Reparse/refresh the currently focused entry.
+---
+--- @param user_commands table|nil
 function View:refresh_focused_entry_content(user_commands)
     self:refresh_entry_content(
         self.state.focused.page,
@@ -685,7 +773,7 @@ function View:refresh_focused_entry_content(user_commands)
     )
 end
 
--- reshresh all entries content in the view (without reparsing the whole board)
+--- Refresh content of all entries in the view (quick, incremental).
 function View:fast_refresh()
     for idx_page, page in ipairs(self.viewData.pages) do
         for idx_list, list in ipairs(page.lists) do
