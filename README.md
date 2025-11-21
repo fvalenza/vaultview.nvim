@@ -14,6 +14,13 @@ With it, you can:
 - Open notes directly in Neovim or Obsidian.
 - Navigate the boards fluidly using Vim motions or custom pickers.
 
+<details>
+<summary><strong>Can we have Bases at home ?</strong></summary>
+
+![meme_bases_at_home](./doc/bases_at_home.png)
+
+</details>
+
 ## Table of Contents
 
 - [Features](#-features)
@@ -235,6 +242,3 @@ It's planned to allow user configuration of keybinds in future releases.
 See [roadmap](roadmap.md)
 
 
-## Known Issues
-- [ ] When opening a file associated to an entry with <CR>, and when quitting it to return to main window of the vaultview ("q"), it comes back to the first board instead of the previsouly active one
-- [ ] Action to "center cursor/focus" on viewlayoutcarousel to fix
