@@ -265,6 +265,12 @@ end
 function VaultView:focus_last_entry()
     self.views[self.active_board_index]:focus_last_entry()
 end
+function VaultView:focus_previous_entry_page()
+    self.views[self.active_board_index]:focus_previous_entry_page()
+end
+function VaultView:focus_next_entry_page()
+    self.views[self.active_board_index]:focus_next_entry_page()
+end
 function VaultView:focus_entry_with_id(entry_id)
     self.views[self.active_board_index]:focus_entry_with_id(entry_id)
 end

@@ -490,6 +490,52 @@ function View:focus_last_entry()
     end
 end
 
+function View:focus_previous_entry_page()
+    local state = self.state
+    local page_idx = state.focused.page
+    local list_idx = state.focused.list
+
+    local list_state = state.pages[page_idx].lists[list_idx]
+    local entry_pages = list_state.list_pages
+    local cur_entry_page = list_state.current_page
+
+    if cur_entry_page > 1 then
+        list_state.current_page = cur_entry_page - 1
+
+        -- move focus to first entry of previous page
+        local prev_range = entry_pages[cur_entry_page - 1]
+        state.focused.entry = prev_range.start
+
+        self.layout:compute_single_list(page_idx, list_idx)
+        self.layout:render_single_list(page_idx, list_idx)
+
+        return self:focus()
+    end
+end
+
+function View:focus_next_entry_page()
+    local state = self.state
+    local page_idx = state.focused.page
+    local list_idx = state.focused.list
+
+    local list_state = state.pages[page_idx].lists[list_idx]
+    local entry_pages = list_state.list_pages
+    local cur_entry_page = list_state.current_page
+
+    if cur_entry_page < #entry_pages then
+        list_state.current_page = cur_entry_page + 1
+
+        -- move focus to first entry of next page
+        local next_range = entry_pages[cur_entry_page + 1]
+        state.focused.entry = next_range.start
+
+        self.layout:compute_single_list(page_idx, list_idx)
+        self.layout:render_single_list(page_idx, list_idx)
+
+        return self:focus()
+    end
+end
+
 function View:focus_entry_with_id(snacksWinId)
     for p_idx, page in ipairs(self.viewWindows.pages) do
         for l_idx, list in ipairs(page.lists) do

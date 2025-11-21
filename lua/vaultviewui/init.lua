@@ -137,6 +137,19 @@ function M.focus_last_entry()
     end
 end
 
+function M.focus_previous_entry_page()
+    if M.context.vv then
+        M.context.vv:focus_previous_entry_page()
+    end
+end
+
+function M.focus_next_entry_page()
+    if M.context.vv then
+        M.context.vv:focus_next_entry_page()
+    end
+end
+
+
 function M.open_in_neovim()
     if M.context.vv then
         M.context.vv:open_in_neovim()

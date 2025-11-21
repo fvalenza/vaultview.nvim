@@ -30,6 +30,8 @@ M.generic = {
     ["k"] = { function() require("vaultviewui").focus_previous_entry() end, mode = "n", noremap = true, nowait = true, },
     ["j"] = { function() require("vaultviewui").focus_next_entry() end, mode = "n", noremap = true, nowait = true, },
     ["G"] = { function() require("vaultviewui").focus_last_entry() end, mode = "n", noremap = true, nowait = true, },
+    ["<A-k>"] = { function() require("vaultviewui").focus_previous_entry_page() end, mode = "n", noremap = true, nowait = true, },
+    ["<A-j>"] = { function() require("vaultviewui").focus_next_entry_page() end, mode = "n", noremap = true, nowait = true, },
     ["<CR>"] = { function() require("vaultviewui").open_in_neovim() end, mode = "n", noremap = true, nowait = true, },
     ["o"] = { function() require("vaultviewui").open_in_obsidian() end, mode = "n", noremap = true, nowait = true, },
 }
