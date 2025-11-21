@@ -34,15 +34,17 @@ local _EXTRA_DEFAULTS = {
         name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
     },
     user_commands = {
-        input_selectors = { -- list of custom input selectors. They keys can
+        input_selectors = { -- list of custom input selectors. They keys can be used in board definitions
             empty_list = { -- a comma-separated list of file paths
             },
             empty_func = function(search_path) -- a function that returns a list of file paths from a given search_path
                 return {
                 }
             end,
+            empty_shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
         },
-        entry_content_selectors = {},
+        entry_content_selectors = { -- custom content selectors can be defined here and chosen in the board configuration
+        },
     },
     boards = {
         {
