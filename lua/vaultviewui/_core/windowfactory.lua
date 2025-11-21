@@ -1,8 +1,11 @@
+--- Helper class to wrap functionalities over Windows creation
+-- Here in case i want to change the window manager lib later (removing snacks or using another one)
 local M = {}
 
 local Snacks = require("snacks")
 local Constants = require("vaultviewui._ui.constants")
 local Keymaps = require("vaultviewui.keymaps")
+
 
 function M.create_window(opts)
     local opts = opts
@@ -12,15 +15,18 @@ function M.create_window(opts)
     return win
 end
 
-function M.close_window(window)
-    if window and vim.api.nvim_win_is_valid(window.win) then
-        vim.api.nvim_win_close(window.win, true)
-    end
-    if window and vim.api.nvim_buf_is_valid(window.buf) then
-        vim.api.nvim_buf_delete(window.buf, { force = true })
-    end
-end
+-- function M.close_window(window)
+--     if window and vim.api.nvim_win_is_valid(window.win) then
+--         vim.api.nvim_win_close(window.win, true)
+--     end
+--     if window and vim.api.nvim_buf_is_valid(window.buf) then
+--         vim.api.nvim_buf_delete(window.buf, { force = true })
+--     end
+-- end
 
+--- Set new content in the window buffer. Erases previous content.
+---@param window The snacks window object
+---@param lines Array of lines to set in the buffer
 function M.setNewContent(window, lines)
     if window and vim.api.nvim_buf_is_valid(window.buf) then
         vim.bo[window.buf].modifiable = true
@@ -29,6 +35,9 @@ function M.setNewContent(window, lines)
     end
 end
 
+--- Append content in the window buffer
+---@param window The snacks window object
+---@param lines Array of lines to append in the buffer
 function M.appendContent(window, lines)
     if window and vim.api.nvim_buf_is_valid(window.buf) then
         local line_count = vim.api.nvim_buf_line_count(window.buf)
@@ -36,6 +45,9 @@ function M.appendContent(window, lines)
     end
 end
 
+--- Create windows for main background of vaultview.nvim plugin : header (to display available boards on pages in board)
+--- and view (to display lists and entries)
+---@return header_win, view_win The created Snacks window objects
 function M.create_header_and_view_windows()
     local header_win = M.create_window({
         width = Constants.header_win.width,
@@ -68,6 +80,10 @@ function M.create_header_and_view_windows()
     return header_win, view_win
 end
 
+--- Create a snacks window for an entry of a list
+---@param entry [TABLE] The entry data  from parsed VaultData
+---@param layout [CLASS] The layout in which this entry window will be displayed
+---@return card_win The created Snacks window object
 local function create_entry_window(entry, layout)
     local class_name = layout.name()
     local cfg = Constants.card_win[class_name]
@@ -115,6 +131,10 @@ local function create_entry_window(entry, layout)
     return card_win
 end
 
+--- create a snacks window for a list in a board page
+---@param list [TABLE] The list data from parsed VaultData
+---@param layout [CLASS] The layout in which this list window will be displayed
+---@return list_win The created Snacks window object
 local function create_list_window(list, layout)
     local class_name = layout.name()
     local cfg = Constants.list_win[class_name]
@@ -141,6 +161,13 @@ local function create_list_window(list, layout)
     return list_win
 end
 
+--- Create all window for a board view (lists and entries for all pages of a board)
+---@param VaultData [TABLE] The complete parsed VaultData
+---@param board_idx [NUMBER] The index of the board to create windows for
+---@param layout [CLASS] The layout in which this board will be displayed
+---@return [TABLE] pages_names The names of the pages in the board
+---@return [TABLE] windows The created windows structure for the board
+---@return [TABLE] pages_state The initial state structure for the board
 function M.create_board_view_windows(VaultData, board_idx, layout)
     local board = VaultData.boards[board_idx]
     if not board then

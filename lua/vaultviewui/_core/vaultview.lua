@@ -1,3 +1,48 @@
+--- Main/Root class of the plugin
+---@class vaultviewui.VaultView
+-- For each board of the configuration, will parse the vault and create data structure necessery for rendering
+-- VaultData is in the form:
+-- -- VaultData = {
+-- --     boards = {
+-- --         {
+-- --             title = "board name",
+-- --             pages = {
+-- --                 {
+-- --                     title = "page title",
+-- --                     lists = {
+-- --                         {
+-- --                             title = "list title",
+-- --                             items = {
+-- --                                 {
+-- --                                     title = "entry title",
+-- --                                     filepath = "path/to/file",
+-- --                                     content = { "line1", "line2", ... },
+-- --                                 },
+-- --                                 ...
+-- --                             },
+-- --                         },
+-- --                         ...
+-- --                     },
+-- --                 },
+-- --                 ...
+-- --             },
+-- --         },
+-- --         ...
+-- --     },
+-- -- }
+-- After VaultData is built, will create one View per board for rendering, according to the layout specified in the configuration
+-- The layout is the "strategy" on how to render things on screen (carousel, columns, ...)
+-- The View is in charge of holding the data of the board to render, the state of the view (which page/list/entry
+-- is focused, if the windows shall be expanded/collapsed, if they shall be shown/hidden, ...),
+-- and the windows objects
+-- One could consider that the plugin relies on a sort of MVC architecture:
+-- - Model: VaultData
+-- - View: ViewLayout
+-- - Controller: View. Even if some of the logic is delegated to the viewLayout from the View class
+-- This class VaultView is the root class that holds everything together
+
+---@field config vaultviewui.Configuration The configuration (merged between user configuration of the plugin + default)
+
 local VaultView = {}
 VaultView.__index = VaultView
 
@@ -32,7 +77,6 @@ function VaultView.new(config)
         }
         table.insert(self.VaultData.boards, dataBoard)
     end
-    -- dprint(self.VaultData)
 
     self.views = {}
     for i, board_config in ipairs(config.boards) do
@@ -113,7 +157,7 @@ local build_tabs = function(board_names, width_available, index_active_board)
     return lines, highlights
 end
 
---- Render the header buffer
+--- Render the top of the header buffer
 function VaultView:render_board_selection()
     local win = self.header_win
     local board_names = vim.deepcopy(self.boards_names)
@@ -162,11 +206,9 @@ end
 
 function VaultView:render()
     local page_selection_line = self:render_board_selection()
-    -- dprint("Rendering board index:", self.active_board_index)
-    -- dprint(self.views)
+
     self.views[self.active_board_index].page_selection_line = page_selection_line
     self.views[self.active_board_index]:render()
-    -- local header_line_count = render_board_selection(self.header_win, board_names, current_board_index)
 
     self.header_win:show()
     self.view_win:show()
@@ -183,7 +225,6 @@ function VaultView:hide()
 
     self.isDisplayed = false
 end
-
 
 function VaultView:goto_board(index)
     if index == self.active_board_index then
@@ -226,8 +267,6 @@ function VaultView:next_board()
 
     self:render()
 end
-
-
 
 function VaultView:previous_page()
     self.views[self.active_board_index]:previous_page()
@@ -291,7 +330,6 @@ function VaultView:refresh_focused_entry_content()
 end
 
 function VaultView:fast_refresh()
-
     for _, view in ipairs(self.views) do
         view:fast_refresh()
     end

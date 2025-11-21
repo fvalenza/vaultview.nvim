@@ -144,8 +144,6 @@ function ParserTrait.parseBoardDataEntriesForContent(boardData)
             end
         end
     end
-    -- dprint("Parsed board data entries for content.")
-    -- dprint(boardData)
 end
 
 return ParserTrait

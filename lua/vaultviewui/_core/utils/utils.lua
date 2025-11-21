@@ -17,7 +17,6 @@ end
 
 --- list all entries recursively in a directory (no . or ..)
 function M.scanDirRecursive(dir)
-    -- print("[scanDirRecursive] Scanning directory:", dir)
   local t = {}
   local cmd
   if is_windows() then
@@ -25,7 +24,7 @@ function M.scanDirRecursive(dir)
   else
     cmd = 'ls -1 "'..dir..'"'
   end
-    -- print("[scanDirRecursive] Running command:", cmd)
+
   local p = io.popen(cmd)
   if p then
     for entry in p:lines() do
@@ -135,7 +134,6 @@ function M.isdir(path)
 end
 
 function M.walk(dir, callback, callback_params)
-    -- print("[walk] Scanning directory:", dir)
   for _, entry in ipairs(M.scanDirRecursive(dir)) do
     local path = dir .. "/" .. entry
     if M.isdir(path) then

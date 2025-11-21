@@ -1,3 +1,7 @@
+--- Represents a View for ONE Vault Board
+-- The View is in charge of holding the data of the associated board , the state of the view (which page/list/entry
+-- is focused, if the windows shall be expanded/collapsed, if they shall be shown/hidden, ...),
+-- and the windows objects
 local View = {}
 View.__index = View
 
@@ -20,8 +24,6 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
     -- but we will need self.pages_names to be initialized here anyway and create at least the first page windows + state
     self.pages_names, self.viewWindows, self.state.pages = wf.create_board_view_windows(VaultData, board_idx, layout)
 
-    dprint("Initial View State:", vim.inspect(self.state))
-    dprint("Initial View Windows:", vim.inspect(self.viewWindows))
     self.layout = layout.new(self.viewData, self.viewWindows, self.state)
 
     -- TODO perhaps put it in layout.new
