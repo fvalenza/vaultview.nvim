@@ -218,7 +218,7 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
     local viewState = self.viewState
 
     local focused_page = viewState.focused.page
-    local col_offset = Constants.list_win[layout_name].col
+    local col_offset = 1 -- Start by putting them at the leftmost side
 
     for idx_list, list in ipairs(viewData.pages[focused_page].lists or {}) do
         local list_win = viewWindows.pages[focused_page].lists[idx_list].win
@@ -233,8 +233,28 @@ function ViewLayoutTrait:compute_windows_rendering(layout_name)
         -- move to the next column
         col_offset = col_offset + width + 1 + 1
     end
-end
 
+    -- Center lists/entries in viewport
+    local remaining_space = vim.o.columns - (col_offset - 1)
+    local offset = math.floor(remaining_space / 2)
+
+    -- Apply offset to each list's column position
+    col_offset = offset + 1
+    for idx_list, _ in ipairs(viewData.pages[focused_page].lists or {}) do
+        local list_win_obj = viewWindows.pages[focused_page].lists[idx_list]
+        list_win_obj.win.opts.col = col_offset
+        col_offset = col_offset + list_win_obj.win.opts.width + 1 + 1
+
+        for _, item_win in ipairs(list_win_obj.items or {}) do
+            if not item_win.opts then
+                goto continue_item_loop
+            end
+            item_win.opts.col = list_win_obj.win.opts.col + 1
+            ::continue_item_loop::
+        end
+    end
+
+end
 
 --------------------------------------------------------------------
 -- Main render function
