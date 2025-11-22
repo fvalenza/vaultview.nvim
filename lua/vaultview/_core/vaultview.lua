@@ -59,7 +59,7 @@ local parsers = require("vaultview._core.parsers")
 local View = require("vaultview._core.view")
 local layouts = require("vaultview._core.view.layouts")
 
---- Create a new VaultView instance.
+--- Create a new VaultView instance. Lazy loads boards data and view until needed.
 --
 -- Builds:
 -- - Windows
@@ -72,49 +72,70 @@ function VaultView.new(config)
     local self = setmetatable({}, VaultView)
 
     self.config = config
-
     self.header_win, self.view_win = wf.create_header_and_view_windows()
 
     self.boards_names = {}
     self.active_board_index = 0
-    self.VaultData = {
-        boards = {},
-    }
 
-    -- Build VaultData for each board (MODEL)
+    self.VaultData = { boards = {} }
+    self.views = {}
+
+    -- Lazy loading trackers
+    self.boards_data_loaded = {}
+    self.boards_view_loaded = {}
+
+    -- Collect board names only to display them in tabs, do NOT parse or create views
     for _, board_config in ipairs(config.boards) do
-        self.VaultData.boards.pages = {}
-
         local board_name = board_config.name or "board_" .. tostring(#self.boards_names + 1)
         table.insert(self.boards_names, board_name)
 
-        -- Call parser to generate actual board data (entries, pages, lists)
-        local boardData = parsers(board_config.parser)(config.vault, config.user_commands, board_config)
-
-        local dataBoard = {
-            title = board_name,
-            pages = boardData,
-        }
-
-        table.insert(self.VaultData.boards, dataBoard)
+        table.insert(self.VaultData.boards, nil)
+        table.insert(self.views or {}, nil)
+        table.insert(self.boards_data_loaded, false)
+        table.insert(self.boards_view_loaded, false)
     end
 
-    -- Build VIEWS (one per board)
-    self.views = {}
-    for i, board_config in ipairs(config.boards) do
-        local board_layout_config = board_config.viewlayout
-        local viewlayout = type(board_layout_config) == "string" and layouts[board_layout_config]
-            or error("Invalid layout type for " .. self.boards_names[i])
-
-        -- TODO(roadmap)  create views lazily (when switching to a board that is not "loaded" (either array of bool "boards_loaded" or table boards_names to become boards = { {name="string", loaded=true/false}, {}, .. }
-        self.views[i] = View.new(self.VaultData, i, board_config, viewlayout, self.header_win)
-    end
-
+    -- Initialize first board immediately
     if config.boards and #config.boards > 0 then
         self.active_board_index = config.initial_board_idx or 1
+        self:ensureBoardLoaded(self.active_board_index)
     end
 
     return self
+end
+
+--- Ensure that both data and view for board index i are loaded.
+---@param i integer Board index
+function VaultView:ensureBoardLoaded(i)
+    local board_config = self.config.boards[i]
+
+    ------------------------------------------------------------------
+    -- LOAD DATA (call to parser)
+    ------------------------------------------------------------------
+    if not self.boards_data_loaded[i] then
+        local parser = parsers(board_config.parser)
+        local boardData = parser(self.config.vault, self.config.user_commands, board_config)
+
+        self.VaultData.boards[i] = {
+            title = self.boards_names[i],
+            pages = boardData,
+        }
+
+        self.boards_data_loaded[i] = true
+    end
+
+    ------------------------------------------------------------------
+    -- CREATE VIEW 
+    ------------------------------------------------------------------
+    if not self.boards_view_loaded[i] then
+        local layout_spec = board_config.viewlayout
+        local viewlayout = type(layout_spec) == "string" and layouts[layout_spec]
+            or error("Invalid layout type for " .. self.boards_names[i])
+
+        self.views[i] = View.new(self.VaultData, i, board_config, viewlayout, self.header_win)
+
+        self.boards_view_loaded[i] = true
+    end
 end
 
 --- Show the whole VaultView interface.
@@ -272,6 +293,10 @@ function VaultView:goto_board(index)
     if index >= 1 and index <= #self.boards_names then
         self:hide()
         self.active_board_index = index
+
+        -- LAZY LOAD if not loaded
+        self:ensureBoardLoaded(self.active_board_index)
+
         self:render()
     end
 end
@@ -283,10 +308,15 @@ function VaultView:previous_board()
     end
 
     self:hide()
+
     self.active_board_index = self.active_board_index - 1
     if self.active_board_index < 1 then
         self.active_board_index = #self.boards_names
     end
+
+    -- LAZY LOAD if not loaded
+    self:ensureBoardLoaded(self.active_board_index)
+
     self:render()
 end
 
@@ -301,6 +331,10 @@ function VaultView:next_board()
     if self.active_board_index > #self.boards_names then
         self.active_board_index = 1
     end
+
+    -- LAZY LOAD if not loaded
+    self:ensureBoardLoaded(self.active_board_index)
+
     self:render()
 end
 
