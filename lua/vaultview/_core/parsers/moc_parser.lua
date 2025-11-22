@@ -2,14 +2,21 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
     require("lldebugger").start()
 end
 
-local layouts = require("vaultview._core.viewlayouts")
+local layouts = require("vaultview._core.view.layouts")
 local tutils = require("vaultview._core.utils.table_utils")
 local utils = require("vaultview._core.utils.utils")
 local Constants = require("vaultview._ui.constants")
 
 local M = {}
 
--- parse rg line into filepath, line, col, match
+--- Parse a single ripgrep line into its components.
+---
+--- Expected format: `filepath:line:column:match`
+---
+--- NOTE: For now, only the filepath is returned.
+---
+--- @param line string A line of ripgrep output
+--- @return string filepath The extracted file path
 local function parse_rg_line(line)
     -- match: (filepath):(line):(col):(rest of line)
     local filepath, lnum, col, rgmatch = line:match("^(.-):(%d+):(%d+):(.*)$")
@@ -22,18 +29,21 @@ local function parse_rg_line(line)
     -- }
 end
 
--- search for wikilink of a given name
+--- Search for a wiki link (`[[name]]`) inside a directory using ripgrep.
+---
+--- @param dir string The directory where ripgrep should search
+--- @param name string The wikilink target name (without surrounding brackets)
+--- @return string[] results A list of filepaths that contain the wikilink
 local function search_wikilink(dir, name)
     -- escape [ and ] for rg (Lua pattern -> literal)
     local pattern = "\\[\\[" .. name .. "\\]\\]" -- e.g. [[MyNote]]
+
     -- wrap in quotes for shell safety
     local cmd = string.format(
         'rg --no-config --type=md --no-heading --with-filename --line-number --column "%s" "%s"',
         pattern,
         dir
     )
-
-    print("Executing command:", cmd)
 
     local handle = io.popen(cmd)
     if not handle then
@@ -51,6 +61,18 @@ local function search_wikilink(dir, name)
     return results
 end
 
+------------------------------------------------------------------------------------------------------------------------
+-- Board construction
+------------------------------------------------------------------------------------------------------------------------
+
+--- Transform raw board inputs into structured multi-page board data.
+---
+--- The editor width determines how many lists fit on one page hence splits into multiple pages if needed.
+---
+--- @param boardInputs table[] Raw items parsed from the vault
+--- @param boardConfig table Board configuration (contains viewlayout, parser type, etc)
+--- @param vaultRootPath string Absolute path to the root of the vault
+--- @return table boardData A multi-page board structure groupd alphabetically into pages/ lists(moc-files)/entries(files linking to moc)
 function M.arrangeInputsIntoBoardData(boardInputs, boardConfig, vaultRootPath)
     local boardData = {}
 
@@ -87,7 +109,6 @@ function M.arrangeInputsIntoBoardData(boardInputs, boardConfig, vaultRootPath)
             local notesBacklinking = search_wikilink(vaultRootPath, board_input.name)
             local unique_results = tutils.remove_duplicates(notesBacklinking)
 
-            -- necessary ??
             -- Sort wikilinks by filename before parsing them (using utils.SplitFilename)
             table.sort(unique_results, function(a, b)
                 local _, afname = utils.SplitFilename(a)
@@ -123,10 +144,27 @@ function M.arrangeInputsIntoBoardData(boardInputs, boardConfig, vaultRootPath)
     return boardData
 end
 
-function M.parseBoard(vault, user_commands, boardConfig)
+------------------------------------------------------------------------------------------------------------------------
+-- Board Parsing Entry Point
+------------------------------------------------------------------------------------------------------------------------
+
+--- Parse a vault folder and generate a full board data structure.
+---
+--- This function:
+--- 1. Expands the vault path
+--- 2. Extracts the files that will serve as board inputs via parseVaultForBoardInputs
+--- 3. Groups inputs into a paginated board
+--- 4. Parses the content for each entry of the paginatd board data
+---
+--- @param vault table { path: string, name: string }
+--- @param custom_selectors table User callbacks / parser overrides
+--- @param boardConfig table { name: string, parser: string|function, viewlayout: string, subfolder: string, pattern: string }
+---
+--- @return table boardData Fully structured board data compatible with all ViewLayouts
+function M.parseBoard(vault, custom_selectors, boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 
-    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, user_commands, boardConfig)
+    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, custom_selectors, boardConfig)
 
     local boardData = M.arrangeInputsIntoBoardData(boardRawInputs, boardConfig, vaultRootPath)
     M.parseBoardDataEntriesForContent(boardData)

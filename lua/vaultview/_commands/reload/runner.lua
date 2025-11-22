@@ -2,12 +2,12 @@
 
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
+local _LOGGER = logging.get_logger("vaultview._commands.reload.runner")
 
 local M = {}
 
-function M.run_open()
-    require("vaultview").open()
+function M.run_reload()
+    require("vaultview").reload()
 end
 
 

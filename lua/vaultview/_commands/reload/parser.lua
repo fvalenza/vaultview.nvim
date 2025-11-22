@@ -22,13 +22,13 @@ end
 
 ---@return mega.cmdparse.ParameterParser # The main parser for the `:Vaultview hello-world` command.
 function M.make_parser()
-    local parser = cmdparse.ParameterParser.new({ "close", help = "close" })
+    local parser = cmdparse.ParameterParser.new({ "reload", help = "reload" })
 
 
     parser:set_execute(function()
-        local runner = require("vaultview._commands.close.runner")
+        local runner = require("vaultview._commands.reload.runner")
 
-        runner.run_close()
+        runner.run_reload()
     end)
 
 

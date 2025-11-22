@@ -1,3 +1,16 @@
+---
+--- ParserTrait: Mixin/trait for parsing vault files into board data structures.
+--- Provides methods for:
+---   1. Selecting input files to build board pages/lists (parseVaultForBoardInputs)
+---   2. Extracting content from entry files (findContentInEntryFile)
+---   3. Populating board entries with parsed content (parseBoardDataEntriesForContent)
+---
+--- The functions of this trait is intended to be applied to other parsers to provide them default implementation.
+--- These parsers can also overwrite them if necessary
+---
+---
+--- @module ParserTrait
+---
 local ParserTrait = {}
 
 local utils = require("vaultview._core.utils.utils")
@@ -8,12 +21,14 @@ local utils = require("vaultview._core.utils.utils")
 --
 -----------------------------------------------------------------------------------------------------
 local input_selectors = {
-    all_files = [[find %q -type f | sort ]],
-    all_md = [[find %q -type f -name '*.md' | sort ]],
-    ["yyyy-mm-dd_md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
+    ["*"] = [[find %q -type f | sort ]],
+    ["*.md"] = [[find %q -type f -name '*.md' | sort ]],
+    ["yyyy-mm-dd.md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
 }
 
--- Merge user-defined find commands with defaults
+--- Merge user-defined input selectors with defaults
+--- @param user_selectors table? User-defined input selectors
+--- @return table Merged input selectors
 local function merge_input_selectors(user_selectors)
     local merged = vim.deepcopy(input_selectors)
     if type(user_selectors) == "table" then
@@ -24,7 +39,12 @@ local function merge_input_selectors(user_selectors)
     return merged
 end
 
-function ParserTrait.parseVaultForBoardInputs(base_dir, user_commands, board_config)
+--- Parse vault directory to get the list of files to use as board inputs
+--- @param base_dir string Base vault directory path
+--- @param custom_selectors table Table of user-defined input/content selectors -- TODO(roadmap): merge table in configuraiton.lua
+--- @param board_config table Configuration for the board (input_selector, subfolder, etc.)
+--- @return table[] List of board input objects: { name = string, path = string }
+function ParserTrait.parseVaultForBoardInputs(base_dir, custom_selectors, board_config)
     local boardData = {}
 
     -- Build the directory in which to look for files
@@ -35,7 +55,7 @@ function ParserTrait.parseVaultForBoardInputs(base_dir, user_commands, board_con
     end
 
     -- Retrieve the input_selector wanted (from configuration of the board) between the user-defined ones and default ones
-    local find_commands = merge_input_selectors(user_commands.input_selectors)
+    local find_commands = merge_input_selectors(custom_selectors.input_selectors)
     local mode = board_config.input_selector or "all_md"
     local selector = find_commands[mode]
 
@@ -89,15 +109,21 @@ end
 --
 ------------------------------------------------------------------------------------------------------------
 local content_selectors = {
-    all_headings = [=[grep -E '^#+[[:space:]]+.+' %q | sed -E 's/^#+[[:space:]]+//' ]=],
-    lvl2headings_noexcalidraw_awk = [=[awk '/^# Excalidraw Data/ { exit } /^##[[:space:]]+.+/ { sub(/^##[[:space:]]+/, ""); print }' %q]=],
-    lvl2headings_noexcalidraw_rg = [=[rg --until-pattern '^# Excalidraw Data' '^##[[:space:]]+.+$' %q | sed -E 's/^##[[:space:]]+//' ]=],
+    headings = [=[grep -E '^#+[[:space:]]+.+' %q | sed -E 's/^#+[[:space:]]+//' ]=],
+    h1 = [=[grep -E '^#[[:space:]]+.+' %q | sed -E 's/^#[[:space:]]+//' ]=],
+    h2 = [=[grep -E '^##[[:space:]]+.+' %q | sed -E 's/^##[[:space:]]+//' ]=],
+    h3 = [=[grep -E '^###[[:space:]]+.+' %q | sed -E 's/^###[[:space:]]+//' ]=],
+    h4 = [=[grep -E '^####[[:space:]]+.+' %q | sed -E 's/^####[[:space:]]+//' ]=],
+    h2_awk_noexcalidraw = [=[awk '/^# Excalidraw Data/ { exit } /^##[[:space:]]+.+/ { sub(/^##[[:space:]]+/, ""); print }' %q]=],
+    h2_rg_noexcalidraw = [=[rg --until-pattern '^# Excalidraw Data' '^##[[:space:]]+.+$' %q | sed -E 's/^##[[:space:]]+//' ]=],
     uncompleted_tasks = [=[grep -E '^\s*-\s*\[ \]' %q | sed -E 's/^\s*-\s*\[ \]\s*//' ]=], -- TODO test
     completed_tasks = [=[grep -E '^\s*-\s*\[x\]' %q | sed -E 's/^\s*-\s*\[x\]\s*//' ]=], -- TODO test
     tasks = [=[grep -E '^\s*-\s*\[[ x]\]' %q | sed -E 's/^\s*-\s*\[[ x]\]\s*//' ]=], -- TODO test
 }
 
--- Merge user-defined grep commands with defaults
+--- Merge user-defined content selectors with defaults
+--- @param user_selectors table? User-defined content selectors
+--- @return table Merged content selectors
 local function merge_content_selectors(user_selectors)
     local merged = vim.deepcopy(content_selectors)
     if type(user_selectors) == "table" then
@@ -108,17 +134,22 @@ local function merge_content_selectors(user_selectors)
     return merged
 end
 
-function ParserTrait.findContentInEntryFile(path, user_commands, config)
-    user_commands = user_commands or {}
-    config = config or {}
+--- Extract content lines from a file
+--- @param path string File path
+--- @param custom_selectors table? User-defined commands (input + content selectors)
+--- @param boardConfig table? Board configuration (content_selector)
+--- @return string[] Lines of content
+function ParserTrait.findContentInEntryFile(path, custom_selectors, boardConfig)
+    custom_selectors = custom_selectors or {}
+    boardConfig = boardConfig or {}
 
     -- Retrieve the grep command template between the user-defined and default ones
-    local grep_commands = merge_content_selectors(user_commands.content_selectors)
-    local mode = config.input_selector or "lvl2headings_noexcalidraw_awk" -- default to awk version
+    local grep_commands = merge_content_selectors(custom_selectors.content_selectors) -- TODO(roadmap) when merge at plugin loading, no need to merge again so to remove here
+    local mode = boardConfig.content_selector or "h2_awk_noexcalidraw" -- default to awk version
     local template = grep_commands[mode]
 
     if not template then
-        error("Unknown input_selector: " .. tostring(mode))
+        error("Unknown content_selector: " .. tostring(mode))
     end
 
     -- Build and run the shell command
@@ -132,6 +163,8 @@ function ParserTrait.findContentInEntryFile(path, user_commands, config)
     return lines
 end
 
+--- Populate all entries in boardData with content from their files
+--- @param boardData table Board data structure: pages → lists → entries
 function ParserTrait.parseBoardDataEntriesForContent(boardData)
     for _, page in ipairs(boardData) do
         for _, list in ipairs(page.lists) do
@@ -144,8 +177,6 @@ function ParserTrait.parseBoardDataEntriesForContent(boardData)
             end
         end
     end
-    -- dprint("Parsed board data entries for content.")
-    -- dprint(boardData)
 end
 
 return ParserTrait

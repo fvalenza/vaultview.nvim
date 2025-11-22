@@ -10,12 +10,14 @@ local _PREFIX = "Vaultview"
 local _SUBCOMMANDS = function()
     local open = require("vaultview._commands.open.parser")
     local close = require("vaultview._commands.close.parser")
+    local reload = require("vaultview._commands.reload.parser")
 
     local parser = cmdparse.ParameterParser.new({ name = _PREFIX, help = "The root of all commands." })
     local subparsers = parser:add_subparsers({ "commands", help = "All runnable commands." })
 
     subparsers:add_parser(open.make_parser())
     subparsers:add_parser(close.make_parser())
+    subparsers:add_parser(reload.make_parser())
 
     return parser
 end
@@ -23,10 +25,8 @@ end
 cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
 
 vim.keymap.set("n", "<Plug>(Vaultview)", function()
-    local configuration = require("vaultview._core.configuration")
-    local vaultview = require("vaultview")
 
-    configuration.initialize_data_if_needed()
+    require("vaultview").toggle()
 
-    vaultview.run_toggle_vaultview()
+
 end, { desc = "Open your vaultview" })

@@ -5,7 +5,6 @@ end
 local tutils = require("vaultview._core.utils.table_utils")
 local utils = require("vaultview._core.utils.utils")
 
--- TODO pour le parseDirForBoardInput ca peut etre soit regex nom de fichier, soit nom de dossier et tout prendre dedans, etc, trouver une configuration qui permet tout ca
 local M = {}
 
 local monthsMap = {
@@ -27,10 +26,39 @@ local months = {
         "July", "August", "September", "October", "November", "December"
     }
 
+--- Convert a numeric month ("01") into a month name ("January")
+--- @param month string
+--- @return string
 local function mmToMonthString(month)
     return monthsMap[month] or month
 end
 
+------------------------------------------------------------------------------------------------------------------------
+-- Board Construction
+------------------------------------------------------------------------------------------------------------------------
+
+--- Build a board structure grouped by **year → month**.
+---
+--- Expected boardInputs structure:
+--- {
+---   { name = "2024-01-MyNote", path = "/full/path", ... },
+---   { name = "2024-09-X", path = "/full/path", ... },
+--- }
+---
+--- Output structure:
+--- {
+---   {
+---     title = "2024",
+---     lists = {
+---        { title = "January", items = { ... } },
+---        { title = "February", items = { ... } },
+---        ...
+---     }
+---   }
+--- }
+---
+--- @param boardInputs table[] List of raw notes
+--- @return table boardData Multi-page board structure grouped by pages(year)/lists(month)/entries(dailynote of that month)
 function M.arrangeInputsIntoBoardData(boardInputs)
     local boardData = {}
 
@@ -106,15 +134,27 @@ function M.arrangeInputsIntoBoardData(boardInputs)
     return boardData
 end
 
+------------------------------------------------------------------------------------------------------------------------
+-- Entry point: parse vault into a board
+------------------------------------------------------------------------------------------------------------------------
 
---- parse a vault folder to create a board data structure depending on the board configuration
----@param vault configuration of the vault {path: string, name: string}
----@param boardConfig configuration of the board {name:string, parser: string|function, viewlayout: string, subfolder: string, pattern: string}
----@return The BoardDataStructure as expected by a ViewLayout
-function M.parseBoard(vault, user_commands, boardConfig)
+--- Parse a vault folder and generate a  full board data structure (**year–month board**.)
+---
+--- Steps:
+--- 1. Expand vault path
+--- 2. Extracts the files that will serve as board inputs via parseVaultForBoardInputs
+--- 3. Groups inputs into a paginated board
+--- 4. Parse file contents for each entry
+---
+--- @param vault table { path: string, name: string }
+--- @param custom_selectors table Additional user parser commands
+--- @param boardConfig table { name:string, parser:string|function, viewlayout:string, subfolder:string, pattern:string }
+---
+--- @return table boardData The BoardDataStructure required by ViewLayouts
+function M.parseBoard(vault, custom_selectors, boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 
-    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, user_commands, boardConfig)
+    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, custom_selectors, boardConfig)
 
     local boardData = M.arrangeInputsIntoBoardData(boardRawInputs)
     M.parseBoardDataEntriesForContent(boardData)
