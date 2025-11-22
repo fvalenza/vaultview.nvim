@@ -13,7 +13,7 @@
 ---
 local ParserTrait = {}
 
-local utils = require("vaultviewui._core.utils.utils")
+local utils = require("vaultview._core.utils.utils")
 
 -----------------------------------------------------------------------------------------------------
 --

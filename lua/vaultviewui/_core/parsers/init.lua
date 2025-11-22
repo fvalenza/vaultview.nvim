@@ -1,9 +1,9 @@
-local TraitUtils = require("vaultviewui._core.utils.traitutils")
-local ParserTrait = require("vaultviewui._core.parsers.parsertrait")
+local TraitUtils = require("vaultview._core.utils.traitutils")
+local ParserTrait = require("vaultview._core.parsers.parsertrait")
 
 local parsers = {
-    daily = require("vaultviewui._core.parsers.daily_parser"),
-    moc   = require("vaultviewui._core.parsers.moc_parser"),
+    daily = require("vaultview._core.parsers.daily_parser"),
+    moc   = require("vaultview._core.parsers.moc_parser"),
 }
 
 for _, parser in pairs(parsers) do

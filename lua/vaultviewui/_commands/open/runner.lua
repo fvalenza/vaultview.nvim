@@ -7,7 +7,7 @@ local _LOGGER = logging.get_logger("vaultview._commands.open.runner")
 local M = {}
 
 function M.run_open()
-    require("vaultviewui").open()
+    require("vaultview").open()
 end
 
 

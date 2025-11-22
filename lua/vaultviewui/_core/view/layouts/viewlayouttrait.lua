@@ -15,7 +15,7 @@
 --- @field viewWindows table                Table of window objects for pages/lists/items
 local ViewLayoutTrait = {}
 
-local Constants = require("vaultviewui._ui.constants")
+local Constants = require("vaultview._ui.constants")
 
 
 ---------------------------------------------------------------------

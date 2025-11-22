@@ -1,17 +1,17 @@
---- VaultViewUI public API.
+--- VaultView public API.
 --
 -- This module exposes all externally callable functions of the plugin.
 -- Any backward-incompatible changes to the signatures of these functions
 -- require a **major** version bump of the plugin.
 --
--- @module vaultviewui
+-- @module vaultview
 -- @alias M
 
 local logging = require("mega.logging")
-local configuration = require("vaultviewui._core.configuration")
-local vaultview = require("vaultviewui._core.vaultview")
+local configuration = require("vaultview._core.configuration")
+local vaultview = require("vaultview._core.vaultview")
 
-local _LOGGER = logging.get_logger("vaultviewui.init")
+local _LOGGER = logging.get_logger("vaultview.init")
 
 local M = {}
 
@@ -21,7 +21,7 @@ M.context = {}
 
 --- Open the VaultView UI.
 --
--- Equivalent to calling `M.toggle()`.  
+-- Equivalent to calling `M.toggle()`.
 -- Opens the UI if not already visible.
 function M.open()
     M.toggle()

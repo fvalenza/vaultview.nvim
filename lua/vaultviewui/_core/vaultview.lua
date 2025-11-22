@@ -1,5 +1,5 @@
 --- Main/Root class of the plugin
----@class vaultviewui.VaultView
+---@class vaultview.VaultView
 -- For each board of the configuration, will parse the vault and create data structure necessery for rendering
 -- VaultData is in the form:
 -- -- VaultData = {
@@ -41,23 +41,23 @@
 -- - Controller: View. Even if some of the logic is delegated to the viewLayout from the View class
 -- This class VaultView is the root class that holds everything together
 --
----@field config vaultviewui.Configuration The merged plugin configuration (defaults + user config)
----@field header_win vaultviewui.Window Header window object
----@field view_win vaultviewui.Window Main content window object
+---@field config vaultview.Configuration The merged plugin configuration (defaults + user config)
+---@field header_win vaultview.Window Header window object
+---@field view_win vaultview.Window Main content window object
 ---@field boards_names string[] Names of all configured boards
 ---@field active_board_index integer Index of the currently active board
 ---@field VaultData table Parsed data structure used for rendering (the Model)
----@field views vaultviewui.View[] View instances (one per board)
+---@field views vaultview.View[] View instances (one per board)
 ---@field isDisplayed boolean|nil Whether the complete UI is currently shown
 
 local VaultView = {}
 VaultView.__index = VaultView
 
-local Constants = require("vaultviewui._ui.constants")
-local wf = require("vaultviewui._core.windowfactory")
-local parsers = require("vaultviewui._core.parsers")
-local View = require("vaultviewui._core.view")
-local layouts = require("vaultviewui._core.view.layouts")
+local Constants = require("vaultview._ui.constants")
+local wf = require("vaultview._core.windowfactory")
+local parsers = require("vaultview._core.parsers")
+local View = require("vaultview._core.view")
+local layouts = require("vaultview._core.view.layouts")
 
 --- Create a new VaultView instance.
 --
@@ -66,8 +66,8 @@ local layouts = require("vaultviewui._core.view.layouts")
 -- - VaultData model
 -- - A View instance per board (Controller + Layout)
 --
--- @param config vaultviewui.Configuration
--- @return vaultviewui.VaultView
+-- @param config vaultview.Configuration
+-- @return vaultview.VaultView
 function VaultView.new(config)
     local self = setmetatable({}, VaultView)
 

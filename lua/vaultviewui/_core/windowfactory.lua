@@ -3,8 +3,8 @@
 local M = {}
 
 local Snacks = require("snacks")
-local Constants = require("vaultviewui._ui.constants")
-local Keymaps = require("vaultviewui.keymaps")
+local Constants = require("vaultview._ui.constants")
+local Keymaps = require("vaultview.keymaps")
 
 
 function M.create_window(opts)
@@ -122,7 +122,7 @@ local function create_entry_window(entry, layout)
     -- card_win:on("WinEnter", function()
     --     local winid = card_win.id
     --     vim.notify("Entry window focused: " .. tostring(winid))
-    --     require("vaultviewui").focus_entry_with_id(winid)
+    --     require("vaultview").focus_entry_with_id(winid)
     -- end)
     -- TODO(roadmap) end of my tries
 

@@ -1,15 +1,15 @@
---- All functions and data to help customize `vaultviewui` for this user.
+--- All functions and data to help customize `vaultview` for this user.
 
 local logging = require("mega.logging")
 
-local _LOGGER = logging.get_logger("vaultviewui._core.configuration")
+local _LOGGER = logging.get_logger("vaultview._core.configuration")
 
 local M = {}
 
 -- NOTE: Don't remove this line. It makes the Lua module much easier to reload
 vim.g.loaded_vaultview = false
 
----@type vaultviewui.Configuration
+---@type vaultview.Configuration
 M.DATA = {}
 
 -- TODO: (you) If you use the mega.logging module for built-in logging, keep
@@ -17,7 +17,7 @@ M.DATA = {}
 --
 -- It's recommended to keep the `display` section in any case.
 --
----@type vaultviewui.Configuration
+---@type vaultview.Configuration
 local _DEFAULTS = {
     logging = { level = "info", use_console = false, use_file = false },
 }
@@ -56,12 +56,12 @@ local _EXTRA_DEFAULTS = {
             content_selector = "lvl2headings_noexcalidraw_awk", -- rule to select content inside each file to be displayed in the view. Can be a built-in selector or a user-defined one
         },
     },
-    -- initial_board_idx = 1, -- index of the board to be displayed when opening the vaultviewui. Optional.
+    -- initial_board_idx = 1, -- index of the board to be displayed when opening the vaultview. Optional.
 }
 
 _DEFAULTS = vim.tbl_deep_extend("force", _DEFAULTS, _EXTRA_DEFAULTS)
 
---- Setup `vaultviewui` for the first time, if needed.
+--- Setup `vaultview` for the first time, if needed.
 function M.initialize_data_if_needed()
     if vim.g.loaded_vaultview then
         return
@@ -69,21 +69,21 @@ function M.initialize_data_if_needed()
 
     M.DATA = vim.tbl_deep_extend("force", _DEFAULTS, vim.g.vaultview_configuration or {})
 
-    require("vaultviewui._ui.highlights").apply()
+    require("vaultview._ui.highlights").apply()
 
     vim.g.loaded_vaultview = true
 
     local configuration = M.DATA.logging or {}
     ---@cast configuration mega.logging.SparseLoggerOptions
-    logging.set_configuration("vaultviewui", configuration)
+    logging.set_configuration("vaultview", configuration)
 
-    _LOGGER:fmt_debug("Initialized vaultviewui's configuration.")
+    _LOGGER:fmt_debug("Initialized vaultview's configuration.")
 end
 
 --- Merge `data` with the user's current configuration.
 ---
----@param data vaultviewui.Configuration? All extra customizations for this plugin.
----@return vaultviewui.Configuration # The configuration with 100% filled out values.
+---@param data vaultview.Configuration? All extra customizations for this plugin.
+---@return vaultview.Configuration # The configuration with 100% filled out values.
 ---
 function M.resolve_data(data)
     M.initialize_data_if_needed()

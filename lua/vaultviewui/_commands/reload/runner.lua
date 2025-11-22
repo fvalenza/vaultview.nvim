@@ -7,7 +7,7 @@ local _LOGGER = logging.get_logger("vaultview._commands.reload.runner")
 local M = {}
 
 function M.run_reload()
-    require("vaultviewui").reload()
+    require("vaultview").reload()
 end
 
 

@@ -28,7 +28,7 @@
 local View = {}
 View.__index = View
 
-local wf = require("vaultviewui._core.windowfactory")
+local wf = require("vaultview._core.windowfactory")
 
 --- Create a new View instance for a given board index (among the boards configured by user in plugin setup).
 ---
@@ -664,7 +664,7 @@ function View:open_in_neovim()
         bo = { modifiable = true },
         keys = { q = "close" },
         on_close = function()
-            require("vaultviewui").refresh_focused_entry_content()
+            require("vaultview").refresh_focused_entry_content()
         end,
         wo = {
             wrap = true,
@@ -744,7 +744,7 @@ function View:refresh_entry_content(page_idx, list_idx, entry_idx, user_commands
         return
     end
 
-    local reparsed_content = require("vaultviewui._core.parsers.parsertrait").findContentInEntryFile(
+    local reparsed_content = require("vaultview._core.parsers.parsertrait").findContentInEntryFile(
         entry.filepath,
         user_commands,
         self.board_config

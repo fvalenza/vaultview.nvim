@@ -2,8 +2,8 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
     require("lldebugger").start()
 end
 
-local tutils = require("vaultviewui._core.utils.table_utils")
-local utils = require("vaultviewui._core.utils.utils")
+local tutils = require("vaultview._core.utils.table_utils")
+local utils = require("vaultview._core.utils.utils")
 
 local M = {}
 

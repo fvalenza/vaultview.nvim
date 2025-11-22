@@ -1,10 +1,10 @@
-local TraitUtils = require("vaultviewui._core.utils.traitutils")
+local TraitUtils = require("vaultview._core.utils.traitutils")
 
-local ViewLayoutTrait = require("vaultviewui._core.view.layouts.viewlayouttrait")
+local ViewLayoutTrait = require("vaultview._core.view.layouts.viewlayouttrait")
 
 local layouts = {
-    carousel = require("vaultviewui._core.view.layouts.viewlayoutcarousel"),
-    columns  = require("vaultviewui._core.view.layouts.viewlayoutcolumns"),
+    carousel = require("vaultview._core.view.layouts.viewlayoutcarousel"),
+    columns  = require("vaultview._core.view.layouts.viewlayoutcolumns"),
 }
 
 for _, layout in pairs(layouts) do
