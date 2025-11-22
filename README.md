@@ -144,20 +144,22 @@ return {
 				path = "/path/to/your/vault", -- full path to your vault
 				name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
 			},
-            user_commands = {
+            display_tabs_hint = true, -- whether to display hint about board navigation in the UI
+            custom_selectors = {
                 input_selectors = { -- list of custom input selectors. They keys can be used in board definitions
-                    list_files = { -- a comma-separated list of file paths
+                    exemple_list_files = { -- a comma-separated list of file paths
                         "/path/to/file1.md",
                         "/path/to/file2.md",
                         "/path/to/file3.md",
                     },
-                    lua_function =function(search_path) -- a function that returns a list of file paths from a given search_path
+                    exemple_lua_function =function(search_path) -- a function that returns a list of file paths from a given search_path
                         return {
                         }
                     end,
-                    shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
+                    exemple_shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
                 },
                 entry_content_selectors = { -- custom content selectors can be defined here and chosen in the board configuration
+                    -- shall be grep/awk/rg command lines
                 },
             },
 			boards = {
@@ -165,19 +167,20 @@ return {
 					name = "dailyBoard", -- name of the board as printed in the top of UI
                     parser = "daily", -- parser used to retrieve information to display in the view -> currently supported parsers: "daily", "moc"
 					viewlayout = "carousel", -- how information is displayed in the view -> currently supported layouts: "carousel", "columns"
-                    input_selector = "yyyy-mm-dd_md",-- rule to select files to be included in the board. Can be a built-in selector or a user-defined one
+                    input_selector = "yyyy-mm-dd.md",-- rule to select files to be included in the board. Can be a built-in selector or a user-defined one
                     subfolder = "vault/0-dailynotes", -- optional subfolder inside vault to limit the scope of the input files
-                    content_selector = "lvl2headings_noexcalidraw_awk", -- rule to select content inside each file to be displayed in the view. Can be a built-in selector or a user-defined one
+                    content_selector = "h2", -- rule to select content inside each file to be displayed in the view. Can be a built-in selector or a user-defined one
 				},
 				{
 					name = "mocBoard",
 					parser = "moc",
 					viewlayout = "columns",
-                    input_selector = "all_md",
+                    input_selector = "*.md",
                     subfolder = "vault/1-MOCs",
-                    content_selector = "lvl2headings_noexcalidraw_awk",
+                    content_selector = "h2",
 				},
 			},
+            initial_board_idx = 1, -- index of the board to be displayed when opening the vaultview. Optional.
 		}
 	end,
 }
@@ -191,15 +194,19 @@ The current default ones are:
 
 ```lua
 local input_selectors = {
-    all_files = [[find %q -type f | sort ]],
-    all_md = [[find %q -type f -name '*.md' | sort ]],
-    ["yyyy-mm-dd_md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
+    ["*"] = [[find %q -type f | sort ]],
+    ["*.md"] = [[find %q -type f -name '*.md' | sort ]],
+    ["yyyy-mm-dd.md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
 }
 
 local content_selectors = {
-    all_headings = [=[grep -E '^#+[[:space:]]+.+' %q | sed -E 's/^#+[[:space:]]+//' ]=],
-    lvl2headings_noexcalidraw_awk = [=[awk '/^# Excalidraw Data/ { exit } /^##[[:space:]]+.+/ { sub(/^##[[:space:]]+/, ""); print }' %q]=],
-    lvl2headings_noexcalidraw_rg = [=[rg --until-pattern '^# Excalidraw Data' '^##[[:space:]]+.+$' %q | sed -E 's/^##[[:space:]]+//' ]=],
+    headings = [=[grep -E '^#+[[:space:]]+.+' %q | sed -E 's/^#+[[:space:]]+//' ]=],
+    h1 = [=[grep -E '^#[[:space:]]+.+' %q | sed -E 's/^#[[:space:]]+//' ]=],
+    h2 = [=[grep -E '^##[[:space:]]+.+' %q | sed -E 's/^##[[:space:]]+//' ]=],
+    h3 = [=[grep -E '^###[[:space:]]+.+' %q | sed -E 's/^###[[:space:]]+//' ]=],
+    h4 = [=[grep -E '^####[[:space:]]+.+' %q | sed -E 's/^####[[:space:]]+//' ]=],
+    h2_awk_noexcalidraw = [=[awk '/^# Excalidraw Data/ { exit } /^##[[:space:]]+.+/ { sub(/^##[[:space:]]+/, ""); print }' %q]=],
+    h2_rg_noexcalidraw = [=[rg --until-pattern '^# Excalidraw Data' '^##[[:space:]]+.+$' %q | sed -E 's/^##[[:space:]]+//' ]=],
 }
 ```
 
@@ -211,10 +218,10 @@ The function should take as input the vault subtable of the configuration and th
 
 --- parse a vault folder to create a board data structure depending on the board configuration
 ---@param vault configuration of the vault {path: string, name: string}
----@param user_commands configuration of user commands {input_selectors: table, entry_content_selectors: table}
+---@param custom_selectors configuration of user custom selectors {input_selectors: table, entry_content_selectors: table}
 ---@param boardConfig configuration of the board {name:string, parser: string|function, viewlayout: string, subfolder: string, pattern: string}
 ---@return The BoardDataStructure as expected by a ViewLayout
-parser = function(vault_config, user_commands, board_config)
+parser = function(vault_config, custom_selectors, board_config)
     end
 ```
 

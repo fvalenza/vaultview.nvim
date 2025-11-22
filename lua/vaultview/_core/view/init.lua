@@ -734,8 +734,8 @@ end
 --- @param page_idx integer
 --- @param list_idx integer
 --- @param entry_idx integer
---- @param user_commands table|nil Optional parser commands
-function View:refresh_entry_content(page_idx, list_idx, entry_idx, user_commands)
+--- @param custom_selectors table|nil Optional parser commands
+function View:refresh_entry_content(page_idx, list_idx, entry_idx, custom_selectors)
     if page_idx == 0 or list_idx == 0 or entry_idx == 0 then
         return
     end
@@ -746,7 +746,7 @@ function View:refresh_entry_content(page_idx, list_idx, entry_idx, user_commands
 
     local reparsed_content = require("vaultview._core.parsers.parsertrait").findContentInEntryFile(
         entry.filepath,
-        user_commands,
+        custom_selectors,
         self.board_config
     )
     local new_content = {}
@@ -763,13 +763,13 @@ end
 
 --- Reparse/refresh the currently focused entry.
 ---
---- @param user_commands table|nil
-function View:refresh_focused_entry_content(user_commands)
+--- @param custom_selectors table|nil
+function View:refresh_focused_entry_content(custom_selectors)
     self:refresh_entry_content(
         self.state.focused.page,
         self.state.focused.list,
         self.state.focused.entry,
-        user_commands
+        custom_selectors
     )
 end
 

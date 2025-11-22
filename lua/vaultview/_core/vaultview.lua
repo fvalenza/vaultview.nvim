@@ -84,6 +84,9 @@ function VaultView.new(config)
     self.boards_data_loaded = {}
     self.boards_view_loaded = {}
 
+    if not config.boards or #config.boards == 0 then
+        table.insert(self.boards_names, "No board configured")
+    end
     -- Collect board names only to display them in tabs, do NOT parse or create views
     for _, board_config in ipairs(config.boards) do
         local board_name = board_config.name or "board_" .. tostring(#self.boards_names + 1)
@@ -98,6 +101,9 @@ function VaultView.new(config)
     -- Initialize first board immediately
     if config.boards and #config.boards > 0 then
         self.active_board_index = config.initial_board_idx or 1
+        if self.active_board_index < 1 or self.active_board_index > #self.boards_names then
+            self.active_board_index = 1
+        end
         self:ensureBoardLoaded(self.active_board_index)
     end
 
@@ -114,7 +120,7 @@ function VaultView:ensureBoardLoaded(i)
     ------------------------------------------------------------------
     if not self.boards_data_loaded[i] then
         local parser = parsers(board_config.parser)
-        local boardData = parser(self.config.vault, self.config.user_commands, board_config)
+        local boardData = parser(self.config.vault, self.config.custom_selectors, board_config)
 
         self.VaultData.boards[i] = {
             title = self.boards_names[i],
@@ -326,16 +332,21 @@ end
 function VaultView:render()
     local page_selection_line = self:render_board_selection()
 
+    self.header_win:show()
+    self.view_win:show()
+    if self.active_board_index == 0 then
+        return
+    end
     self.views[self.active_board_index].page_selection_line = page_selection_line
     self.views[self.active_board_index]:render()
 
-    self.header_win:show()
-    self.view_win:show()
 end
 
 --- Hide the entire UI.
 function VaultView:hide()
-    self.views[self.active_board_index]:hide()
+    if self.active_board_index ~= 0 then
+        self.views[self.active_board_index]:hide()
+    end
     if self.header_win then
         self.header_win:hide()
     end
@@ -480,7 +491,7 @@ end
 
 --- Refresh content of the focused entry.
 function VaultView:refresh_focused_entry_content()
-    self.views[self.active_board_index]:refresh_focused_entry_content(self.config.user_commands) -- TODO: I should not have to give config.user_commands each time. find better way to have this config once (initialize_Data_if_needed...)
+    self.views[self.active_board_index]:refresh_focused_entry_content(self.config.custom_selectors) -- TODO: I should not have to give config.custom_selectors each time. find better way to have this config once (initialize_Data_if_needed...)
 end
 
 --- Fast refresh applied to all views.

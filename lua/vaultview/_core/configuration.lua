@@ -34,7 +34,7 @@ local _EXTRA_DEFAULTS = {
         name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
     },
     display_tabs_hint = true, -- whether to display hint about board navigation in the UI
-    user_commands = {
+    custom_selectors = {
         input_selectors = { -- list of custom input selectors. They keys can be used in board definitions
             empty_list = { -- a comma-separated list of file paths
             },
@@ -45,17 +45,18 @@ local _EXTRA_DEFAULTS = {
             empty_shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
         },
         entry_content_selectors = { -- custom content selectors can be defined here and chosen in the board configuration
+            -- shall be grep/awk/rg command lines
         },
     },
     boards = {
-        {
-            name = "dailyBoard", -- name of the board as printed in the top of UI
-            parser = "daily", -- parser used to retrieve information to display in the view -> currently supported parsers: "daily", "moc"
-            viewlayout = "carousel", -- how lists are displayed in the view -> currently supported layouts: "carousel", "columns"
-            input_selector = "yyyy-mm-dd_md", -- rule to select files to be included in the board. Can be a built-in selector or a user-defined one
-            subfolder = "vault/0-dailynotes", -- optional subfolder inside vault to limit the scope of the parser
-            content_selector = "lvl2headings_noexcalidraw_awk", -- rule to select content inside each file to be displayed in the view. Can be a built-in selector or a user-defined one
-        },
+        -- {
+        --     name = "dailyBoard", -- name of the board as printed in the top of UI
+        --     parser = "daily", -- parser used to retrieve information to display in the view -> currently supported parsers: "daily", "moc"
+        --     viewlayout = "carousel", -- how lists are displayed in the view -> currently supported layouts: "carousel", "columns"
+        --     input_selector = "yyyy-mm-dd.md", -- rule to select files to be included in the board. Can be a built-in selector or a user-defined one
+        --     subfolder = "vault/0-dailynotes", -- optional subfolder inside vault to limit the scope of the parser
+        --     content_selector = "h2_awk_noexcalidraw", -- rule to select content inside each file to be displayed in the view. Can be a built-in selector or a user-defined one
+        -- },
     },
     -- initial_board_idx = 1, -- index of the board to be displayed when opening the vaultview. Optional.
 }
