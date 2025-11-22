@@ -149,51 +149,93 @@ end
 --- ┌────────┐
 --- │  text  │
 --- └────────┘
+--- Adds hint if configured to do so
 --- @param board_names string[] List of tabs names
 --- @param width_available integer Total columns available in the header window
 --- @param index_active_board integer Active board index
+--- @param display_tabs_hint boolean Whether to display hints for tab navigation
 --- @return table lines Three rows of rendered UI text
 --- @return table highlights Highlight groups + positions
-local build_tabs = function(board_names, width_available, index_active_board)
+local build_tabs = function(board_names, width_available, index_active_board, display_tabs_hint)
     local activeBoardName = board_names[index_active_board]
 
+    ---------------------------------------------------------------------
+    -- Compute total width
+    ---------------------------------------------------------------------
     local total_str_w = -1
-    for _, v in ipairs(board_names) do
-        if v ~= "_pad_" then
-            total_str_w = total_str_w + vim.api.nvim_strwidth(v) + 5
+    for i, name in ipairs(board_names) do
+        if name ~= "_pad_" then
+            local is_settings = (name == "Settings")
+
+            local hint = ""
+            if display_tabs_hint then
+                hint = is_settings and " (?)" or ("(" .. i .. ")")
+            end
+
+            total_str_w = total_str_w + vim.api.nvim_strwidth(hint .. name) + 5
         end
     end
 
     local lines = { {}, {}, {} }
     local highlights = {}
-
     local datalen = #board_names
-    local colpos = { 0, 0, 0 } -- track byte columns per line
+    local colpos = { 0, 0, 0 }
 
-    for i, v in ipairs(board_names) do
-        if v == "_pad_" then
+    for i, name in ipairs(board_names) do
+        if name == "_pad_" then
+            -----------------------------------------------------------------
+            -- Padding
+            -----------------------------------------------------------------
             local emptychar = string.rep(" ", width_available - total_str_w)
             for l = 1, 3 do
                 table.insert(lines[l], { emptychar })
                 colpos[l] = colpos[l] + #emptychar
             end
+
         else
-            local hchar = string.rep("─", vim.api.nvim_strwidth(v) + 2)
+            -----------------------------------------------------------------
+            -- Build HINT (conditionally)
+            -----------------------------------------------------------------
+            local is_settings = (name == "Settings")
+
+            local hint = ""
+            if display_tabs_hint then
+                hint = is_settings and " (?)" or ("(" .. i .. ")")
+            end
+
+            local full_label = hint .. name
+            local full_width = vim.api.nvim_strwidth(full_label)
+
+            local hchar = string.rep("─", full_width + 2)
+
+            -----------------------------------------------------------------
+            -- Build the 3 text rows
+            -----------------------------------------------------------------
             local row_text = {
                 "┌" .. hchar .. "┐",
-                "│ " .. v .. " │",
+                "│ " .. full_label .. " │",
                 "└" .. hchar .. "┘",
             }
 
-            local hl = (activeBoardName == v and "TabActive") or "TabInactive"
+            local hl_tab = (activeBoardName == name) and "TabActive" or "TabInactive"
 
+            -----------------------------------------------------------------
+            -- Capture tab start col (display column)
+            -----------------------------------------------------------------
+            local tab_start_col = colpos[2]
+
+            -----------------------------------------------------------------
+            -- Insert row text + whole-tab highlight
+            -----------------------------------------------------------------
             for l = 1, 3 do
-                table.insert(lines[l], { row_text[l] })
-                local byte_len = #row_text[l]
+                local text = row_text[l]
+                local byte_len = #text
+
+                table.insert(lines[l], { text })
 
                 table.insert(highlights, {
-                    group = hl,
-                    line = l - 1, -- 0-based for nvim_buf_add_highlight
+                    group = hl_tab,
+                    line = l - 1,
                     start_col = colpos[l],
                     end_col = colpos[l] + byte_len,
                 })
@@ -201,6 +243,27 @@ local build_tabs = function(board_names, width_available, index_active_board)
                 colpos[l] = colpos[l] + byte_len
             end
 
+            -----------------------------------------------------------------
+            -- Conditionally highlight the hint portion
+            -----------------------------------------------------------------
+            if display_tabs_hint and hint ~= "" then
+                local left_border_visual = vim.api.nvim_strwidth("│ ")
+                local hint_visual_len = vim.api.nvim_strwidth(hint)
+
+                local hint_start_col = tab_start_col + left_border_visual + 1
+                local hint_end_col = hint_start_col + hint_visual_len + 1
+
+                table.insert(highlights, {
+                    group = "TabHint",
+                    line = 1,
+                    start_col = hint_start_col,
+                    end_col = hint_end_col,
+                })
+            end
+
+            -----------------------------------------------------------------
+            -- Space between tabs
+            -----------------------------------------------------------------
             if i ~= datalen then
                 for l = 1, 3 do
                     table.insert(lines[l], { " " })
@@ -234,7 +297,7 @@ function VaultView:render_board_selection()
     local win_width = dims.width
 
     board_names = vim.list_extend(board_names, { "_pad_", "Settings" })
-    local lines, highlights = build_tabs(board_names, win_width, active_board_index)
+    local lines, highlights = build_tabs(board_names, win_width, active_board_index, self.config.display_tabs_hint)
 
     local flat_lines = {}
     for _, row in ipairs(lines) do

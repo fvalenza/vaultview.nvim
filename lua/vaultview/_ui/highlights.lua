@@ -10,6 +10,7 @@ M.defaults = {
     PageInactive = "Normal",
     EntryWindowActive = {bg = "#303040"},
     EntryWindowInactive = {bg = "#202020"},
+    TabHint      = "Comment",
 }
 
 --- Apply or link highlights

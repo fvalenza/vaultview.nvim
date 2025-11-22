@@ -37,7 +37,8 @@ function M.toggle()
     _LOGGER:debug("Toggling board")
 
     if not M.context.vv then
-        local plugin_configuration = configuration.resolve_data(vim.g.vaultview_configuration)
+        local plugin_configuration = configuration.resolve_data()
+
         local vv = vaultview.new(plugin_configuration)
         M.context.vv = vv
         M.context.vv:show()

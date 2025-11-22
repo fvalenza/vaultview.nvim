@@ -33,6 +33,7 @@ local _EXTRA_DEFAULTS = {
         path = "/tmp/myVault/", -- full path th the vault
         name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
     },
+    display_tabs_hint = true, -- whether to display hint about board navigation in the UI
     user_commands = {
         input_selectors = { -- list of custom input selectors. They keys can be used in board definitions
             empty_list = { -- a comma-separated list of file paths
