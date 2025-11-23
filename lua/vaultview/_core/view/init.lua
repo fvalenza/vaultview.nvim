@@ -16,7 +16,7 @@
 --- Some actions of the View might be delegated to the layout
 ---
 --- @class View
---- @field VaultData table                     Board-scoped vault data
+--- @field _opts table                         Plugin options
 --- @field board_idx integer                   Index of the board this view represents
 --- @field viewData table                      Data of the selected board
 --- @field board_config table                  Per-board plugin configuration
@@ -25,6 +25,7 @@
 --- @field pages_names string[]                List of page names from Vault data
 --- @field viewWindows table                   Window objects for all pages/lists/entries
 --- @field state table                         UI navigation state
+--- @field page_selection_line integer|nil     Line number where the page selection starts (used by views)
 local View = {}
 View.__index = View
 
@@ -32,19 +33,19 @@ local wf = require("vaultview._core.windowfactory")
 
 --- Create a new View instance for a given board index (among the boards configured by user in plugin setup).
 ---
---- @param VaultData table       The entire vault data (global)
+--- @param viewData table       The vault data for specified board index
 --- @param board_idx integer     Index of the board this View handles
---- @param board_config table    User configuration for this board
 --- @param layout table          Layout class/table with .new() constructor
 --- @param header_win table      Snacks window instance for page selection header
 ---
 --- @return View                 New View instance
-function View.new(VaultData, board_idx, board_config, layout, header_win)
+function View.new(viewData, board_idx, layout, header_win)
     local self = setmetatable({}, View)
-    self.VaultData = VaultData
+
+    self._opts = require("vaultview").opts
     self.board_idx = board_idx
-    self.viewData = VaultData.boards[board_idx]
-    self.board_config = board_config
+    self.viewData = viewData
+    self.board_config = self._opts.boards[board_idx]
     self.header_win = header_win
     self.state = {
         focused = { page = 1, list = 1, entry = 0 },
@@ -53,7 +54,7 @@ function View.new(VaultData, board_idx, board_config, layout, header_win)
     -- TODO(roadmap) Do not create all windows at once, only create those needed for the current page, and create others on demand when needed
     -- This can be done with a boolean "loaded" flag in self.state.pages and when switching page, check if loaded, if not create windows for that page
     -- but we will need self.pages_names to be initialized here anyway and create at least the first page windows + state
-    self.pages_names, self.viewWindows, self.state.pages = wf.create_board_view_windows(VaultData, board_idx, layout)
+    self.pages_names, self.viewWindows, self.state.pages = wf.create_board_view_windows(self.viewData, layout)
 
     self.layout = layout.new(self.viewData, self.viewWindows, self.state)
 
@@ -746,7 +747,6 @@ function View:refresh_entry_content(page_idx, list_idx, entry_idx, custom_select
 
     local reparsed_content = require("vaultview._core.parsers.parsertrait").findContentInEntryFile(
         entry.filepath,
-        custom_selectors,
         self.board_config
     )
     local new_content = {}

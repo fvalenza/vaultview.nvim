@@ -19,12 +19,19 @@ M.DATA = {}
 --
 ---@type vaultview.Configuration
 local _DEFAULTS = {
-    logging = { level = "info", use_console = false, use_file = false },
+    --- @type mega.logging.SparseLoggerOptions
+    logging = {
+        level = "info",
+        use_console = false,
+        use_file = false,
+        output_path = "/tmp/vaultview.log",
+    },
 }
 
--- TODO: (you) Update these sections depending on your intended plugin features.
+---@type vaultview.Configuration
 local _EXTRA_DEFAULTS = {
-    commands = {
+    --- @type table
+    keymaps = {
         open = {},
         close = {},
     },
@@ -34,19 +41,14 @@ local _EXTRA_DEFAULTS = {
         name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
     },
     display_tabs_hint = true, -- whether to display hint about board navigation in the UI
-    custom_selectors = {
-        input_selectors = { -- list of custom input selectors. They keys can be used in board definitions
-            empty_list = { -- a comma-separated list of file paths
-            },
-            empty_func = function(search_path) -- a function that returns a list of file paths from a given search_path
-                return {
-                }
-            end,
-            empty_shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
-        },
-        entry_content_selectors = { -- custom content selectors can be defined here and chosen in the board configuration
-            -- shall be grep/awk/rg command lines
-        },
+    hints = {
+        board_navigation = true,
+        pages_navigation = false, -- TODO: not yet implemented
+        entry_navigation = false, -- TODO: not yet implemented
+    },
+    selectors = {
+        input = require("vaultview._core.parsers.selectors").default_input_selectors,
+        entry_content = require("vaultview._core.parsers.selectors").default_entry_content_selectors,
     },
     boards = {
         -- {
@@ -80,6 +82,7 @@ function M.initialize_data_if_needed()
     logging.set_configuration("vaultview", configuration)
 
     _LOGGER:fmt_debug("Initialized vaultview's configuration.")
+    -- dprint("Plugin Configuration initialized: %s", M.DATA)
 end
 
 --- Merge `data` with the user's current configuration.

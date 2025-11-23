@@ -157,17 +157,16 @@ end
 --- 4. Parses the content for each entry of the paginatd board data
 ---
 --- @param vault table { path: string, name: string }
---- @param custom_selectors table User callbacks / parser overrides
 --- @param boardConfig table { name: string, parser: string|function, viewlayout: string, subfolder: string, pattern: string }
 ---
 --- @return table boardData Fully structured board data compatible with all ViewLayouts
-function M.parseBoard(vault, custom_selectors, boardConfig)
+function M.parseBoard(vault, boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 
-    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, custom_selectors, boardConfig)
+    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, boardConfig)
 
     local boardData = M.arrangeInputsIntoBoardData(boardRawInputs, boardConfig, vaultRootPath)
-    M.parseBoardDataEntriesForContent(boardData)
+    M.parseBoardDataEntriesForContent(boardData, boardConfig)
 
     return boardData
 

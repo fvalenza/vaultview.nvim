@@ -37,4 +37,7 @@ M.generic = {
 }
 
 
+--TODO actions et mapping <-> actions
+
+
 return M

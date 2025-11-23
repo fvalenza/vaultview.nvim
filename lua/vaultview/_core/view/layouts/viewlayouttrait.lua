@@ -88,7 +88,6 @@ end
 ---
 --- @return integer width                     Width computed for this list
 function ViewLayoutTrait:compute_list_window_rendering(idx_list, list, list_state, list_win, layout_name, col_offset)
-    local Constants = Constants -- local reference for optimizing lookup ?
     local expanded = list_state.expanded
     local list_entry_page = list_state.current_page
     local num_entry_pages = #list_state.list_pages

@@ -6,6 +6,7 @@
 --- establishes initial focus.
 ---
 --- @class ViewLayoutColumns
+---@field _opts table                         Plugin options
 ---@field __name string               Name of the layout class
 ---@field viewData table              Data model: pages → lists → items
 ---@field viewWindows table           Window objects for pages/lists/items
@@ -29,6 +30,7 @@ end
 --- @return ViewLayoutColumns  The constructed layout instance
 function ViewLayoutColumns.new(viewData, viewWindows, viewState)
     local self = setmetatable({}, ViewLayoutColumns)
+    self._opts = require("vaultview").opts
     self.__name = "ViewLayoutColumns"
     self.viewData = viewData
     self.viewWindows = viewWindows

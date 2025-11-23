@@ -14,6 +14,7 @@ local vaultview = require("vaultview._core.vaultview")
 local _LOGGER = logging.get_logger("vaultview.init")
 
 local M = {}
+M.opts = {}
 
 --- Runtime context table storing the active VaultView instance.
 -- @field vv table|nil The active `vaultview` instance, or `nil` if not loaded.
@@ -38,6 +39,10 @@ function M.toggle()
 
     if not M.context.vv then
         local plugin_configuration = configuration.resolve_data()
+
+        M.opts = vim.deepcopy(plugin_configuration)
+        -- _LOGGER:fmt_debug("Plugin opts: %s", M.opts)
+        dprint("Plugin opts: %s", M.opts)
 
         local vv = vaultview.new(plugin_configuration)
         M.context.vv = vv

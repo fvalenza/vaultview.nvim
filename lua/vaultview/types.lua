@@ -1,0 +1,14 @@
+---@class vaultview.LoggingConfig
+---@field level string
+---@field use_console boolean
+---@field use_file boolean
+---
+
+---@class vaultview.Configuration
+---@field logging mega.logging.SparseLoggerOptions
+---@field actions table
+---@field vault table
+---@field hints table
+---@field selectors table
+---@field boards table[]
+---@field initial_board_idx? integer

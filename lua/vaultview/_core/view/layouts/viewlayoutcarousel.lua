@@ -11,6 +11,7 @@
 --- Afterwards, the main View handles expand/collapse interactions through visibility_window
 ---
 ---@class ViewLayoutCarousel
+---@field _opts table                         Plugin options
 ---@field __name string               Name of the layout class
 ---@field viewData table              Data model: pages → lists → items
 ---@field viewWindows table           Window objects for pages/lists/items
@@ -21,6 +22,8 @@ ViewLayoutCarousel.__index = ViewLayoutCarousel
 
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview._core.view.layouts.carousel")
 
 
 --- Get layout class name.
@@ -43,6 +46,7 @@ end
 --- @return ViewLayoutCarousel The constructed layout instance
 function ViewLayoutCarousel.new(viewData, viewWindows, viewState)
     local self = setmetatable({}, ViewLayoutCarousel)
+    self._opts = require("vaultview").opts
     self.__name = "ViewLayoutCarousel"
     self.viewData = viewData
     self.viewWindows = viewWindows
@@ -68,6 +72,10 @@ end
 ---
 --- This is called **once** in the constructor.
 function ViewLayoutCarousel:compute_layout()
+    _LOGGER:fmt_debug("Computing Layout")
+    _LOGGER:fmt_debug("ViewWindows: %s", self.viewWindows)
+    _LOGGER:fmt_debug("ViewData: %s", self.viewData)
+    _LOGGER:fmt_debug("ViewState: %s", self.viewState)
     for p_idx, _ in ipairs(self.viewData.pages) do
         -- Determine which lists are expanded/collapsed
         self:compute_lists_in_page_visibility_window(p_idx)

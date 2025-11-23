@@ -7,6 +7,9 @@ local Constants = require("vaultview._ui.constants")
 local Keymaps = require("vaultview.keymaps")
 
 
+--- Wrapper to create a snacks window with default options for vaultview.nvim
+---@param opts snacks.win.opts The snacks window options
+---@return snacks.win win The created Snacks window object
 function M.create_window(opts)
     local opts = opts
     opts.show = true
@@ -47,7 +50,8 @@ end
 
 --- Create windows for main background of vaultview.nvim plugin : header (to display available boards on pages in board)
 --- and view (to display lists and entries)
----@return header_win, view_win The created Snacks window objects
+---@return header_win snacks.win The created Snacks window object for the header area
+---@return view_win snacks.win The created Snacks window object for the view area
 function M.create_header_and_view_windows()
     local header_win = M.create_window({
         width = Constants.header_win.width,
@@ -162,23 +166,22 @@ local function create_list_window(list, layout)
 end
 
 --- Create all window for a board view (lists and entries for all pages of a board)
----@param VaultData [TABLE] The complete parsed VaultData
----@param board_idx [NUMBER] The index of the board to create windows for
----@param layout [CLASS] The layout in which this board will be displayed
----@return [TABLE] pages_names The names of the pages in the board
----@return [TABLE] windows The created windows structure for the board
----@return [TABLE] pages_state The initial state structure for the board
-function M.create_board_view_windows(VaultData, board_idx, layout)
-    local board = VaultData.boards[board_idx]
-    if not board then
-        error("Board index " .. board_idx .. " not found in VaultData")
+--- @param viewData [TABLE] The data for the board view (pages → lists → items)
+--- @param layout [CLASS] The layout in which this board will be displayed
+--- @return [TABLE] pages_names The names of the pages in the board
+--- @return [TABLE] windows The created windows structure for the board
+--- @return [TABLE] pages_state The initial state structure for the board
+
+function M.create_board_view_windows(viewData, layout)
+    if not viewData then
+        error("Cannot create viewData view windows: viewData data not available")
     end
 
     local pages_names = {}
     local windows = { pages = {} }
     local pages_state = {}
 
-    for p_idx, page in ipairs(board.pages or {}) do
+    for p_idx, page in ipairs(viewData.pages or {}) do
         --------------------------------------------------------
         -- Create state table for this page
         --------------------------------------------------------
