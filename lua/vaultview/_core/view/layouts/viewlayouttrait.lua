@@ -16,6 +16,8 @@
 local ViewLayoutTrait = {}
 
 local Constants = require("vaultview._ui.constants")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview.core.view.layouts.viewlayouttrait")
 
 
 ---------------------------------------------------------------------
@@ -23,10 +25,10 @@ local Constants = require("vaultview._ui.constants")
 ---------------------------------------------------------------------
 
 function ViewLayoutTrait:debug()
-    dprint("ViewLayoutTrait debug:")
-    dprint(self.__name)
-    dprint(self.viewWindows)
-    dprint(self.viewState)
+    _LOGGER:debug("ViewLayoutTrait debug:")
+    _LOGGER:fmt_debug("ViewData: %s", self.viewData)
+    _LOGGER:fmt_debug("ViewWindows: %s", self.viewWindows)
+    _LOGGER:fmt_debug("ViewState: %s", self.viewState)
 end
 
 

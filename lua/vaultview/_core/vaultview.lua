@@ -485,14 +485,14 @@ end
 
 --- Open focused entry in Obsidian.
 function VaultView:open_in_obsidian()
-    self.views[self.active_board_index]:open_in_obsidian(self._opts.vault.name) -- TODO if here i dont give self._opts.vault but self._opts.vault.name, why in parsers i give vault and not vault.path ?
+    self.views[self.active_board_index]:open_in_obsidian()
 end
 
 -- REFRESH API --------------------------------------------------------
 
 --- Refresh content of the focused entry.
 function VaultView:refresh_focused_entry_content()
-    self.views[self.active_board_index]:refresh_focused_entry_content(self._opts.custom_selectors) -- TODO: I should not have to give _opts.custom_selectors each time. find better way to have this config once (initialize_Data_if_needed...)
+    self.views[self.active_board_index]:refresh_focused_entry_content()
 end
 
 --- Fast refresh applied to all views.

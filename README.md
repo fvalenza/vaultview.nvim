@@ -130,7 +130,7 @@ I actually started thinking about VaultView before Obsidian Bases even existed â
 
 ```lua
 return {
-	"fvalenza/vaultview",
+	"fvalenza/vaultview.nvim",
 	dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging", "folke/snacks.nvim" },
 
 	keys = {
@@ -140,13 +140,19 @@ return {
 	config = function()
 
 		vim.g.vaultview_configuration = {
-			vault = {
-				path = "/path/to/your/vault", -- full path to your vault
-				name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
+			logging = {
+				level = "debug",
+				use_console = false,
+				use_file = false,
+				output_path = "/tmp/vaultview.log",
+			},true
+			hints = {
+				board_navigation = true,
+				-- pages_navigation = false, -- TODO: not yet implemented
+				-- entry_navigation = false, -- TODO: not yet implemented
 			},
-            display_tabs_hint = true, -- whether to display hint about board navigation in the UI
-            custom_selectors = {
-                input_selectors = { -- list of custom input selectors. They keys can be used in board definitions
+            selectors = {
+                input = { -- list of custom input selectors. They keys can be used in board definitions
                     exemple_list_files = { -- a comma-separated list of file paths
                         "/path/to/file1.md",
                         "/path/to/file2.md",
@@ -158,9 +164,13 @@ return {
                     end,
                     exemple_shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
                 },
-                entry_content_selectors = { -- custom content selectors can be defined here and chosen in the board configuration
+                entry_content= { -- custom content selectors can be defined here and chosen in the board configuration
                     -- shall be grep/awk/rg command lines
                 },
+            },
+            vault = {
+                path = "/path/to/your/vault", -- full path to your vault
+                name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
             },
 			boards = {
 				{

@@ -47,8 +47,7 @@ local function search_wikilink(dir, name)
 
     local handle = io.popen(cmd)
     if not handle then
-        callback({})
-        return
+        return {}
     end
 
     local results = {}

@@ -2,11 +2,13 @@
 ---@field level string
 ---@field use_console boolean
 ---@field use_file boolean
+---@field output_path string
+---@field raw_debug_console boolean 
 ---
 
 ---@class vaultview.Configuration
 ---@field logging mega.logging.SparseLoggerOptions
----@field actions table
+---@field keymaps table
 ---@field vault table
 ---@field hints table
 ---@field selectors table

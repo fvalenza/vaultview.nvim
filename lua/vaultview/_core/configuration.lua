@@ -12,11 +12,6 @@ vim.g.loaded_vaultview = false
 ---@type vaultview.Configuration
 M.DATA = {}
 
--- TODO: (you) If you use the mega.logging module for built-in logging, keep
--- the `logging` section. Otherwise delete it.
---
--- It's recommended to keep the `display` section in any case.
---
 ---@type vaultview.Configuration
 local _DEFAULTS = {
     --- @type mega.logging.SparseLoggerOptions
@@ -25,6 +20,7 @@ local _DEFAULTS = {
         use_console = false,
         use_file = false,
         output_path = "/tmp/vaultview.log",
+        raw_debug_console = true,
     },
 }
 
@@ -40,7 +36,6 @@ local _EXTRA_DEFAULTS = {
         path = "/tmp/myVault/", -- full path th the vault
         name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
     },
-    display_tabs_hint = true, -- whether to display hint about board navigation in the UI
     hints = {
         board_navigation = true,
         pages_navigation = false, -- TODO: not yet implemented
@@ -81,8 +76,7 @@ function M.initialize_data_if_needed()
     ---@cast configuration mega.logging.SparseLoggerOptions
     logging.set_configuration("vaultview", configuration)
 
-    _LOGGER:fmt_debug("Initialized vaultview's configuration.")
-    -- dprint("Plugin Configuration initialized: %s", M.DATA)
+    _LOGGER:fmt_info("Initialized vaultview's configuration.")
 end
 
 --- Merge `data` with the user's current configuration.

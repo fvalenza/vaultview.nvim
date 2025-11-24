@@ -9,8 +9,9 @@
 --- These parsers can also overwrite them if necessary
 ---
 ---
---- @module ParserTrait
+--- @module "vaultview._core.parser.parsertrait"
 ---
+--- @class ParserTrait
 local ParserTrait = {}
 
 local utils = require("vaultview._core.utils.utils")

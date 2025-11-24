@@ -30,6 +30,8 @@ local View = {}
 View.__index = View
 
 local wf = require("vaultview._core.windowfactory")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview.core.view.init")
 
 --- Create a new View instance for a given board index (among the boards configured by user in plugin setup).
 ---
@@ -58,7 +60,7 @@ function View.new(viewData, board_idx, layout, header_win)
 
     self.layout = layout.new(self.viewData, self.viewWindows, self.state)
 
-    -- TODO perhaps put it in layout.new
+    -- Initialize focused indexes
     if self.viewData.pages and #self.viewData.pages > 0 then
         local first_page = self.viewData.pages[1]
         if first_page.lists and #first_page.lists > 0 then
@@ -77,9 +79,9 @@ end
 
 --- Print debugging information about the current View.
 function View:debug()
-    dprint("View Debug Info:")
-    dprint("Board Index:", self.board_idx)
-    dprint("ViewData:", self.viewData)
+    _LOGGER:debug("View Debug Info:")
+    _LOGGER:debug("Board Index:", self.board_idx)
+    _LOGGER:debug("ViewData:", self.viewData)
     self.layout:debug()
 end
 
@@ -676,8 +678,8 @@ end
 
 --- Open focused entry in Obsidian using URI.
 ---
---- @param vaultname string
-function View:open_in_obsidian(vaultname)
+function View:open_in_obsidian()
+    local vaultname = self._opts.vault.name
     if self.state.focused.list == 0 or self.state.focused.entry == 0 then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
         return
@@ -735,8 +737,7 @@ end
 --- @param page_idx integer
 --- @param list_idx integer
 --- @param entry_idx integer
---- @param custom_selectors table|nil Optional parser commands
-function View:refresh_entry_content(page_idx, list_idx, entry_idx, custom_selectors)
+function View:refresh_entry_content(page_idx, list_idx, entry_idx)
     if page_idx == 0 or list_idx == 0 or entry_idx == 0 then
         return
     end
@@ -763,13 +764,11 @@ end
 
 --- Reparse/refresh the currently focused entry.
 ---
---- @param custom_selectors table|nil
-function View:refresh_focused_entry_content(custom_selectors)
+function View:refresh_focused_entry_content()
     self:refresh_entry_content(
         self.state.focused.page,
         self.state.focused.list,
-        self.state.focused.entry,
-        custom_selectors
+        self.state.focused.entry
     )
 end
 
