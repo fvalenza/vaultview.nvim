@@ -2,9 +2,9 @@
 local M = {}
 
 M.default_input_selectors = {
-    ["*"] = [[find %q -type f | sort ]],
-    ["*.md"] = [[find %q -type f -name '*.md' | sort ]],
-    ["yyyy-mm-dd.md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
+    ["*"] = [[find %q -type f | sort ]], -- all files
+    ["*.md"] = [[find %q -type f -name '*.md' | sort ]], -- all markdown files
+    ["yyyy-mm-dd.md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']], -- all markdown files with name matching yyyy-mm-dd.md
 }
 
 M.default_entry_content_selectors = {
