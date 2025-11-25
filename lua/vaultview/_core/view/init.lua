@@ -40,7 +40,7 @@ local _LOGGER = logging.get_logger("vaultview.core.view.init")
 --- @param layout table          Layout class/table with .new() constructor
 --- @param header_win table      Snacks window instance for page selection header
 ---
---- @return View                 New View instance
+---@return View|nil, string?   -- view, err
 function View.new(viewData, board_idx, layout, header_win)
     local self = setmetatable({}, View)
 
@@ -53,6 +53,13 @@ function View.new(viewData, board_idx, layout, header_win)
         focused = { page = 1, list = 1, entry = 0 },
         pages = {},
     }
+    if not self.viewData or not self.viewData.pages or #self.viewData.pages == 0 then
+        local msg = "Cannot create View: no pages in viewData for board index " .. tostring(board_idx)
+        _LOGGER:error(msg)
+        -- error(msg) -- TODO decide if error is too harsh or should return nil + error message and test it in calling code
+        return nil, msg -- TODO decide if error is too harsh or should return nil + error message and test it in calling code
+    end
+
     -- TODO(roadmap) Do not create all windows at once, only create those needed for the current page, and create others on demand when needed
     -- This can be done with a boolean "loaded" flag in self.state.pages and when switching page, check if loaded, if not create windows for that page
     -- but we will need self.pages_names to be initialized here anyway and create at least the first page windows + state
@@ -746,10 +753,8 @@ function View:refresh_entry_content(page_idx, list_idx, entry_idx)
         return
     end
 
-    local reparsed_content = require("vaultview._core.parsers.parsertrait").findContentInEntryFile(
-        entry.filepath,
-        self.board_config
-    )
+    local reparsed_content =
+        require("vaultview._core.parsers.parsertrait").findContentInEntryFile(entry.filepath, self.board_config)
     local new_content = {}
 
     for _, line in ipairs(reparsed_content) do
@@ -765,11 +770,7 @@ end
 --- Reparse/refresh the currently focused entry.
 ---
 function View:refresh_focused_entry_content()
-    self:refresh_entry_content(
-        self.state.focused.page,
-        self.state.focused.list,
-        self.state.focused.entry
-    )
+    self:refresh_entry_content(self.state.focused.page, self.state.focused.list, self.state.focused.entry)
 end
 
 --- Refresh content of all entries in the view (quick, incremental).

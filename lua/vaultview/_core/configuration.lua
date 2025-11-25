@@ -1,4 +1,5 @@
 --- All functions and data to help customize `vaultview` for this user.
+---@diagnostic disable: missing-fields
 
 local logging = require("mega.logging")
 

@@ -57,6 +57,8 @@ local M = {}
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
 local Keymaps = require("vaultview.keymaps")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview._core.windowfactory")
 
 
 --- Wrapper to create a snacks window with default options for vaultview.nvim
@@ -90,6 +92,16 @@ function M.setNewContent(window, lines)
     end
 end
 
+--- Erase all content from the window buffer (sets it to a single empty line).
+---@param window snacks.win The snacks window object
+function M.eraseContent(window)
+    if window and vim.api.nvim_buf_is_valid(window.buf) then
+        vim.bo[window.buf].modifiable = true
+        vim.api.nvim_buf_set_lines(window.buf, 0, -1, false, { "" })
+        vim.bo[window.buf].modifiable = false
+    end
+end
+
 --- Append content in the window buffer
 ---@param window snacks.win The snacks window object
 ---@param lines table Array of lines to set in the buffer
@@ -99,6 +111,34 @@ function M.appendContent(window, lines)
         vim.api.nvim_buf_set_lines(window.buf, line_count, -1, false, lines)
     end
 end
+
+
+
+--- Replace all keymaps of a snacks window
+---@param win snacks.win
+---@param new_keys snacks.win.Keys[]
+function M.replace_window_keys(win, new_keys)
+    if not win or not win:buf_valid() then
+        vim.notify("Window buffer is not valid", vim.log.levels.WARN)
+        return
+    end
+
+    -- remove existing buffer-local keymaps
+    local modes = { "n", "i", "v", "x", "s", "o" }
+    for _, mode in ipairs(modes) do
+        local maps = vim.api.nvim_buf_get_keymap(win.buf, mode)
+        for _, m in ipairs(maps) do
+            vim.keymap.del(mode, m.lhs, { buffer = win.buf })
+        end
+    end
+
+    -- replace the keys table
+    win.keys = vim.deepcopy(new_keys)
+
+    -- re-apply new keymaps
+    win:map()
+end
+
 
 --- Create windows for main background of vaultview.nvim plugin : header (to display available boards on pages in board)
 --- and view (to display lists and entries)
@@ -130,6 +170,7 @@ function M.create_header_and_view_windows()
         text = "",
         show = true,
         focusable = false,
+        keys = Keymaps.generic,
         -- enter = false,
     })
 
@@ -225,7 +266,8 @@ end
 --- @return table pages_state The initial state structure for the board
 function M.create_board_view_windows(viewData, layout)
     if not viewData then
-        error("Cannot create viewData view windows: viewData data not available")
+        _LOGGER:error("Cannot create viewData view windows: viewData data not available")
+        return {}, {}, {}
     end
 
     local pages_names = {}

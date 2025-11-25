@@ -1,5 +1,4 @@
 --- Main/Root class of the plugin
----@class vaultview.VaultView
 -- For each board of the configuration, will parse the vault and create data structure necessery for rendering
 -- VaultData is in the form:
 -- -- VaultData = {
@@ -41,6 +40,7 @@
 -- - Controller: View. Even if some of the logic is delegated to the viewLayout from the View class
 -- This class VaultView is the root class that holds everything together
 --
+---@class vaultview.VaultView
 ---@field _opts vaultview.Configuration The merged plugin configuration (defaults + user config)
 ---@field header_win snacks.win Header window object
 ---@field view_win snacks.win Main content window object
@@ -49,11 +49,14 @@
 ---@field VaultData table Parsed data structure used for rendering (the Model)
 ---@field views View[] View instances (one per board)
 ---@field isDisplayed boolean|nil Whether the complete UI is currently shown
+---@field boards_data_loaded boolean[]
+---@field boards_view_loaded boolean[]
 
 local VaultView = {}
 VaultView.__index = VaultView
 
 local Constants = require("vaultview._ui.constants")
+local Keymaps = require("vaultview.keymaps")
 local wf = require("vaultview._core.windowfactory")
 local parsers = require("vaultview._core.parsers")
 local View = require("vaultview._core.view")
@@ -90,7 +93,7 @@ function VaultView.new()
     end
     -- Collect board names only to display them in tabs, do NOT parse or create views
     for _, board_config in ipairs(self._opts.boards) do
-        local board_name = board_config.name or "board_" .. tostring(#self.boards_names + 1)
+        local board_name = board_config.name or ("board_" .. tostring(#self.boards_names + 1))
         table.insert(self.boards_names, board_name)
 
         table.insert(self.VaultData.boards, nil)
@@ -123,6 +126,13 @@ function VaultView:ensureBoardLoaded(i)
         local parser = parsers(board_config.parser)
         local boardData = parser(self._opts.vault, board_config)
 
+        -- if boardData is nil
+        if boardData == nil then
+            _LOGGER:error("Parser for board " .. tostring(i) .. " returned nil data")
+            self.boards_data_loaded[i] = false
+            return
+        end
+
         self.VaultData.boards[i] = {
             title = self.boards_names[i],
             pages = boardData,
@@ -139,9 +149,14 @@ function VaultView:ensureBoardLoaded(i)
         local viewlayout = type(layout_spec) == "string" and layouts[layout_spec]
             or error("Invalid layout type for " .. self.boards_names[i])
 
-        self.views[i] = View.new(self.VaultData.boards[i], i, viewlayout, self.header_win)
-
-        self.boards_view_loaded[i] = true
+        local view, err = View.new(self.VaultData.boards[i], i, viewlayout, self.header_win)
+        if not view then
+            _LOGGER:error("Failed to create view for board " .. i .. ": " .. err)
+            self.boards_view_loaded[i] = false
+        else
+            self.views[i] = view
+            self.boards_view_loaded[i] = true
+        end
     end
 end
 
@@ -198,7 +213,6 @@ local build_tabs = function(board_names, width_available, index_active_board, di
                 table.insert(lines[l], { emptychar })
                 colpos[l] = colpos[l] + #emptychar
             end
-
         else
             -----------------------------------------------------------------
             -- Build HINT (conditionally)
@@ -331,22 +345,49 @@ end
 
 --- Render the entire UI (header + active view).
 function VaultView:render()
+    if not self.header_win or not self.view_win then
+        _LOGGER:error("VaultView windows are not initialized")
+        return
+    end
+    if self.active_board_index == 0 then
+        _LOGGER:error("VaultView has no active board to render")
+        return
+    end
+
     local page_selection_line = self:render_board_selection()
 
     self.header_win:show()
+    wf.eraseContent(self.view_win)
     self.view_win:show()
-    if self.active_board_index == 0 then
+
+    local idx = self.active_board_index
+    local view = self.views[idx]
+    if not view then
+        _LOGGER:error("Trying to render board " .. tostring(idx) .. " but view is nil")
+        local new_content = { "No view to render. Check logs for errors and ensure parser returned non empty data" }
+        wf.setNewContent(self.view_win, new_content)
+        self.view_win.opts.focusable = true
+        dprint("Window keys : ", self.view_win.opts.keys)
+        wf.replace_window_keys(self.view_win, Keymaps.error)
+        dprint("Window keys after replace : ", self.view_win.opts.keys)
+        self.view_win:focus()
+
         return
     end
-    self.views[self.active_board_index].page_selection_line = page_selection_line
-    self.views[self.active_board_index]:render()
 
+    view.page_selection_line = page_selection_line
+    view:render()
 end
 
 --- Hide the entire UI.
 function VaultView:hide()
     if self.active_board_index ~= 0 then
-        self.views[self.active_board_index]:hide()
+        -- check that view exists
+        if not self.views[self.active_board_index] then
+            _LOGGER:error("Trying to hide board " .. tostring(self.active_board_index) .. " but view is nil")
+        else
+            self.views[self.active_board_index]:hide()
+        end
     end
     if self.header_win then
         self.header_win:hide()
