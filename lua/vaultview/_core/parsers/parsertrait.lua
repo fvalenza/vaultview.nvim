@@ -9,42 +9,26 @@
 --- These parsers can also overwrite them if necessary
 ---
 ---
---- @module ParserTrait
+--- @module "vaultview._core.parser.parsertrait"
 ---
+--- @class ParserTrait
 local ParserTrait = {}
 
 local utils = require("vaultview._core.utils.utils")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview._core.parser.parsertrait")
 
 -----------------------------------------------------------------------------------------------------
 --
 -- Input Selection = get the files to be used as board inputs by the parser to build the board data
 --
 -----------------------------------------------------------------------------------------------------
-local input_selectors = {
-    ["*"] = [[find %q -type f | sort ]],
-    ["*.md"] = [[find %q -type f -name '*.md' | sort ]],
-    ["yyyy-mm-dd.md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
-}
-
---- Merge user-defined input selectors with defaults
---- @param user_selectors table? User-defined input selectors
---- @return table Merged input selectors
-local function merge_input_selectors(user_selectors)
-    local merged = vim.deepcopy(input_selectors)
-    if type(user_selectors) == "table" then
-        for k, v in pairs(user_selectors) do
-            merged[k] = v
-        end
-    end
-    return merged
-end
 
 --- Parse vault directory to get the list of files to use as board inputs
 --- @param base_dir string Base vault directory path
---- @param custom_selectors table Table of user-defined input/content selectors -- TODO(roadmap): merge table in configuraiton.lua
 --- @param board_config table Configuration for the board (input_selector, subfolder, etc.)
 --- @return table[] List of board input objects: { name = string, path = string }
-function ParserTrait.parseVaultForBoardInputs(base_dir, custom_selectors, board_config)
+function ParserTrait.parseVaultForBoardInputs(base_dir, board_config)
     local boardData = {}
 
     -- Build the directory in which to look for files
@@ -55,8 +39,9 @@ function ParserTrait.parseVaultForBoardInputs(base_dir, custom_selectors, board_
     end
 
     -- Retrieve the input_selector wanted (from configuration of the board) between the user-defined ones and default ones
-    local find_commands = merge_input_selectors(custom_selectors.input_selectors)
-    local mode = board_config.input_selector or "all_md"
+    local find_commands = require("vaultview").opts.selectors.input
+
+    local mode = board_config.input_selector or "*.md"
     local selector = find_commands[mode]
 
     if not selector then
@@ -108,44 +93,18 @@ end
 -- Content selection = get the content(lines) to display in the card associated to each entry (within lists)
 --
 ------------------------------------------------------------------------------------------------------------
-local content_selectors = {
-    headings = [=[grep -E '^#+[[:space:]]+.+' %q | sed -E 's/^#+[[:space:]]+//' ]=],
-    h1 = [=[grep -E '^#[[:space:]]+.+' %q | sed -E 's/^#[[:space:]]+//' ]=],
-    h2 = [=[grep -E '^##[[:space:]]+.+' %q | sed -E 's/^##[[:space:]]+//' ]=],
-    h3 = [=[grep -E '^###[[:space:]]+.+' %q | sed -E 's/^###[[:space:]]+//' ]=],
-    h4 = [=[grep -E '^####[[:space:]]+.+' %q | sed -E 's/^####[[:space:]]+//' ]=],
-    h2_awk_noexcalidraw = [=[awk '/^# Excalidraw Data/ { exit } /^##[[:space:]]+.+/ { sub(/^##[[:space:]]+/, ""); print }' %q]=],
-    h2_rg_noexcalidraw = [=[rg --until-pattern '^# Excalidraw Data' '^##[[:space:]]+.+$' %q | sed -E 's/^##[[:space:]]+//' ]=],
-    uncompleted_tasks = [=[grep -E '^\s*-\s*\[ \]' %q | sed -E 's/^\s*-\s*\[ \]\s*//' ]=], -- TODO test
-    completed_tasks = [=[grep -E '^\s*-\s*\[x\]' %q | sed -E 's/^\s*-\s*\[x\]\s*//' ]=], -- TODO test
-    tasks = [=[grep -E '^\s*-\s*\[[ x]\]' %q | sed -E 's/^\s*-\s*\[[ x]\]\s*//' ]=], -- TODO test
-}
 
---- Merge user-defined content selectors with defaults
---- @param user_selectors table? User-defined content selectors
---- @return table Merged content selectors
-local function merge_content_selectors(user_selectors)
-    local merged = vim.deepcopy(content_selectors)
-    if type(user_selectors) == "table" then
-        for k, v in pairs(user_selectors) do
-            merged[k] = v
-        end
-    end
-    return merged
-end
 
 --- Extract content lines from a file
 --- @param path string File path
---- @param custom_selectors table? User-defined commands (input + content selectors)
 --- @param boardConfig table? Board configuration (content_selector)
 --- @return string[] Lines of content
-function ParserTrait.findContentInEntryFile(path, custom_selectors, boardConfig)
-    custom_selectors = custom_selectors or {}
+function ParserTrait.findContentInEntryFile(path,  boardConfig)
     boardConfig = boardConfig or {}
 
-    -- Retrieve the grep command template between the user-defined and default ones
-    local grep_commands = merge_content_selectors(custom_selectors.content_selectors) -- TODO(roadmap) when merge at plugin loading, no need to merge again so to remove here
-    local mode = boardConfig.content_selector or "h2_awk_noexcalidraw" -- default to awk version
+    local grep_commands = require("vaultview").opts.selectors.entry_content
+
+    local mode = boardConfig.content_selector or "h1"
     local template = grep_commands[mode]
 
     if not template then
@@ -165,12 +124,13 @@ end
 
 --- Populate all entries in boardData with content from their files
 --- @param boardData table Board data structure: pages → lists → entries
-function ParserTrait.parseBoardDataEntriesForContent(boardData)
+---@param boardConfig table Board configuration (content_selector, etc.)
+function ParserTrait.parseBoardDataEntriesForContent(boardData, boardConfig)
     for _, page in ipairs(boardData) do
         for _, list in ipairs(page.lists) do
             for _, entry in ipairs(list.items) do
                 local expanded_path = utils.expand_path(entry.filepath)
-                local entryContent = ParserTrait.findContentInEntryFile(expanded_path)
+                local entryContent = ParserTrait.findContentInEntryFile(expanded_path, boardConfig)
                     for _, line in ipairs(entryContent) do
                         table.insert(entry.content, "- " .. line)
                     end

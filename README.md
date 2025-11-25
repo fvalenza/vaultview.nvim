@@ -25,6 +25,9 @@ With it, you can:
 
 - [Features](#-features)
     - [Examples](#examples)
+        - [Daily Notes Board (Carousel Layout)](#daily-notes-board-carousel-layout)
+        - [Boards of Maps Of Content (Columns Layout)](#boards-of-maps-of-content-columns-layout)
+            - [What is a Map Of Content (MOC)?](#what-is-a-map-of-content-moc)
 - [How it works](#️-how-it-works)
 - [Why this plugin](#-why-this-plugin)
 - [External dependencies](#external-dependencies)
@@ -37,6 +40,7 @@ With it, you can:
 - [Roadmap](#roadmap)
 - [Known Issues](#known-issues)
 
+
 ## ⭐ Features
 - Search / Parse / Display specific files in a matrix or board view
 - Open the corresponding file in Neovim or Obsidian
@@ -46,11 +50,38 @@ With it, you can:
 
 ### 🪄 Examples
 
-__Daily Notes Board (Carousel Layout):__
+#### Daily Notes Board (Carousel Layout):
 ![img](./doc/vaultview_example_dailies_carousel.png)
 
-__MOC Board (Columns Layout):__
+#### Boards of Maps Of Content (Columns Layout):
 ![img](./doc/vaultview_example_moc_columns.png)
+
+##### What is a Map Of Content (MOC)?
+
+A Map Of Content is a special type of note that serves as a hub or index that gives you an overview of a topic and quickly navigates you to the relevant notes.
+A MOC can typically be built within Obsidian by creating a file whose content is a list of links to other notes related to a specific subject.
+An optimized workflow to populate MOCs in Obsidian is to use `[[links]]` in notes that relate to the MOC topic and then display dynamically with `Dataview plugin` in the MOC file all notes that link to it.
+
+For example:
+```
+- Projects.md -> the MOC file
+- Project 1.md -> file containing [[Projects]]  (I usually put the link at the top of the file)
+- Project 2.md -> file containing [[Projects]]
+```
+
+and the dynamically displayed content in Projects.md with Dataview would be (with links that can be followed):
+![img](https://private-user-images.githubusercontent.com/7045681/518883763-d552ace4-6f40-4b1b-87fb-cd672561bab6.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3NjQxMDg2NTUsIm5iZiI6MTc2NDEwODM1NSwicGF0aCI6Ii83MDQ1NjgxLzUxODg4Mzc2My1kNTUyYWNlNC02ZjQwLTRiMWItODdmYi1jZDY3MjU2MWJhYjYucG5nP1gtQW16LUFsZ29yaXRobT1BV1M0LUhNQUMtU0hBMjU2JlgtQW16LUNyZWRlbnRpYWw9QUtJQVZDT0RZTFNBNTNQUUs0WkElMkYyMDI1MTEyNSUyRnVzLWVhc3QtMSUyRnMzJTJGYXdzNF9yZXF1ZXN0JlgtQW16LURhdGU9MjAyNTExMjVUMjIwNTU1WiZYLUFtei1FeHBpcmVzPTMwMCZYLUFtei1TaWduYXR1cmU9ZjFkMTNiOTU1MzViN2U5MDVhNDI0Njc3ODc4NThiNWI0M2YxYzY0MmM5NWNiZTZiNzgzZWJiYzBlMTI4YjRiOCZYLUFtei1TaWduZWRIZWFkZXJzPWhvc3QifQ.v02rGZk572J6DN8HhlEY38WE54G2rjOaw5FYQ8KYaho)
+
+This concept of MOC can be applied to various note organization preferences.
+
+The problem with this is that while you can click on the links in Obsidian, you can’t quickly get an overview of what’s inside each linked note without opening it + you can only display one MOC at a time.
+
+> [!tip]
+>With the VaultView plugin, you can create a board that displays all your MOCs at once, along with the headings (or whatever content_selector you prefer) inside each linked note — and navigate it quickly using Vim motions. Plus quickly open the file in either Neovim or Obsidian.
+
+
+
+
 
 __Quick edit of a file from the board:__
 ![img](./doc/vaultview_example_edit_file_in_neovim.png)
@@ -130,7 +161,7 @@ I actually started thinking about VaultView before Obsidian Bases even existed �
 
 ```lua
 return {
-	"fvalenza/vaultview",
+	"fvalenza/vaultview.nvim",
 	dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging", "folke/snacks.nvim" },
 
 	keys = {
@@ -140,13 +171,19 @@ return {
 	config = function()
 
 		vim.g.vaultview_configuration = {
-			vault = {
-				path = "/path/to/your/vault", -- full path to your vault
-				name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
+			logging = {
+				level = "info",
+				use_console = false,
+				use_file = false,
+				output_path = "/tmp/vaultview.log",
 			},
-            display_tabs_hint = true, -- whether to display hint about board navigation in the UI
-            custom_selectors = {
-                input_selectors = { -- list of custom input selectors. They keys can be used in board definitions
+			hints = {
+				board_navigation = true,
+				-- pages_navigation = false, -- TODO: not yet implemented
+				-- entry_navigation = false, -- TODO: not yet implemented
+			},
+            selectors = {
+                input = { -- list of custom input selectors. They keys can be used in board definitions
                     exemple_list_files = { -- a comma-separated list of file paths
                         "/path/to/file1.md",
                         "/path/to/file2.md",
@@ -158,9 +195,13 @@ return {
                     end,
                     exemple_shell_command = [=[ your_shell_command ]=], -- Custom shell command to list files
                 },
-                entry_content_selectors = { -- custom content selectors can be defined here and chosen in the board configuration
+                entry_content= { -- custom content selectors can be defined here and chosen in the board configuration
                     -- shall be grep/awk/rg command lines
                 },
+            },
+            vault = {
+                path = "/path/to/your/vault", -- full path to your vault
+                name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
             },
 			boards = {
 				{
@@ -194,9 +235,9 @@ The current default ones are:
 
 ```lua
 local input_selectors = {
-    ["*"] = [[find %q -type f | sort ]],
-    ["*.md"] = [[find %q -type f -name '*.md' | sort ]],
-    ["yyyy-mm-dd.md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']],
+    ["*"] = [[find %q -type f | sort ]], -- all files
+    ["*.md"] = [[find %q -type f -name '*.md' | sort ]], -- all markdown files
+    ["yyyy-mm-dd.md"] = [[find %q -type f | sort | grep -E '/[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])\.md$']], -- all markdown files with name matching yyyy-mm-dd.md
 }
 
 local content_selectors = {

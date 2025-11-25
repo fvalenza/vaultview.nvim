@@ -147,17 +147,16 @@ end
 --- 4. Parse file contents for each entry
 ---
 --- @param vault table { path: string, name: string }
---- @param custom_selectors table Additional user parser commands
 --- @param boardConfig table { name:string, parser:string|function, viewlayout:string, subfolder:string, pattern:string }
 ---
 --- @return table boardData The BoardDataStructure required by ViewLayouts
-function M.parseBoard(vault, custom_selectors, boardConfig)
+function M.parseBoard(vault,  boardConfig)
     local vaultRootPath = utils.expand_path(vault.path)
 
-    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, custom_selectors, boardConfig)
+    local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, boardConfig)
 
     local boardData = M.arrangeInputsIntoBoardData(boardRawInputs)
-    M.parseBoardDataEntriesForContent(boardData)
+    M.parseBoardDataEntriesForContent(boardData, boardConfig)
 
     return boardData
 end

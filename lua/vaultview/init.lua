@@ -1,11 +1,10 @@
 --- VaultView public API.
---
--- This module exposes all externally callable functions of the plugin.
--- Any backward-incompatible changes to the signatures of these functions
--- require a **major** version bump of the plugin.
---
--- @module vaultview
--- @alias M
+---
+--- This module exposes all externally callable functions of the plugin.
+--- Any backward-incompatible changes to the signatures of these functions
+--- require a **major** version bump of the plugin.
+---
+--- @module "vaultview.init
 
 local logging = require("mega.logging")
 local configuration = require("vaultview._core.configuration")
@@ -13,7 +12,11 @@ local vaultview = require("vaultview._core.vaultview")
 
 local _LOGGER = logging.get_logger("vaultview.init")
 
+---@class VaultViewAPI
+---@field opts table
+---@field context table
 local M = {}
+M.opts = {}
 
 --- Runtime context table storing the active VaultView instance.
 -- @field vv table|nil The active `vaultview` instance, or `nil` if not loaded.
@@ -21,7 +24,6 @@ M.context = {}
 
 --- Open the VaultView UI.
 --
--- Equivalent to calling `M.toggle()`.
 -- Opens the UI if not already visible.
 function M.open()
     M.toggle()
@@ -34,10 +36,12 @@ end
 -- - If already created but hidden, it is shown.
 -- - If already visible, it is hidden.
 function M.toggle()
-    _LOGGER:debug("Toggling board")
 
     if not M.context.vv then
         local plugin_configuration = configuration.resolve_data()
+
+        M.opts = vim.deepcopy(plugin_configuration)
+        dprint("Plugin opts: %s", M.opts)
 
         local vv = vaultview.new(plugin_configuration)
         M.context.vv = vv

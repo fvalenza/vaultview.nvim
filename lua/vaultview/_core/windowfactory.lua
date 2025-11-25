@@ -2,11 +2,68 @@
 -- Here in case i want to change the window manager lib later (removing snacks or using another one)
 local M = {}
 
+--- HACK: Taken from snacks.nvim types to avoid LSP errors...
+
+---@class snacks.win.Config: vim.api.keyset.win_config
+---@field style? string merges with config from `Snacks.config.styles[style]`
+---@field show? boolean Show the window immediately (default: true)
+---@field footer_keys? boolean|string[] Show keys footer. When string[], only show those keys with lhs (default: false)
+---@field height? number|fun(self:snacks.win):number Height of the window. Use <1 for relative height. 0 means full height. (default: 0.9)
+---@field width? number|fun(self:snacks.win):number Width of the window. Use <1 for relative width. 0 means full width. (default: 0.9)
+---@field min_height? number Minimum height of the window
+---@field max_height? number Maximum height of the window
+---@field min_width? number Minimum width of the window
+---@field max_width? number Maximum width of the window
+---@field col? number|fun(self:snacks.win):number Column of the window. Use <1 for relative column. (default: center)
+---@field row? number|fun(self:snacks.win):number Row of the window. Use <1 for relative row. (default: center)
+---@field minimal? boolean Disable a bunch of options to make the window minimal (default: true)
+---@field position? "float"|"bottom"|"top"|"left"|"right"|"current"
+---@field border? "none"|"top"|"right"|"bottom"|"left"|"top_bottom"|"hpad"|"vpad"|"rounded"|"single"|"double"|"solid"|"shadow"|"bold"|string[]|false|true
+---@field buf? number If set, use this buffer instead of creating a new one
+---@field file? string If set, use this file instead of creating a new buffer
+---@field enter? boolean Enter the window after opening (default: false)
+---@field backdrop? number|false|snacks.win.Backdrop Opacity of the backdrop (default: 60)
+---@field wo? vim.wo|{} window options
+---@field bo? vim.bo|{} buffer options
+---@field b? table<string, any> buffer local variables
+---@field w? table<string, any> window local variables
+---@field ft? string filetype to use for treesitter/syntax highlighting. Won't override existing filetype
+---@field scratch_ft? string filetype to use for scratch buffers
+---@field keys? table<string, false|string|fun(self: snacks.win)|snacks.win.Keys> Key mappings
+---@field on_buf? fun(self: snacks.win) Callback after opening the buffer
+---@field on_win? fun(self: snacks.win) Callback after opening the window
+---@field on_close? fun(self: snacks.win) Callback after closing the window
+---@field fixbuf? boolean don't allow other buffers to be opened in this window
+---@field text? string|string[]|fun():(string[]|string) Initial lines to set in the buffer
+---@field actions? table<string, snacks.win.Action.spec> Actions that can be used in key mappings
+---@field resize? boolean Automatically resize the window when the editor is resized
+---@field stack? boolean When enabled, multiple split windows with the same position will be stacked together (useful for terminals)
+
+---@class snacks.win
+---@field id number
+---@field buf? number
+---@field scratch_buf? number
+---@field win? number
+---@field opts snacks.win.Config
+---@field augroup? number
+---@field backdrop? snacks.win
+---@field keys snacks.win.Keys[]
+---@field events (snacks.win.Event|{event:string|string[]})[]
+---@field meta table<string, any>
+---@field closed? boolean
+---@overload fun(opts? :snacks.win.Config|{}): snacks.win
+
+
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
 local Keymaps = require("vaultview.keymaps")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview._core.windowfactory")
 
 
+--- Wrapper to create a snacks window with default options for vaultview.nvim
+---@param opts snacks.win.Config The snacks window options
+---@return snacks.win win The created Snacks window object
 function M.create_window(opts)
     local opts = opts
     opts.show = true
@@ -25,8 +82,8 @@ end
 -- end
 
 --- Set new content in the window buffer. Erases previous content.
----@param window The snacks window object
----@param lines Array of lines to set in the buffer
+---@param window snacks.win The snacks window object
+---@param lines table Array of lines to set in the buffer
 function M.setNewContent(window, lines)
     if window and vim.api.nvim_buf_is_valid(window.buf) then
         vim.bo[window.buf].modifiable = true
@@ -35,9 +92,19 @@ function M.setNewContent(window, lines)
     end
 end
 
+--- Erase all content from the window buffer (sets it to a single empty line).
+---@param window snacks.win The snacks window object
+function M.eraseContent(window)
+    if window and vim.api.nvim_buf_is_valid(window.buf) then
+        vim.bo[window.buf].modifiable = true
+        vim.api.nvim_buf_set_lines(window.buf, 0, -1, false, { "" })
+        vim.bo[window.buf].modifiable = false
+    end
+end
+
 --- Append content in the window buffer
----@param window The snacks window object
----@param lines Array of lines to append in the buffer
+---@param window snacks.win The snacks window object
+---@param lines table Array of lines to set in the buffer
 function M.appendContent(window, lines)
     if window and vim.api.nvim_buf_is_valid(window.buf) then
         local line_count = vim.api.nvim_buf_line_count(window.buf)
@@ -45,9 +112,38 @@ function M.appendContent(window, lines)
     end
 end
 
+
+
+--- Replace all keymaps of a snacks window
+---@param win snacks.win
+---@param new_keys snacks.win.Keys[]
+function M.replace_window_keys(win, new_keys)
+    if not win or not win:buf_valid() then
+        vim.notify("Window buffer is not valid", vim.log.levels.WARN)
+        return
+    end
+
+    -- remove existing buffer-local keymaps
+    local modes = { "n", "i", "v", "x", "s", "o" }
+    for _, mode in ipairs(modes) do
+        local maps = vim.api.nvim_buf_get_keymap(win.buf, mode)
+        for _, m in ipairs(maps) do
+            vim.keymap.del(mode, m.lhs, { buffer = win.buf })
+        end
+    end
+
+    -- replace the keys table
+    win.keys = vim.deepcopy(new_keys)
+
+    -- re-apply new keymaps
+    win:map()
+end
+
+
 --- Create windows for main background of vaultview.nvim plugin : header (to display available boards on pages in board)
 --- and view (to display lists and entries)
----@return header_win, view_win The created Snacks window objects
+---@return snacks.win header_win The created Snacks window object for the header area
+---@return snacks.win view_win The created Snacks window object for the view area
 function M.create_header_and_view_windows()
     local header_win = M.create_window({
         width = Constants.header_win.width,
@@ -74,6 +170,7 @@ function M.create_header_and_view_windows()
         text = "",
         show = true,
         focusable = false,
+        keys = Keymaps.generic,
         -- enter = false,
     })
 
@@ -81,9 +178,9 @@ function M.create_header_and_view_windows()
 end
 
 --- Create a snacks window for an entry of a list
----@param entry [TABLE] The entry data  from parsed VaultData
----@param layout [CLASS] The layout in which this entry window will be displayed
----@return card_win The created Snacks window object
+---@param entry table The entry data  from parsed VaultData
+---@param layout ViewLayoutColumns|ViewLayoutCarousel The layout in which this entry window will be displayed
+---@return snacks.win card_win The created Snacks window object
 local function create_entry_window(entry, layout)
     local class_name = layout.name()
     local cfg = Constants.card_win[class_name]
@@ -132,9 +229,9 @@ local function create_entry_window(entry, layout)
 end
 
 --- create a snacks window for a list in a board page
----@param list [TABLE] The list data from parsed VaultData
----@param layout [CLASS] The layout in which this list window will be displayed
----@return list_win The created Snacks window object
+---@param list table The list data from parsed VaultData
+---@param layout ViewLayoutColumns|ViewLayoutCarousel The layout in which this list window will be displayed
+---@return snacks.win list_win The created Snacks window object
 local function create_list_window(list, layout)
     local class_name = layout.name()
     local cfg = Constants.list_win[class_name]
@@ -162,23 +259,22 @@ local function create_list_window(list, layout)
 end
 
 --- Create all window for a board view (lists and entries for all pages of a board)
----@param VaultData [TABLE] The complete parsed VaultData
----@param board_idx [NUMBER] The index of the board to create windows for
----@param layout [CLASS] The layout in which this board will be displayed
----@return [TABLE] pages_names The names of the pages in the board
----@return [TABLE] windows The created windows structure for the board
----@return [TABLE] pages_state The initial state structure for the board
-function M.create_board_view_windows(VaultData, board_idx, layout)
-    local board = VaultData.boards[board_idx]
-    if not board then
-        error("Board index " .. board_idx .. " not found in VaultData")
+--- @param viewData table The data for the board view (pages → lists → items)
+--- @param layout ViewLayoutCarousel|ViewLayoutColumns The layout in which this board will be displayed
+--- @return table pages_names The names of the pages in the board
+--- @return table windows The created windows structure for the board
+--- @return table pages_state The initial state structure for the board
+function M.create_board_view_windows(viewData, layout)
+    if not viewData then
+        _LOGGER:error("Cannot create viewData view windows: viewData data not available")
+        return {}, {}, {}
     end
 
     local pages_names = {}
     local windows = { pages = {} }
     local pages_state = {}
 
-    for p_idx, page in ipairs(board.pages or {}) do
+    for p_idx, page in ipairs(viewData.pages or {}) do
         --------------------------------------------------------
         -- Create state table for this page
         --------------------------------------------------------

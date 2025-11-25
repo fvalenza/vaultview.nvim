@@ -16,6 +16,8 @@
 local ViewLayoutTrait = {}
 
 local Constants = require("vaultview._ui.constants")
+local logging = require("mega.logging")
+local _LOGGER = logging.get_logger("vaultview.core.view.layouts.viewlayouttrait")
 
 
 ---------------------------------------------------------------------
@@ -23,10 +25,10 @@ local Constants = require("vaultview._ui.constants")
 ---------------------------------------------------------------------
 
 function ViewLayoutTrait:debug()
-    dprint("ViewLayoutTrait debug:")
-    dprint(self.__name)
-    dprint(self.viewWindows)
-    dprint(self.viewState)
+    _LOGGER:debug("ViewLayoutTrait debug:")
+    _LOGGER:fmt_debug("ViewData: %s", self.viewData)
+    _LOGGER:fmt_debug("ViewWindows: %s", self.viewWindows)
+    _LOGGER:fmt_debug("ViewState: %s", self.viewState)
 end
 
 
@@ -88,7 +90,6 @@ end
 ---
 --- @return integer width                     Width computed for this list
 function ViewLayoutTrait:compute_list_window_rendering(idx_list, list, list_state, list_win, layout_name, col_offset)
-    local Constants = Constants -- local reference for optimizing lookup ?
     local expanded = list_state.expanded
     local list_entry_page = list_state.current_page
     local num_entry_pages = #list_state.list_pages
