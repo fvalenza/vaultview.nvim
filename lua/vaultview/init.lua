@@ -227,7 +227,7 @@ end
 -- Opens `_doc/help_page.md` in a floating window using Snacks.
 function M.open_help()
     local current_file = debug.getinfo(1, "S").source:sub(2)
-    local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/_doc/help_page.md"
+    local help_path = vim.fn.fnamemodify(current_file, ":h:h:h") .. "/lua/vaultview/_doc/help_page.md"
 
     local help_win = Snacks.win({
         file = help_path,
