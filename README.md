@@ -165,7 +165,7 @@ return {
 	dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging", "folke/snacks.nvim" },
 
 	keys = {
-		{ "<leader>vv", "<Plug>(Vaultview)", mode = "n", desc = "Open VaultView" },
+		{ "<leader>vv", "<Plug>(VaultView)", mode = "n", desc = "Open VaultView" },
 	},
 
 	config = function()
@@ -227,6 +227,75 @@ return {
 }
 ```
 
+### Keybinds
+Interaction with the VaultView UI is done through actions exposed as `<Plug>` mappings.
+This plugin defines default keybinds only inside the VaultView UI (through `ftplugin/vaultview.lua`).
+
+The description of the default keybinds and associated actions/\<Plug\> is as follows:
+
+
+| Key     | Plug                                | Description                                                                      |
+| ------- | ----------------------------------- | -------------------------------------------------------------------------------- |
+|         | <Plug>(VaultView)                   | Toggles VaultView UI                                                             |
+| q       | <Plug>(VaultViewHide)               | Closes VaultView UI                                                              |
+| ?       | <Plug>(VaultViewHelp)               | Open help                                                                        |
+| p       | <Plug>(VaultViewPreviousBoard)      | Go to previous board                                                             |
+| n       | <Plug>(VaultViewNextBoard)          | Go to next board                                                                 |
+| \<S-h\> | <Plug>(VaultViewPreviousPage)       | Go to previous page in current board                                             |
+| \<S-l\> | <Plug>(VaultViewNextPage)           | Go to next page in current board                                                 |
+| \<M-h\> | <Plug>(VaultViewFirstList)          | Go to first list in current page                                                 |
+| h       | <Plug>(VaultViewPreviousList)       | Go to previous list in current page                                              |
+| c       | <Plug>(VaultViewCenterList)         | Go to center list in current page                                                |
+| l       | <Plug>(VaultViewNextList)           | Go to next list in current page                                                  |
+| \<M-l\> | <Plug>(VaultViewLastList)           | Go to last list in current page                                                  |
+| gg      | <Plug>(VaultViewFirstEntry)         | Go to first entry in current list (jumps entry's pages)                          |
+| k       | <Plug>(VaultViewPreviousEntry)      | Go to previous entry in current list                                             |
+| j       | <Plug>(VaultViewNextEntry)          | Go to next entry in current list                                                 |
+| G       | <Plug>(VaultViewLastEntry)          | Go to last entry in current list (jumps entry's pages)                           |
+| \<A-k\> | <Plug>(VaultViewPreviousPageInList) | Go to previous entry's page in current list                                      |
+| \<A-j\> | <Plug>(VaultViewNextPageInList)     | Go to next entry's page in current list                                          |
+| o       | <Plug>(VaultViewOpenInNeovim)       | Open file of currently selected entry in Neovim                                  |
+| \<CR\>  | <Plug>(VaultViewOpenInObsidian)     | Open file of currently selected entry in Obsidian                                |
+| r       | <Plug>(VaultViewRefreshEntry)       | Refresh Content displayed for selected entry                                     |
+| R       | <Plug>(VaultViewFastRefresh)        | Refresh Content displayed for all entries (do NOT reparse vault for new entries) |
+| 1       | <Plug>(VaultViewBoard1)             | Go To Board 1                                                                    |
+| 2       | <Plug>(VaultViewBoard2)             | Go To Board 2                                                                    |
+| 3       | <Plug>(VaultViewBoard3)             | Go To Board 3                                                                    |
+| 4       | <Plug>(VaultViewBoard4)             | Go To Board 4                                                                    |
+| 5       | <Plug>(VaultViewBoard5)             | Go To Board 5                                                                    |
+| 6       | <Plug>(VaultViewBoard6)             | Go To Board 6                                                                    |
+| 7       | <Plug>(VaultViewBoard7)             | Go To Board 7                                                                    |
+| 8       | <Plug>(VaultViewBoard8)             | Go To Board 8                                                                    |
+| 9       | <Plug>(VaultViewBoard9)             | Go To Board 9                                                                    |
+
+
+
+### Overwriteing Default keybinds
+To overwrite the default keybinds, the advised way is to create your own `ftplugin/vaultview.lua` (or `ftplugin/vaultview-error.lua` for corrupted boards) in your Neovim configuration folder (e.g. `~/.config/nvim/ftplugin/vaultview.lua`).
+In this file, set your preferred keybindings using `vim.keymap.set` with the `{buffer = true}` option.
+For example:
+
+```lua
+vim.keymap.set("n", "<C-n>", "<Plug>(VaultViewNextBoard)", { buffer = true })
+```
+
+
+or using LazyVim you can put it directly in the `keys` section of the plugin specification:
+
+```lua
+{
+    "fvalenza/vaultview",
+    dependencies = { "ColinKennedy/mega.cmdparse", "ColinKennedy/mega.logging", "folke/snacks.nvim" },
+    keys = {
+		{ "<leader>vv", "<Plug>(VaultView)", mode = "n", desc = "Open VaultView" },
+    },
+}
+```
+
+> [!warning]
+> No default keybind is set to open the VaultView UI and putting a keymap to `<Plug>(VaultView)` in `ftplugin/vaultview.lua` would not work.
+> It is expected from the user to set at least this keymap in their Neovim configuration file or to use `:VaultView open` command.
+
 ### Input and Content selectors
 The plugin comes with some default input and content selectors that can be used in the board configuration.
 In the configuration one can specify custom ones for input selector as either : a list of files, a shell command returning a list of files, or a Lua function returning a list of files.
@@ -273,18 +342,14 @@ Once setup and your neovim instance running, you can use the following commands 
 <!-- plugin/vaultview.lua for details. -->
 
 ```vim
-:Vaultview open
-:Vaultview close
-:Vaultview refresh
+:VaultView open
+:VaultView close
+:VaultView refresh
 ```
 
-or you can map your preferred keybinding to `<Plug>(Vaultview)` to open the main VaultView window.
+or you can map your preferred keybinding to `<Plug>(VaultView)` to open the main VaultView window.
 
 ## Keybinds inside VaultView UI
-See [default keybinds](lua/vaultview/keymaps.lua) for details. May change in the future.
-
-It's planned to allow user configuration of keybinds in future releases.
-
 
 ## Roadmap
 See [roadmap](roadmap.md)

@@ -129,7 +129,7 @@ function View:render_page_selection()
     end
 
     local pages_line = table.concat(page_texts)
-    local prefix = "<S-h>  <--  " -- TODO (roadmap) prefix and suffix shall be the one from keymaps of the actions "next_page/previous_page", taking into account user remaps
+    local prefix = "<S-h>  <--  " -- TODO (roadmap) prefix and suffix shall be the one from keymaps of the Plugs "VaultViewNextPage/VaultViewPreviousPage", taking into account user remaps
     local suffix = "  -->  <S-l>"
     local full_text = prefix .. pages_line .. suffix
 

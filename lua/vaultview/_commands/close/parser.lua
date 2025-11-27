@@ -1,5 +1,3 @@
---- The main parser for the `:Vaultview hello-world` command.
-
 local cmdparse = require("mega.cmdparse")
 
 local M = {}
@@ -20,7 +18,7 @@ local function _add_style_parameter(parser)
     })
 end
 
----@return mega.cmdparse.ParameterParser # The main parser for the `:Vaultview hello-world` command.
+---@return mega.cmdparse.ParameterParser # The main parser for the `:Vaultview close` command.
 function M.make_parser()
     local parser = cmdparse.ParameterParser.new({ "close", help = "close" })
 
