@@ -53,13 +53,10 @@ local M = {}
 ---@field closed? boolean
 ---@overload fun(opts? :snacks.win.Config|{}): snacks.win
 
-
 local Snacks = require("snacks")
 local Constants = require("vaultview._ui.constants")
-local Keymaps = require("vaultview.keymaps")
 local logging = require("mega.logging")
 local _LOGGER = logging.get_logger("vaultview._core.windowfactory")
-
 
 --- Wrapper to create a snacks window with default options for vaultview.nvim
 ---@param opts snacks.win.Config The snacks window options
@@ -113,33 +110,6 @@ function M.appendContent(window, lines)
 end
 
 
-
---- Replace all keymaps of a snacks window
----@param win snacks.win
----@param new_keys snacks.win.Keys[]
-function M.replace_window_keys(win, new_keys)
-    if not win or not win:buf_valid() then
-        vim.notify("Window buffer is not valid", vim.log.levels.WARN)
-        return
-    end
-
-    -- remove existing buffer-local keymaps
-    local modes = { "n", "i", "v", "x", "s", "o" }
-    for _, mode in ipairs(modes) do
-        local maps = vim.api.nvim_buf_get_keymap(win.buf, mode)
-        for _, m in ipairs(maps) do
-            vim.keymap.del(mode, m.lhs, { buffer = win.buf })
-        end
-    end
-
-    -- replace the keys table
-    win.keys = vim.deepcopy(new_keys)
-
-    -- re-apply new keymaps
-    win:map()
-end
-
-
 --- Create windows for main background of vaultview.nvim plugin : header (to display available boards on pages in board)
 --- and view (to display lists and entries)
 ---@return snacks.win header_win The created Snacks window object for the header area
@@ -156,8 +126,10 @@ function M.create_header_and_view_windows()
         text = "header_win",
         show = true,
         focusable = false,
+        keys = { q = false},
         -- enter = false,
     })
+    vim.bo[header_win.buf].filetype = "vaultview"
 
     local view_win = M.create_window({
         width = Constants.view_win.width,
@@ -170,9 +142,10 @@ function M.create_header_and_view_windows()
         text = "",
         show = true,
         focusable = false,
-        keys = Keymaps.generic,
+        keys = { q = false},
         -- enter = false,
     })
+    vim.bo[view_win.buf].filetype = "vaultview"
 
     return header_win, view_win
 end
@@ -199,10 +172,12 @@ local function create_entry_window(entry, layout)
         enter = true,
         backdrop = false,
         focusable = true,
-        keys = Keymaps.generic,
+        keys = { q = false},
         -- bo = { modifiable = true, filetype = "markdown" }, -- FIXME this causes performance issues ?
         bo = { modifiable = true },
     })
+    vim.bo[card_win.buf].filetype = "vaultview"
+
     -- TODO(roadmap) highlight focused/unfocused entry windows either with events here or autocommands ? Or force highlight manually at each focus/unfocus
     -- vim.api.nvim_set_option_value("winhighlight", "Normal:EntryWindowInactive", { win = card_win.win })
     --
@@ -249,10 +224,11 @@ local function create_list_window(list, layout)
         enter = false,
         backdrop = false,
         focusable = true,
-        keys = Keymaps.generic,
+        keys = { q = false},
         -- bo = { modifiable = true, filetype = "markdown" }, -- FIXME this causes performance issues ?
         bo = { modifiable = true },
     })
+    vim.bo[list_win.buf].filetype = "vaultview"
     list_win:hide()
 
     return list_win

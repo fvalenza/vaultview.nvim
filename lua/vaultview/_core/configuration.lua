@@ -28,15 +28,6 @@ local _DEFAULTS = {
 ---@type vaultview.Configuration
 local _EXTRA_DEFAULTS = {
     --- @type table
-    keymaps = {
-        open = {},
-        close = {},
-    },
-
-    vault = {
-        path = "/tmp/myVault/", -- full path th the vault
-        name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
-    },
     hints = {
         board_navigation = true,
         pages_navigation = false, -- TODO: not yet implemented
@@ -45,6 +36,10 @@ local _EXTRA_DEFAULTS = {
     selectors = {
         input = require("vaultview._core.parsers.selectors").default_input_selectors,
         entry_content = require("vaultview._core.parsers.selectors").default_entry_content_selectors,
+    },
+    vault = {
+        path = "/tmp/myVault/", -- full path th the vault
+        name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
     },
     boards = {
         -- {

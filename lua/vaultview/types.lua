@@ -8,7 +8,6 @@
 
 ---@class vaultview.Configuration
 ---@field logging mega.logging.SparseLoggerOptions
----@field keymaps table
 ---@field vault table
 ---@field hints table
 ---@field selectors table

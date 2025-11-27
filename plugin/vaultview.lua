@@ -4,7 +4,7 @@ _G.dprint = require("vaultview._core.utils.debug")
 
 local cmdparse = require("mega.cmdparse")
 
-local _PREFIX = "Vaultview"
+local _PREFIX = "VaultView"
 
 ---@type mega.cmdparse.ParserCreator
 local _SUBCOMMANDS = function()
@@ -24,7 +24,7 @@ end
 
 cmdparse.create_user_command(_SUBCOMMANDS, _PREFIX)
 
-vim.keymap.set("n", "<Plug>(Vaultview)", function()
+vim.keymap.set("n", "<Plug>(VaultView)", function()
 
     require("vaultview").toggle()
 

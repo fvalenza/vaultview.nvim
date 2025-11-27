@@ -56,7 +56,6 @@ local VaultView = {}
 VaultView.__index = VaultView
 
 local Constants = require("vaultview._ui.constants")
-local Keymaps = require("vaultview.keymaps")
 local wf = require("vaultview._core.windowfactory")
 local parsers = require("vaultview._core.parsers")
 local View = require("vaultview._core.view")
@@ -367,9 +366,7 @@ function VaultView:render()
         local new_content = { "No view to render. Check logs for errors and ensure parser returned non empty data" }
         wf.setNewContent(self.view_win, new_content)
         self.view_win.opts.focusable = true
-        dprint("Window keys : ", self.view_win.opts.keys)
-        wf.replace_window_keys(self.view_win, Keymaps.error)
-        dprint("Window keys after replace : ", self.view_win.opts.keys)
+        vim.bo[self.view_win.buf].filetype = "vaultview-error"
         self.view_win:focus()
 
         return
