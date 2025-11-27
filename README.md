@@ -33,6 +33,8 @@ With it, you can:
 - [External dependencies](#external-dependencies)
 - [Installation](#installation)
 - [Configuration](#configuration)
+    - [Keybinds](#keybinds)
+    - [Overwriting Default keybinds](#overwriting-default-keybinds)
     - [Input and Content selectors](#input-and-content-selectors)
     - [Custom parsers](#custom-parsers)
 - [Usage](#usage)
@@ -270,7 +272,7 @@ The description of the default keybinds and associated actions/\<Plug\> is as fo
 
 
 
-### Overwriteing Default keybinds
+### Overwriting Default keybinds
 To overwrite the default keybinds, the advised way is to create your own `ftplugin/vaultview.lua` (or `ftplugin/vaultview-error.lua` for corrupted boards) in your Neovim configuration folder (e.g. `~/.config/nvim/ftplugin/vaultview.lua`).
 In this file, set your preferred keybindings using `vim.keymap.set` with the `{buffer = true}` option.
 For example:
@@ -348,8 +350,6 @@ Once setup and your neovim instance running, you can use the following commands 
 ```
 
 or you can map your preferred keybinding to `<Plug>(VaultView)` to open the main VaultView window.
-
-## Keybinds inside VaultView UI
 
 ## Roadmap
 See [roadmap](roadmap.md)
