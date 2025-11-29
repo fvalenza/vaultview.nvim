@@ -116,6 +116,33 @@ function VaultView.new()
     return self
 end
 
+local function is_obsidian_vault_key(key)
+    return key:sub(1, 9) == "obsidian:"
+end
+
+local function parse_obsidian_vault_key(key)
+    if not is_obsidian_vault_key(key) then
+        return nil
+    end
+    return key:sub(10) -- everything after "obsidian:"
+end
+
+local function find_obsidian_workspace_by_name(name)
+    -- Check that global Obsidian.workspaces is available
+    if type(Obsidian) ~= "table" or type(Obsidian.workspaces) ~= "table" then
+        return nil, "obsidian.nvim: global `Obsidian.workspaces` is not available"
+    end
+
+    -- Search the workspace in Obsidian.workspaces that has given key
+    for _, ws in ipairs(Obsidian.workspaces) do
+        if ws.name == name then
+            return ws
+        end
+    end
+
+    return nil -- not found
+end
+
 --- Ensure that both data and view for board index i are loaded.
 --- @param i integer Board index
 function VaultView:ensureBoardLoaded(i)
@@ -135,19 +162,76 @@ function VaultView:ensureBoardLoaded(i)
             return
         end
 
-        local vault_path = self._opts.vaults[vault_key].path
-        local vault_uriRoot = self._opts.vaults[vault_key].obsidianVaultName
+        local vault_path = nil
+        local vault_uriRoot = nil
 
-        if not vault_path then
-            self.last_error_message = "Board " .. i .. " references unknown vault '" .. tostring(vault_key) .. "'"
-            _LOGGER:error(self.last_error_message)
-            self.boards_data_loaded[i] = false
-            return
+        -- TODO: Surement que ce bloc (jusqu'a "ICI") peut etre factorisé dans une fonction utilitaire
+        -- Resolve vault path/uri if it's an obsdian.nvim workspace
+        local workspace = parse_obsidian_vault_key(vault_key)
+
+        if workspace then -- it's an Obsidian workspace name
+
+            local has_obsidian, obsidian = pcall(require, "obsidian")
+            if not has_obsidian then
+                self.last_error_message = "Obsidian.nvim plugin not found but is required to use obsidian: vault keys"
+                _LOGGER:error(self.last_error_message)
+                self.boards_data_loaded[i] = false
+                return
+                -- obsidian.nvim not installed
+            end
+
+            if workspace == "CURRENT" then
+                -- Use current obsidian.nvim workspace
+                if type(Obsidian) ~= "table" or type(Obsidian.workspace) ~= "table" then
+                    self.last_error_message = "obsidian.nvim: current workspace is not available"
+                    _LOGGER:error(self.last_error_message)
+                    self.boards_data_loaded[i] = false
+                    return
+                end
+
+                vault_path = Obsidian.workspace.root.filename
+                vault_uriRoot = Obsidian.workspace.name -- FIXME(obsidian.nvim) if workspace name in obsidian.nvim config is not the name of vault as known by obsdian, won't work.
+
+            else -- Search for specified workspace (after obsidian:xxx) from available workspaces
+
+                -- Check that global Obsidian.workspaces is available
+                if type(Obsidian) ~= "table" or type(Obsidian.workspaces) ~= "table" then
+                    return nil, "obsidian.nvim: global `Obsidian.workspaces` is not available"
+                end
+
+                -- Search the workspace in Obsidian.workspaces that has given key
+                local ws = find_obsidian_workspace_by_name(workspace)
+                if not ws then
+                    self.last_error_message = "Board " .. i .. " references unknown obsidian.nvim workspace '" .. tostring(workspace) .. "'"
+                    _LOGGER:error(self.last_error_message)
+                    self.boards_data_loaded[i] = false
+                    return
+                end
+
+                vault_path = ws.root.filename
+                vault_uriRoot = ws.name -- FIXME(obsidian.nvim) if workspace name in obsidian.nvim config is not the name of vault as known by obsdian, won't work.
+            end
+
+
+        else -- Use vaultview.nvim plugin configuration
+            vault_path = self._opts.vaults[vault_key].path
+            vault_uriRoot = self._opts.vaults[vault_key].obsidianVaultName
+            if not vault_path then
+                self.last_error_message = "Board " .. i .. " references unknown vault '" .. tostring(vault_key) .. "'"
+                _LOGGER:error(self.last_error_message)
+                self.boards_data_loaded[i] = false
+                return
+            end
         end
+        -- ICI
 
         -- Check folder vault_path exists
         if vim.fn.isdirectory(vim.fn.expand(vault_path)) == 0 then
-            self.last_error_message = "Board " .. i .. " references non-existing vault path '" .. tostring(vault_path) .. "'"
+            self.last_error_message = "Board "
+                .. i
+                .. " references non-existing vault path '"
+                .. tostring(vault_path)
+                .. "'"
             _LOGGER:error(self.last_error_message)
             self.boards_data_loaded[i] = false
             return
@@ -416,10 +500,10 @@ function VaultView:render_footer()
     -- Add highlight to vault key inside [...]
     if vault_key then
         -- Find where '[vault]' starts
-        local line = footer_lines[2]       -- the second line
+        local line = footer_lines[2] -- the second line
         local start = line:find("%[" .. vim.pesc(vault_key) .. "%]")
         if start then
-            local finish = start + (#vault_key + 1)  -- include '[' + vault_key + ']'
+            local finish = start + (#vault_key + 1) -- include '[' + vault_key + ']'
             vim.api.nvim_buf_add_highlight(buf, -1, "Footer_VaultName", 1, start - 1, finish)
         end
     end
@@ -453,7 +537,11 @@ function VaultView:render()
     local view = self.views[idx]
     if not view then -- If no view, something went wront during loading (reason in last_error_message)
         _LOGGER:error("Trying to render board " .. tostring(idx) .. " but view is nil")
-        local new_content = { "No view to render. Check logs for errors and ensure parser returned non empty data" , "Last Error detected", self.last_error_message or "" }
+        local new_content = {
+            "No view to render. Check logs for errors and ensure parser returned non empty data",
+            "Last Error detected",
+            self.last_error_message or "",
+        }
         wf.setNewContent(self.view_win, new_content)
         self.view_win.opts.focusable = true
         vim.bo[self.view_win.buf].filetype = "vaultview-error"
