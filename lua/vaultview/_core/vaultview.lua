@@ -127,6 +127,22 @@ local function parse_obsidian_vault_key(key)
     return key:sub(10) -- everything after "obsidian:"
 end
 
+local function find_obsidian_workspace_by_name(name)
+    -- Check that global Obsidian.workspaces is available
+    if type(Obsidian) ~= "table" or type(Obsidian.workspaces) ~= "table" then
+        return nil, "obsidian.nvim: global `Obsidian.workspaces` is not available"
+    end
+
+    -- Search the workspace in Obsidian.workspaces that has given key
+    for _, ws in ipairs(Obsidian.workspaces) do
+        if ws.name == name then
+            return ws
+        end
+    end
+
+    return nil -- not found
+end
+
 --- Ensure that both data and view for board index i are loaded.
 --- @param i integer Board index
 function VaultView:ensureBoardLoaded(i)
@@ -164,11 +180,29 @@ function VaultView:ensureBoardLoaded(i)
                 return
                 -- obsidian.nvim not installed
             end
-            -- Resolve vault path from obsidian.nvim
-            dprint(obsidian.config.workspaces)
-            local ws_config = obsidian.config.workspaces[workspace]
-            -- Penser a checker que ws_config peut etre nil (workspace non trouvé)
 
+            -- Check that global Obsidian.workspaces is available
+            if type(Obsidian) ~= "table" or type(Obsidian.workspaces) ~= "table" then
+                return nil, "obsidian.nvim: global `Obsidian.workspaces` is not available"
+            end
+
+            -- Search the workspace in Obsidian.workspaces that has given key
+            local ws = find_obsidian_workspace_by_name(workspace)
+            if not ws then
+                self.last_error_message = "Board " .. i .. " references unknown obsidian.nvim workspace '" .. tostring(workspace) .. "'"
+                _LOGGER:error(self.last_error_message)
+                self.boards_data_loaded[i] = false
+                return
+            end
+
+            vault_path = ws.root
+            vault_uriRoot = ws.name
+
+            dprint("Resolved obsidian workspace vault path: " .. tostring(vault_path))
+            dprint("Resolved obsidian workspace vault uriRoot: " .. tostring(vault_uriRoot))
+
+
+            -- Penser a checker que ws_config peut etre nil (workspace non trouvé)
         else -- Use vaultview.nvim plugin configuration
             vault_path = self._opts.vaults[vault_key].path
             vault_uriRoot = self._opts.vaults[vault_key].obsidianVaultName
@@ -180,7 +214,6 @@ function VaultView:ensureBoardLoaded(i)
             end
         end
         -- ICI
-
 
         -- Check folder vault_path exists
         if vim.fn.isdirectory(vim.fn.expand(vault_path)) == 0 then
