@@ -114,7 +114,8 @@ end
 --- and view (to display lists and entries)
 ---@return snacks.win header_win The created Snacks window object for the header area
 ---@return snacks.win view_win The created Snacks window object for the view area
-function M.create_header_and_view_windows()
+---@return snacks.win footer_win The created Snacks window object for the footer area
+function M.create_vaultview_main_ui()
     local header_win = M.create_window({
         width = Constants.header_win.width,
         height = Constants.header_win.height,
@@ -147,7 +148,23 @@ function M.create_header_and_view_windows()
     })
     vim.bo[view_win.buf].filetype = "vaultview"
 
-    return header_win, view_win
+    local footer_win = M.create_window({
+        width = Constants.footer_win.width,
+        height = Constants.footer_win.height,
+        zindex = Constants.footer_win.zindex,
+        border = "none",
+        relative = "editor",
+        row = Constants.footer_win.row,
+        col = 0,
+        text = "",
+        show = true,
+        focusable = false,
+        keys = { q = false},
+        -- enter = false,
+    })
+    vim.bo[footer_win.buf].filetype = "vaultview"
+
+    return header_win, view_win, footer_win
 end
 
 --- Create a snacks window for an entry of a list

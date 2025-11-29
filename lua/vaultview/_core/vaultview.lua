@@ -44,6 +44,7 @@
 ---@field _opts vaultview.Configuration The merged plugin configuration (defaults + user config)
 ---@field header_win snacks.win Header window object
 ---@field view_win snacks.win Main content window object
+---@field footer_win snacks.win Footer content window object
 ---@field boards_names string[] Names of all configured boards
 ---@field active_board_index integer Index of the currently active board
 ---@field VaultData table Parsed data structure used for rendering (the Model)
@@ -51,6 +52,7 @@
 ---@field isDisplayed boolean|nil Whether the complete UI is currently shown
 ---@field boards_data_loaded boolean[]
 ---@field boards_view_loaded boolean[]
+---@field last_error_message string|nil Last error message encountered during loading
 
 local VaultView = {}
 VaultView.__index = VaultView
@@ -74,8 +76,9 @@ local _LOGGER = logging.get_logger("vaultview._core.vaultview")
 function VaultView.new()
     local self = setmetatable({}, VaultView)
 
+    self.last_error_message = nil
     self._opts = require("vaultview").opts
-    self.header_win, self.view_win = wf.create_header_and_view_windows()
+    self.header_win, self.view_win, self.footer_win = wf.create_vaultview_main_ui()
 
     self.boards_names = {}
     self.active_board_index = 0
@@ -123,11 +126,40 @@ function VaultView:ensureBoardLoaded(i)
     ------------------------------------------------------------------
     if not self.boards_data_loaded[i] then
         local parser = parsers(board_config.parser)
-        local boardData = parser(self._opts.vault, board_config)
+
+        local vault_key = board_config.vault or "noVault"
+        if vault_key == "noVault" then
+            self.last_error_message = "Board " .. i .. " does not specify a vault key"
+            _LOGGER:error(self.last_error_message)
+            self.boards_data_loaded[i] = false
+            return
+        end
+
+        local vault_path = self._opts.vaults[vault_key].path
+        local vault_uriRoot = self._opts.vaults[vault_key].obsidianVaultName
+
+        if not vault_path then
+            self.last_error_message = "Board " .. i .. " references unknown vault '" .. tostring(vault_key) .. "'"
+            _LOGGER:error(self.last_error_message)
+            self.boards_data_loaded[i] = false
+            return
+        end
+
+        -- Check folder vault_path exists
+        if vim.fn.isdirectory(vim.fn.expand(vault_path)) == 0 then
+            self.last_error_message = "Board " .. i .. " references non-existing vault path '" .. tostring(vault_path) .. "'"
+            _LOGGER:error(self.last_error_message)
+            self.boards_data_loaded[i] = false
+            return
+        end
+
+        -- parser main entry point called
+        local boardData = parser(vault_path, board_config)
 
         -- if boardData is nil
         if boardData == nil then
-            _LOGGER:error("Parser for board " .. tostring(i) .. " returned nil data")
+            self.last_error_message = "Parser for board " .. i .. " returned nil data"
+            _LOGGER:error(self.last_error_message)
             self.boards_data_loaded[i] = false
             return
         end
@@ -135,6 +167,9 @@ function VaultView:ensureBoardLoaded(i)
         self.VaultData.boards[i] = {
             title = self.boards_names[i],
             pages = boardData,
+            vault_key = vault_key,
+            vault_path = vault_path,
+            vault_uriRoot = vault_uriRoot,
         }
 
         self.boards_data_loaded[i] = true
@@ -150,7 +185,8 @@ function VaultView:ensureBoardLoaded(i)
 
         local view, err = View.new(self.VaultData.boards[i], i, viewlayout, self.header_win)
         if not view then
-            _LOGGER:error("Failed to create view for board " .. i .. ": " .. err)
+            self.last_error_message = "Failed to create view for board " .. i .. ": " .. err
+            _LOGGER:error(self.last_error_message)
             self.boards_view_loaded[i] = false
         else
             self.views[i] = view
@@ -342,28 +378,82 @@ function VaultView:render_board_selection()
     return #flat_lines -- number of header lines (so we know where to start the next section)
 end
 
+function VaultView:render_footer()
+    local footer_lines = {}
+
+    -- First line
+    table.insert(footer_lines, string.rep("─", vim.o.columns))
+
+    -- Second line with vault info
+    local idx = self.active_board_index
+    local bd = self.VaultData.boards[idx]
+
+    local vault_key = bd and bd.vault_key or nil
+    local vault_path = bd and bd.vault_path or nil
+
+    local vault_label = ""
+    if vault_key and vault_path then
+        vault_label = string.format(" [%s] %s", vault_key, vault_path)
+    end
+
+    table.insert(footer_lines, vault_label)
+
+    -- Push text into window
+    wf.setNewContent(self.footer_win, footer_lines)
+
+    local buf = self.footer_win.buf
+
+    ----------------------------------------------------------------------
+    -- Highlights
+    ----------------------------------------------------------------------
+
+    -- Line 0 — separator
+    vim.api.nvim_buf_add_highlight(buf, -1, "TabSeparator", 0, 0, -1)
+
+    -- Line 1 — normal footer text
+    vim.api.nvim_buf_add_highlight(buf, -1, "Footer_VaultPath", 1, 0, -1)
+
+    -- Add highlight to vault key inside [...]
+    if vault_key then
+        -- Find where '[vault]' starts
+        local line = footer_lines[2]       -- the second line
+        local start = line:find("%[" .. vim.pesc(vault_key) .. "%]")
+        if start then
+            local finish = start + (#vault_key + 1)  -- include '[' + vault_key + ']'
+            vim.api.nvim_buf_add_highlight(buf, -1, "Footer_VaultName", 1, start - 1, finish)
+        end
+    end
+
+    self.footer_win:show()
+end
+
 --- Render the entire UI (header + active view).
 function VaultView:render()
-    if not self.header_win or not self.view_win then
-        _LOGGER:error("VaultView windows are not initialized")
+    if not self.header_win or not self.view_win or not self.footer_win then
+        self.last_error_message = "VaultView windows are not initialized"
+        _LOGGER:error(self.last_error_message)
         return
     end
     if self.active_board_index == 0 then
-        _LOGGER:error("VaultView has no active board to render")
+        self.last_error_message = "VaultView has no active board to render"
+        _LOGGER:error(self.last_error_message)
         return
     end
 
     local page_selection_line = self:render_board_selection()
-
     self.header_win:show()
+
+    self:render_footer()
+    self.footer_win:show()
+
     wf.eraseContent(self.view_win)
     self.view_win:show()
 
     local idx = self.active_board_index
     local view = self.views[idx]
-    if not view then
+    if not view then -- If no view, something went wront during loading (reason in last_error_message)
         _LOGGER:error("Trying to render board " .. tostring(idx) .. " but view is nil")
-        local new_content = { "No view to render. Check logs for errors and ensure parser returned non empty data" }
+        local new_content = { "No view to render. Check logs for errors and ensure parser returned non empty data" , "Last Error detected", self.last_error_message or "" }
         wf.setNewContent(self.view_win, new_content)
         self.view_win.opts.focusable = true
         vim.bo[self.view_win.buf].filetype = "vaultview-error"
@@ -391,6 +481,9 @@ function VaultView:hide()
     end
     if self.view_win then
         self.view_win:hide()
+    end
+    if self.footer_win then
+        self.footer_win:hide()
     end
     self.isDisplayed = false
 end

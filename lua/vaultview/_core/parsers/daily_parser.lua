@@ -135,7 +135,7 @@ function M.arrangeInputsIntoBoardData(boardInputs)
 end
 
 ------------------------------------------------------------------------------------------------------------------------
--- Entry point: parse vault into a board
+-- Entry point: parse vault directory into a board
 ------------------------------------------------------------------------------------------------------------------------
 
 --- Parse a vault folder and generate a  full board data structure (**year–month board**.)
@@ -146,12 +146,12 @@ end
 --- 3. Groups inputs into a paginated board
 --- 4. Parse file contents for each entry
 ---
---- @param vault table { path: string, name: string }
+--- @param vault_path string
 --- @param boardConfig table { name:string, parser:string|function, viewlayout:string, subfolder:string, pattern:string }
 ---
 --- @return table boardData The BoardDataStructure required by ViewLayouts
-function M.parseBoard(vault,  boardConfig)
-    local vaultRootPath = utils.expand_path(vault.path)
+function M.parseBoard(vault_path,  boardConfig)
+    local vaultRootPath = utils.expand_path(vault_path)
 
     local boardRawInputs = M.parseVaultForBoardInputs(vaultRootPath, boardConfig)
 
