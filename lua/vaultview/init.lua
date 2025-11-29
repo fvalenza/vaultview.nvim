@@ -41,7 +41,6 @@ function M.toggle()
         local plugin_configuration = configuration.resolve_data()
 
         M.opts = vim.deepcopy(plugin_configuration)
-        dprint("Plugin opts: %s", M.opts)
 
         local vv = vaultview.new(plugin_configuration)
         M.context.vv = vv
