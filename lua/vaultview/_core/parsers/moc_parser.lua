@@ -69,7 +69,7 @@ end
 --- The editor width determines how many lists fit on one page hence splits into multiple pages if needed.
 ---
 --- @param boardInputs table[] Raw items parsed from the vault
---- @param boardConfig table Board configuration (contains viewlayout, parser type, etc)
+--- @param boardConfig vaultview.BoardConfig Board configuration (contains viewlayout, parser type, etc)
 --- @param vaultRootPath string Absolute path to the root of the vault
 --- @return table boardData A multi-page board structure groupd alphabetically into pages/ lists(moc-files)/entries(files linking to moc)
 function M.arrangeInputsIntoBoardData(boardInputs, boardConfig, vaultRootPath)
@@ -156,7 +156,7 @@ end
 --- 4. Parses the content for each entry of the paginatd board data
 ---
 --- @param vault_path table { path: string, name: string }
---- @param boardConfig table { name: string, parser: string|function, viewlayout: string, subfolder: string, pattern: string }
+--- @param boardConfig vaultview.BoardConfig 
 ---
 --- @return table boardData Fully structured board data compatible with all ViewLayouts
 function M.parseBoard(vault_path, boardConfig)

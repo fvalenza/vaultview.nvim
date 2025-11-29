@@ -97,7 +97,7 @@ end
 
 --- Extract content lines from a file
 --- @param path string File path
---- @param boardConfig table? Board configuration (content_selector)
+--- @param boardConfig vaultview.BoardConfig Board configuration (content_selector)
 --- @return string[] Lines of content
 function ParserTrait.findContentInEntryFile(path,  boardConfig)
     boardConfig = boardConfig or {}
@@ -124,7 +124,7 @@ end
 
 --- Populate all entries in boardData with content from their files
 --- @param boardData table Board data structure: pages → lists → entries
----@param boardConfig table Board configuration (content_selector, etc.)
+---@param boardConfig vaultview.BoardConfig Board configuration (content_selector, etc.)
 function ParserTrait.parseBoardDataEntriesForContent(boardData, boardConfig)
     for _, page in ipairs(boardData) do
         for _, list in ipairs(page.lists) do

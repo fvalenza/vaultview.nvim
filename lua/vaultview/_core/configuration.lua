@@ -44,6 +44,28 @@ local _EXTRA_DEFAULTS = {
         },
         ["noVault"] = nil,
     },
+    ---@class vaultview.BoardConfig
+    ---@field vault string Key of the vault to use (must exist in the `vaults` section of the plugin configuration).p
+    ---@field name string Display name of the board, shown in the top header UI.
+    ---@field parser '"daily"' | '"moc"' Parser used to extract data from the vault.
+    --- Supported parsers:
+    --- - `"daily"` — daily notes organization
+    --- - `"moc"` — Map-Of-Content structure
+    ---@field viewlayout '"carousel"' | '"columns"' How lists/pages are visually displayed in the View.
+    --- Supported layouts:
+    --- - `"carousel"` — one list/page centered, others scroll horizontally
+    --- - `"columns"` — multiple lists rendered side by side
+    ---@field input_selector string Rule used to select which files to include in the board.
+    --- Can refer to:
+    --- - a built-in selector
+    --- - a user-defined selector
+    ---@field subfolder string|nil Optional subfolder inside the selected vault. If set, limits the parser to this directory only.
+    ---@field content_selector string Rule to pick which part of each file is displayed.
+    --- Can refer to:
+    --- - a built-in content selector
+    --- - a user-defined selector
+
+    ---@type vaultview.BoardConfig[]
     boards = {
         -- {
         --     vault= "myVault", -- key of the vault as defined in the `Vaults` section

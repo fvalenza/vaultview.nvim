@@ -332,15 +332,15 @@ The function should take as input the vault subtable of the configuration and th
 ```lua
 
 --- parse a vault folder to create a board data structure depending on the board configuration
----@param vault configuration of the vault {path: string, name: string}
----@param custom_selectors configuration of user custom selectors {input_selectors: table, entry_content_selectors: table}
----@param boardConfig configuration of the board {name:string, parser: string|function, viewlayout: string, subfolder: string, pattern: string}
----@return The BoardDataStructure as expected by a ViewLayout
-parser = function(vault_config, custom_selectors, board_config)
-    end
+--- @param vault_path string
+--- @param boardConfig vaultview.BoardConfig
+---
+--- @return table boardData The BoardDataStructure required by ViewLayouts
+parser = function(vault_path,  boardConfig)
+end
 ```
 
-Warning: As this plugin is still in early development, the API for custom parsers may change in future releases + pattern matching is currently very basic (see TODOs).
+Warning: First stable release (v1.0.0) of this plugin is still to come, hence the API for custom parsers may change in future releases.
 
 ## Usage
 Once setup and your neovim instance running, you can use the following commands to interact with VaultView.

@@ -147,7 +147,7 @@ end
 --- 4. Parse file contents for each entry
 ---
 --- @param vault_path string
---- @param boardConfig table { name:string, parser:string|function, viewlayout:string, subfolder:string, pattern:string }
+--- @param boardConfig vaultview.BoardConfig
 ---
 --- @return table boardData The BoardDataStructure required by ViewLayouts
 function M.parseBoard(vault_path,  boardConfig)
