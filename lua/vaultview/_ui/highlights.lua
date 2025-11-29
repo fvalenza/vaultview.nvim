@@ -11,6 +11,8 @@ M.defaults = {
     EntryWindowActive = {bg = "#303040"},
     EntryWindowInactive = {bg = "#202020"},
     TabHint      = "Comment",
+    Footer_VaultName = "Title",
+    Footer_VaultPath = "Comment",
 }
 
 --- Apply or link highlights

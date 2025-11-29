@@ -14,14 +14,24 @@ M.header_win = {
     col = 0,
 }
 
+M.footer_win = {
+    width = vim.o.columns,
+    height = 2,
+    zindex = 10,
+    -- backdrop = false,
+    row = vim.o.lines - 1,
+    col = 0,
+}
+
 M.view_win = {
     width = vim.o.columns,
-    height = vim.o.lines - M.header_win.height,
+    height = vim.o.lines - M.header_win.height - M.footer_win.height - 1,
     zindex = 10,
     -- backdrop = false,
     row = M.header_win.height + 1,
     col = 0,
 }
+
 
 M.list_win = {
     ViewLayoutColumns = {

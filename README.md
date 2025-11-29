@@ -201,12 +201,15 @@ return {
                     -- shall be grep/awk/rg command lines
                 },
             },
-            vault = {
-                path = "/path/to/your/vault", -- full path to your vault
-                name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
+            Vaults = {
+                ["myVault"] = { -- Just a key used to reference the vault in board config but can be the same as obsidianVaultName
+                    path = "/tmp/myVault/",
+                    obsidianVaultName = "myVault", -- Name of the vault as known by Obsidian (used to build uri)
+                },
             },
 			boards = {
 				{
+                    vault = "myVault", -- key of the vault to use for this board.
 					name = "dailyBoard", -- name of the board as printed in the top of UI
                     parser = "daily", -- parser used to retrieve information to display in the view -> currently supported parsers: "daily", "moc"
 					viewlayout = "carousel", -- how information is displayed in the view -> currently supported layouts: "carousel", "columns"

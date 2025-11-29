@@ -686,7 +686,8 @@ end
 --- Open focused entry in Obsidian using URI.
 ---
 function View:open_in_obsidian()
-    local vaultname = self._opts.vault.name
+    local vaultname = self.viewData.vault_uriRoot
+
     if self.state.focused.list == 0 or self.state.focused.entry == 0 then
         -- vim.notify("No focused entry to open", vim.log.levels.WARN)
         return

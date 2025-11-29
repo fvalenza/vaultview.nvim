@@ -37,12 +37,16 @@ local _EXTRA_DEFAULTS = {
         input = require("vaultview._core.parsers.selectors").default_input_selectors,
         entry_content = require("vaultview._core.parsers.selectors").default_entry_content_selectors,
     },
-    vault = {
-        path = "/tmp/myVault/", -- full path th the vault
-        name = "myVault", -- name of the Vault as seen by Obsidian. Used to build uri path for Obsidian
+    Vaults = {
+        ["myVault"] = { -- Just a key used to reference the vault in board config but can be the same as obsidianVaultName
+            path = "/tmp/myVault/",
+            obsidianVaultName = "myVault", -- Name of the vault as known by Obsidian (used to build uri)
+        },
+        ["noVault"] = nil,
     },
     boards = {
         -- {
+        --     vault= "myVault", -- key of the vault as defined in the `Vaults` section
         --     name = "dailyBoard", -- name of the board as printed in the top of UI
         --     parser = "daily", -- parser used to retrieve information to display in the view -> currently supported parsers: "daily", "moc"
         --     viewlayout = "carousel", -- how lists are displayed in the view -> currently supported layouts: "carousel", "columns"
