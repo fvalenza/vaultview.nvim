@@ -7,6 +7,7 @@ local tutils = require("vaultview._core.utils.table_utils")
 local utils = require("vaultview._core.utils.utils")
 local Constants = require("vaultview._ui.constants")
 
+--- @class MocParser : ParserTrait
 local M = {}
 
 --- Parse a single ripgrep line into its components.
@@ -156,7 +157,7 @@ end
 --- 4. Parses the content for each entry of the paginatd board data
 ---
 --- @param vault_path table { path: string, name: string }
---- @param boardConfig vaultview.BoardConfig 
+--- @param boardConfig vaultview.BoardConfig
 ---
 --- @return table boardData Fully structured board data compatible with all ViewLayouts
 function M.parseBoard(vault_path, boardConfig)

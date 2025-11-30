@@ -1,5 +1,7 @@
 --- Helper class to wrap functionalities over Windows creation
 -- Here in case i want to change the window manager lib later (removing snacks or using another one)
+
+---@class vaultview.WindowFactory
 local M = {}
 
 --- HACK: Taken from snacks.nvim types to avoid LSP errors...
@@ -254,9 +256,9 @@ end
 --- Create all window for a board view (lists and entries for all pages of a board)
 --- @param viewData table The data for the board view (pages → lists → items)
 --- @param layout ViewLayoutCarousel|ViewLayoutColumns The layout in which this board will be displayed
---- @return table pages_names The names of the pages in the board
---- @return table windows The created windows structure for the board
---- @return table pages_state The initial state structure for the board
+--- @return string[] pages_names The names of the pages in the board
+--- @return vaultview.ViewWindows windows The created windows structure for the board
+--- @return vaultview.ViewState pages_state The initial state structure for the board
 function M.create_board_view_windows(viewData, layout)
     if not viewData then
         _LOGGER:error("Cannot create viewData view windows: viewData data not available")
@@ -264,7 +266,11 @@ function M.create_board_view_windows(viewData, layout)
     end
 
     local pages_names = {}
+
+    ---@type vaultview.ViewWindows
     local windows = { pages = {} }
+
+    ---@type vaultview.PageState
     local pages_state = {}
 
     for p_idx, page in ipairs(viewData.pages or {}) do
@@ -308,6 +314,7 @@ function M.create_board_view_windows(viewData, layout)
             pages_state[p_idx].lists[l_idx] = {
                 expanded = true,
                 show = true,
+                ---@type vaultview.EntryVisbilityWindow
                 entries_visibility = { first = 0, last = 0, length = 0 },
                 items = {},
                 list_pages = list_pages,

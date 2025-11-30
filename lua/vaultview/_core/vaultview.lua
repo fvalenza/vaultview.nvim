@@ -47,7 +47,7 @@
 ---@field footer_win snacks.win Footer content window object
 ---@field boards_names string[] Names of all configured boards
 ---@field active_board_index integer Index of the currently active board
----@field VaultData table Parsed data structure used for rendering (the Model)
+---@field VaultData vaultview.VaultData Parsed data structure used for rendering (the Model)
 ---@field views View[] View instances (one per board)
 ---@field isDisplayed boolean|nil Whether the complete UI is currently shown
 ---@field boards_data_loaded boolean[]
@@ -513,6 +513,8 @@ end
 
 --- Render the entire UI (header + active view).
 function VaultView:render()
+    dprint("VaultView:render() called")
+    dprint(self)
     if not self.header_win or not self.view_win or not self.footer_win then
         self.last_error_message = "VaultView windows are not initialized"
         _LOGGER:error(self.last_error_message)

@@ -5,6 +5,7 @@ end
 local tutils = require("vaultview._core.utils.table_utils")
 local utils = require("vaultview._core.utils.utils")
 
+--- @class DailyParser : ParserTrait
 local M = {}
 
 local monthsMap = {

@@ -6,11 +6,11 @@
 --- establishes initial focus.
 ---
 --- @class ViewLayoutColumns : ViewLayoutTrait
----@field _opts table                         Plugin options
----@field __name string               Name of the layout class
----@field viewData table              Data model: pages → lists → items
----@field viewWindows table           Window objects for pages/lists/items
----@field viewState table             UI state: expanded flags, pagination, focus
+---@field _opts vaultview.Configuration Plugin options
+---@field __name string Name of the layout class
+---@field viewData vaultview.BoardData Data model: pages → lists → items
+---@field viewWindows vaultview.ViewWindows Window objects for pages/lists/items
+---@field viewState vaultview.ViewState UI state: expanded flags, pagination, focus
 local ViewLayoutColumns = {}
 ViewLayoutColumns.__index = ViewLayoutColumns
 
@@ -22,9 +22,9 @@ end
 
 --- Create a new ViewLayoutColumns instance.
 ---
---- @param viewData table      Data model: structure of pages, lists, entries. Only for the board associated to this View/ViewLayout
---- @param viewWindows table   Window objects for all pages/lists/items.
---- @param viewState table     UI navigation + expansion/collapse state.
+--- @param viewData vaultview.BoardData      Data model: structure of pages, lists, entries. Only for the board associated to this View/ViewLayout
+--- @param viewWindows vaultview.ViewWindows   Window objects for all pages/lists/items.
+--- @param viewState vaultview.ViewState     UI navigation + expansion/collapse state.
 ---
 --- @return ViewLayoutColumns  The constructed layout instance
 function ViewLayoutColumns.new(viewData, viewWindows, viewState)

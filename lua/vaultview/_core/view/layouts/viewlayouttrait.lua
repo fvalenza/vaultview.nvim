@@ -10,9 +10,9 @@
 ---
 --- @class ViewLayoutTrait
 --- @field __name string                    Layout name (matching keys in Constants)
---- @field viewData table                   Data model for pages/lists/items
---- @field viewState table                  UI navigation state (expanded, pages, etc.)
---- @field viewWindows table                Table of window objects for pages/lists/items
+---@field viewData vaultview.BoardData Data model: pages → lists → items
+---@field viewWindows vaultview.ViewWindows Window objects for pages/lists/items
+---@field viewState vaultview.ViewState UI state: expanded flags, pagination, focus
 local ViewLayoutTrait = {}
 
 local Constants = require("vaultview._ui.constants")

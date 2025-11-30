@@ -16,20 +16,22 @@
 --- Some actions of the View might be delegated to the layout
 ---
 --- @class View
---- @field _opts table                         Plugin options
---- @field board_idx integer                   Index of the board this view represents
---- @field viewData table                      Data of the selected board
---- @field board_config table                  Per-board plugin configuration
---- @field header_win table                    Snacks window object for the header
---- @field layout table                        Layout instance controlling positioning
---- @field pages_names string[]                List of page names from Vault data
---- @field viewWindows table                   Window objects for all pages/lists/entries
---- @field state table                         UI navigation state
---- @field page_selection_line integer|nil     Line number where the page selection starts (used by views)
+--- @field _opts vaultview.Configuration Plugin options
+--- @field board_idx integer Index of the board this view represents
+--- @field viewData vaultview.BoardData Data of the selected board
+--- @field board_config vaultview.BoardConfig Per-board plugin configuration
+--- @field header_win snacks.win Snacks window object for the header
+--- @field layout ViewLayoutCarousel | ViewLayoutColumns Layout instance controlling positioning
+--- @field pages_names string[] List of page names from Vault data
+--- @field viewWindows vaultview.ViewWindows Window objects for all pages/lists/entries
+--- @field state vaultview.ViewState UI navigation state
+--- @field page_selection_line integer|nil Line number where the page selection starts (used by views)
 local View = {}
 View.__index = View
 
+--- @type vaultview.WindowFactory
 local wf = require("vaultview._core.windowfactory")
+
 local logging = require("mega.logging")
 local _LOGGER = logging.get_logger("vaultview.core.view.init")
 
