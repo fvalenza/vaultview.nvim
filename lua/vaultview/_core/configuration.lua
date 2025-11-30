@@ -76,6 +76,10 @@ local _EXTRA_DEFAULTS = {
         --     subfolder = "vault/0-dailynotes", -- optional subfolder inside vault to limit the scope of the parser
         --     content_selector = "h2_awk_noexcalidraw", -- rule to select content inside each file to be displayed in the view. Can be a built-in selector or a user-defined one
         -- },
+        -- {
+        --     vault= "obsidian:<workspace_name>", -- special syntax to directly reference an Obsidian vault configured in Obsidian.nvim plugin ( key of the workspace as defined in the `workspaces` section of obsidian.nvim plugin configuration)
+        -- ....
+        -- },
     },
     -- initial_board_idx = 1, -- index of the board to be displayed when opening the vaultview. Optional.
 }
