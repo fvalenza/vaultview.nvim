@@ -37,7 +37,7 @@ local _EXTRA_DEFAULTS = {
         input = require("vaultview._core.parsers.selectors").default_input_selectors,
         entry_content = require("vaultview._core.parsers.selectors").default_entry_content_selectors,
     },
-    Vaults = {
+    vaults = {
         ["myVault"] = { -- Just a key used to reference the vault in board config but can be the same as obsidianVaultName
             path = "/tmp/myVault/",
             obsidianVaultName = "myVault", -- Name of the vault as known by Obsidian (used to build uri)
