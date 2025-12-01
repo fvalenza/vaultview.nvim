@@ -21,7 +21,7 @@ local _DEFAULTS = {
         use_console = false,
         use_file = false,
         output_path = "/tmp/vaultview.log",
-        raw_debug_console = true,
+        raw_debug_console = false,
     },
 }
 
